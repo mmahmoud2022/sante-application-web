@@ -123,8 +123,13 @@ const api = {
       return axiosInstance.get('/users/me');
     },
     
-    update: async (data: any) => {
-      return axiosInstance.put('/users/me', data);
+    update: async (idOrData: number | any, data?: any) => {
+      // Support both update(data) for current user and update(id, data) for admin
+      if (typeof idOrData === 'number' && data) {
+        return axiosInstance.put(`/users/${idOrData}`, data);
+      } else {
+        return axiosInstance.put('/users/me', idOrData);
+      }
     },
     
     list: async (params?: any) => {
@@ -137,6 +142,10 @@ const api = {
     
     getDoctor: async (id: number) => {
       return axiosInstance.get(`/users/doctors/${id}`);
+    },
+    
+    delete: async (id: number) => {
+      return axiosInstance.delete(`/users/${id}`);
     },
   },
 
