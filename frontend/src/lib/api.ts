@@ -1,0 +1,340 @@
+/**
+ * API Client
+ * Centralized API client for communicating with the backend
+ */
+
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Create axios instance
+const axiosInstance: AxiosInstance = axios.create({
+  baseURL: `${API_BASE_URL}/api/v1`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor to add auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle token refresh
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If error is 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (typeof window !== 'undefined') {
+        const refreshToken = localStorage.getItem('refresh_token');
+        
+        if (refreshToken) {
+          try {
+            const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+              refresh_token: refreshToken,
+            });
+
+            const { access_token } = response.data;
+            localStorage.setItem('access_token', access_token);
+
+            // Retry the original request with new token
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+            return axiosInstance(originalRequest);
+          } catch (refreshError) {
+            // Refresh failed, clear tokens and redirect to login
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            return Promise.reject(refreshError);
+          }
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+// API endpoints
+const api = {
+  // Authentication
+  auth: {
+    login: async (email: string, password: string) => {
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
+      
+      return axiosInstance.post('/auth/login', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+    },
+    
+    register: async (data: any) => {
+      return axiosInstance.post('/auth/register', data);
+    },
+    
+    logout: () => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      }
+    },
+    
+    refresh: async (refreshToken: string) => {
+      return axiosInstance.post('/auth/refresh', { refresh_token: refreshToken });
+    },
+  },
+
+  // Users
+  users: {
+    me: async () => {
+      return axiosInstance.get('/users/me');
+    },
+    
+    update: async (data: any) => {
+      return axiosInstance.put('/users/me', data);
+    },
+    
+    list: async (params?: any) => {
+      return axiosInstance.get('/users/', { params });
+    },
+    
+    doctors: async (params?: any) => {
+      return axiosInstance.get('/users/doctors', { params });
+    },
+    
+    getDoctor: async (id: number) => {
+      return axiosInstance.get(`/users/doctors/${id}`);
+    },
+  },
+
+  // Appointments
+  appointments: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/appointments/', { params });
+    },
+    
+    get: async (id: number) => {
+      return axiosInstance.get(`/appointments/${id}`);
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/appointments/', data);
+    },
+    
+    update: async (id: number, data: any) => {
+      return axiosInstance.put(`/appointments/${id}`, data);
+    },
+    
+    cancel: async (id: number, reason?: string) => {
+      return axiosInstance.patch(`/appointments/${id}/cancel`, { 
+        cancellation_reason: reason 
+      });
+    },
+    
+    confirm: async (id: number) => {
+      return axiosInstance.patch(`/appointments/${id}/confirm`);
+    },
+    
+    complete: async (id: number, data?: any) => {
+      return axiosInstance.patch(`/appointments/${id}/complete`, data);
+    },
+    
+    getAvailableSlots: async (doctorId: number, date: string) => {
+      return axiosInstance.get(`/appointments/available-slots`, {
+        params: { doctor_id: doctorId, date }
+      });
+    },
+  },
+
+  // Prescriptions
+  prescriptions: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/prescriptions/', { params });
+    },
+    
+    get: async (id: number) => {
+      return axiosInstance.get(`/prescriptions/${id}`);
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/prescriptions/', data);
+    },
+    
+    update: async (id: number, data: any) => {
+      return axiosInstance.put(`/prescriptions/${id}`, data);
+    },
+    
+    renew: async (id: number) => {
+      return axiosInstance.post(`/prescriptions/${id}/renew`);
+    },
+    
+    cancel: async (id: number) => {
+      return axiosInstance.patch(`/prescriptions/${id}/cancel`);
+    },
+  },
+
+  // Medical Records
+  medicalRecords: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/medical-records/', { params });
+    },
+    
+    get: async (id: number) => {
+      return axiosInstance.get(`/medical-records/${id}`);
+    },
+    
+    getByPatient: async (patientId: number) => {
+      return axiosInstance.get(`/medical-records/patient/${patientId}`);
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/medical-records/', data);
+    },
+    
+    update: async (id: number, data: any) => {
+      return axiosInstance.put(`/medical-records/${id}`, data);
+    },
+  },
+
+  // Documents
+  documents: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/documents/', { params });
+    },
+    
+    get: async (id: number) => {
+      return axiosInstance.get(`/documents/${id}`);
+    },
+    
+    upload: async (file: File, data: any) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+      });
+      
+      return axiosInstance.post('/documents/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+    
+    delete: async (id: number) => {
+      return axiosInstance.delete(`/documents/${id}`);
+    },
+    
+    download: async (id: number) => {
+      return axiosInstance.get(`/documents/${id}/download`, {
+        responseType: 'blob',
+      });
+    },
+  },
+
+  // Notifications
+  notifications: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/notifications/', { params });
+    },
+    
+    markAsRead: async (id: number) => {
+      return axiosInstance.patch(`/notifications/${id}/read`);
+    },
+    
+    markAllAsRead: async () => {
+      return axiosInstance.post('/notifications/mark-all-read');
+    },
+  },
+
+  // Reviews
+  reviews: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/reviews/', { params });
+    },
+    
+    getByDoctor: async (doctorId: number, params?: any) => {
+      return axiosInstance.get(`/reviews/doctor/${doctorId}`, { params });
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/reviews/', data);
+    },
+    
+    update: async (id: number, data: any) => {
+      return axiosInstance.put(`/reviews/${id}`, data);
+    },
+    
+    delete: async (id: number) => {
+      return axiosInstance.delete(`/reviews/${id}`);
+    },
+  },
+
+  // Schedules
+  schedules: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/schedules/', { params });
+    },
+    
+    getByDoctor: async (doctorId: number) => {
+      return axiosInstance.get(`/schedules/doctor/${doctorId}`);
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/schedules/', data);
+    },
+    
+    update: async (id: number, data: any) => {
+      return axiosInstance.put(`/schedules/${id}`, data);
+    },
+    
+    delete: async (id: number) => {
+      return axiosInstance.delete(`/schedules/${id}`);
+    },
+  },
+
+  // Payments
+  payments: {
+    list: async (params?: any) => {
+      return axiosInstance.get('/payments/', { params });
+    },
+    
+    get: async (id: number) => {
+      return axiosInstance.get(`/payments/${id}`);
+    },
+    
+    create: async (data: any) => {
+      return axiosInstance.post('/payments/', data);
+    },
+    
+    processPayment: async (id: number, paymentMethod: string) => {
+      return axiosInstance.post(`/payments/${id}/process`, { payment_method: paymentMethod });
+    },
+    
+    refund: async (id: number, amount?: number) => {
+      return axiosInstance.post(`/payments/${id}/refund`, { amount });
+    },
+  },
+};
+
+export default api;
