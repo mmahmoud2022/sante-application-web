@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Open_Sans, Montserrat } from 'next/font/google'
 import './globals.css'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const openSans = Open_Sans({ 
   subsets: ['latin'],
@@ -25,7 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${openSans.variable} ${montserrat.variable} font-sans`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )
