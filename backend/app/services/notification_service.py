@@ -245,3 +245,39 @@ class NotificationService:
         """Check if user wants SMS notifications"""
         # TODO: Check user notification preferences
         return user.phone_number is not None
+
+
+async def send_password_reset_email(email: str, first_name: str, reset_url: str):
+    """
+    Send password reset email (standalone function)
+    
+    Args:
+        email: User email address
+        first_name: User first name
+        reset_url: URL for password reset
+    """
+    # TODO: Integrate with email service (SendGrid, AWS SES, etc.)
+    # For now, just log the reset URL
+    print(f"Password reset email for {first_name} ({email})")
+    print(f"Reset URL: {reset_url}")
+    
+    # In production, you would send an actual email like:
+    # subject = "Réinitialisation de votre mot de passe - Santé"
+    # body = f"""
+    # Bonjour {first_name},
+    # 
+    # Vous avez demandé à réinitialiser votre mot de passe.
+    # 
+    # Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe:
+    # {reset_url}
+    # 
+    # Ce lien est valable pendant 15 minutes.
+    # 
+    # Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
+    # 
+    # Cordialement,
+    # L'équipe Santé
+    # """
+    # await email_service.send(email, subject, body)
+    pass
+
