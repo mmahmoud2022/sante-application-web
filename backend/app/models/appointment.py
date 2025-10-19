@@ -62,15 +62,38 @@ class Appointment(Base):
     # Video call information
     video_call_link = Column(String(500), nullable=True)
     video_call_room_id = Column(String(100), nullable=True)
+    waiting_room_enabled = Column(Boolean, default=False, nullable=False)
+    patient_joined_at = Column(DateTime(timezone=True), nullable=True)
+    doctor_joined_at = Column(DateTime(timezone=True), nullable=True)
+    call_started_at = Column(DateTime(timezone=True), nullable=True)
+    call_ended_at = Column(DateTime(timezone=True), nullable=True)
     
-    # Reminders
+    # Reminders and notifications
     reminder_sent = Column(Boolean, default=False, nullable=False)
     reminder_sent_at = Column(DateTime(timezone=True), nullable=True)
+    reminder_preferences = Column(Text, nullable=True)  # JSON: channels and timing
+    confirmation_sent = Column(Boolean, default=False, nullable=False)
+    
+    # Delays and status updates
+    is_delayed = Column(Boolean, default=False, nullable=False)
+    delay_minutes = Column(Integer, nullable=True)
+    delay_reason = Column(Text, nullable=True)
+    delay_notified = Column(Boolean, default=False, nullable=False)
+    
+    # Smart scheduling
+    suggested_time_slots = Column(Text, nullable=True)  # JSON array
+    auto_confirmed = Column(Boolean, default=False, nullable=False)
+    
+    # Follow-up
+    follow_up_required = Column(Boolean, default=False, nullable=False)
+    follow_up_date = Column(DateTime(timezone=True), nullable=True)
     
     # Cancellation
     cancelled_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     cancellation_reason = Column(Text, nullable=True)
     cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    replacement_suggested = Column(Boolean, default=False, nullable=False)
+    replacement_appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
