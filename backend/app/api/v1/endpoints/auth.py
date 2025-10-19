@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token
+from app.core.security import create_access_token, create_refresh_token, get_current_user
 from app.schemas.user import UserCreate, UserResponse, Token
 from app.services.user_service import create_user, authenticate_user
 from app.services.notification_service import send_password_reset_email
@@ -35,8 +35,13 @@ class PasswordReset(BaseModel):
     new_password: str
 
 
+class EmailVerification(BaseModel):
+    token: str
+
+
 # In-memory storage for password reset tokens (in production, use Redis or database)
 password_reset_tokens = {}
+email_verification_tokens = {}
 
 
 
@@ -218,4 +223,120 @@ def reset_password(
     del password_reset_tokens[request.token]
     
     return {"message": "Password has been reset successfully"}
+
+
+@router.post("/verify-email", status_code=status.HTTP_200_OK)
+def verify_email(
+    request: EmailVerification,
+    db: Session = Depends(get_db)
+) -> dict[str, str]:
+    """
+    Verify user email using token
+    
+    - **token**: Email verification token from email
+    """
+    from app.models.user import User
+    
+    token_data = email_verification_tokens.get(request.token)
+    
+    if not token_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification token"
+        )
+    
+    if datetime.utcnow() > token_data["expiry"]:
+        # Token expired, remove it
+        del email_verification_tokens[request.token]
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification token has expired"
+        )
+    
+    # Get user and verify email
+    user = db.query(User).filter(User.id == token_data["user_id"]).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Mark user as verified
+    user.is_verified = True
+    db.commit()
+    
+    # Remove used token
+    del email_verification_tokens[request.token]
+    
+    return {"message": "Email verified successfully"}
+
+
+@router.post("/resend-verification", status_code=status.HTTP_200_OK)
+async def resend_verification_email(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> dict[str, str]:
+    """
+    Resend verification email to current user
+    
+    Requires authentication
+    """
+    if current_user.is_verified:
+        return {"message": "Email already verified"}
+    
+    # Generate new token
+    token = secrets.token_urlsafe(32)
+    
+    # Store token with expiry (24 hours for email verification)
+    expiry = datetime.utcnow() + timedelta(hours=24)
+    email_verification_tokens[token] = {
+        "user_id": current_user.id,
+        "email": current_user.email,
+        "expiry": expiry
+    }
+    
+    # Send verification email
+    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    await send_verification_email(
+        current_user.email,
+        current_user.first_name,
+        verification_url
+    )
+    
+    return {"message": "Verification email sent"}
+
+
+async def send_verification_email(email: str, first_name: str, verification_url: str):
+    """
+    Send email verification email
+    
+    Args:
+        email: User email address
+        first_name: User first name
+        verification_url: URL for email verification
+    """
+    # TODO: Integrate with email service
+    print(f"Email verification for {first_name} ({email})")
+    print(f"Verification URL: {verification_url}")
+    
+    # In production:
+    # subject = "Vérifiez votre adresse email - Santé"
+    # body = f"""
+    # Bonjour {first_name},
+    # 
+    # Merci de vous être inscrit sur Santé!
+    # 
+    # Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse email:
+    # {verification_url}
+    # 
+    # Ce lien est valable pendant 24 heures.
+    # 
+    # Si vous n'avez pas créé de compte, ignorez cet email.
+    # 
+    # Cordialement,
+    # L'équipe Santé
+    # """
+    # await email_service.send(email, subject, body)
+    pass
 
