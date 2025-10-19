@@ -103,6 +103,18 @@ const api = {
     refresh: async (refreshToken: string) => {
       return axiosInstance.post('/auth/refresh', { refresh_token: refreshToken });
     },
+    
+    requestPasswordReset: async (email: string) => {
+      return axiosInstance.post('/auth/request-password-reset', { email });
+    },
+    
+    validateResetToken: async (token: string) => {
+      return axiosInstance.post('/auth/validate-reset-token', { token });
+    },
+    
+    resetPassword: async (token: string, new_password: string) => {
+      return axiosInstance.post('/auth/reset-password', { token, new_password });
+    },
   },
 
   // Users
