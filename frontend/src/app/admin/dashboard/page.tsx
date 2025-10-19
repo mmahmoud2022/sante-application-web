@@ -51,8 +51,8 @@ export default function AdminDashboard() {
         api.appointments.list(),
       ]);
 
-      const users = usersRes.data.items || usersRes.data || [];
-      const appointments = appointmentsRes.data.items || appointmentsRes.data || [];
+      const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+      const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : (appointmentsRes.data as any).items || [];
 
       const doctors = users.filter((u: any) => u.role === 'doctor');
       const patients = users.filter((u: any) => u.role === 'patient');

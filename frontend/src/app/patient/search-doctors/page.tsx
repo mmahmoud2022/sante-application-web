@@ -48,7 +48,8 @@ export default function DoctorSearchPage() {
     try {
       setLoading(true);
       const response = await api.users.doctors(filters);
-      setDoctors(response.data.items || response.data || []);
+      const doctorsList = Array.isArray(response.data) ? response.data : (response.data as any).items || [];
+      setDoctors(doctorsList);
     } catch (error) {
       console.error('Failed to load doctors:', error);
     } finally {
