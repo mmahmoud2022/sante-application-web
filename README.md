@@ -52,12 +52,12 @@ sante-application-web/
 │   ├── app/
 │   │   ├── api/            # API routes
 │   │   ├── core/           # Core configuration
-│   │   ├── models/         # SQLAlchemy models
+│   │   ├── models/         # SQLAlchemy models (11 models)
 │   │   ├── schemas/        # Pydantic schemas
 │   │   ├── services/       # Business logic
 │   │   └── utils/          # Utility functions
 │   ├── alembic/            # Database migrations
-│   ├── tests/              # Backend tests
+│   ├── tests/              # Backend tests (22 tests)
 │   ├── requirements.txt    # Python dependencies
 │   └── Dockerfile
 ├── frontend/               # Next.js frontend application
@@ -77,6 +77,11 @@ sante-application-web/
 │   ├── k8s/
 │   ├── terraform/
 │   └── monitoring/
+├── docs/                   # Comprehensive documentation
+│   ├── API.md             # API reference
+│   ├── ARCHITECTURE.md    # System architecture
+│   ├── MODELS.md          # Data models documentation (NEW)
+│   └── ...
 ├── docker-compose.yml      # Local development setup
 └── README.md
 ```
