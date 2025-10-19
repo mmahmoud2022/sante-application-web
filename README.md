@@ -133,41 +133,73 @@ sante-application-web/
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Docker and Docker Compose
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL 16+
-- Redis
+- Docker 20.10+ and Docker Compose 2.0+
+- Git
+- (Optional) Make utility for easier commands
 
-### Local Development Setup
+### Quick Start with Make
 
-1. **Clone the repository**
 ```bash
+# Clone the repository
 git clone https://github.com/mmahmoud2022/sante-application-web.git
 cd sante-application-web
-```
 
-2. **Set up environment variables**
-```bash
+# Initialize the project (copies .env, builds images, starts services, runs migrations)
+make init
+
+# Or manually:
 cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. **Start services with Docker Compose**
-```bash
 docker-compose up -d
-```
-
-4. **Run database migrations**
-```bash
 docker-compose exec backend alembic upgrade head
 ```
 
-5. **Access the applications**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
-- Admin Dashboard: http://localhost:3000/admin
+### Verify Setup
+
+```bash
+# Check all services
+./scripts/verify-setup.sh
+
+# Or check manually
+docker-compose ps
+curl http://localhost:8000/health
+```
+
+### Access the Applications
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Alternative API Docs**: http://localhost:8000/redoc
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3001 (admin/admin)
+- **Kibana**: http://localhost:5601
+- **Jaeger**: http://localhost:16686
+
+### Common Commands
+
+```bash
+# Using Make (recommended)
+make help           # Show all available commands
+make up             # Start all services
+make down           # Stop all services
+make logs           # View logs
+make migrate        # Run database migrations
+make test-backend   # Run backend tests
+
+# Using Docker Compose directly
+docker-compose up -d                        # Start services
+docker-compose down                         # Stop services
+docker-compose logs -f                      # View logs
+docker-compose exec backend alembic upgrade head  # Run migrations
+```
+
+### Development Workflow
+
+1. **Backend Development**: Edit files in `backend/app/`, changes auto-reload
+2. **Frontend Development**: Edit files in `frontend/src/`, hot-reload enabled
+3. **Database Changes**: Modify models, run `make migrate-create MSG="description"`, then `make migrate`
+
+For detailed instructions, see the [Quick Start Guide](docs/QUICKSTART.md).
 
 ## 🧪 Testing
 
