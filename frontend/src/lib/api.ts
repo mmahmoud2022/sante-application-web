@@ -115,6 +115,14 @@ const api = {
     resetPassword: async (token: string, new_password: string) => {
       return axiosInstance.post('/auth/reset-password', { token, new_password });
     },
+    
+    verifyEmail: async (token: string) => {
+      return axiosInstance.post('/auth/verify-email', { token });
+    },
+    
+    resendVerificationEmail: async () => {
+      return axiosInstance.post('/auth/resend-verification');
+    },
   },
 
   // Users
