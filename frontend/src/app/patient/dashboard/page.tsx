@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { Appointment, Prescription } from '@/types';
 
 export default function PatientDashboard() {
@@ -52,8 +53,11 @@ export default function PatientDashboard() {
       
       setAppointments(appointments);
       setPrescriptions(prescriptions);
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+    } catch (error: any) {
+      logger.error('Failed to load dashboard data', {
+        userId: user?.id,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoadingData(false);
     }

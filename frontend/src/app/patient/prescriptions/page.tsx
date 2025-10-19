@@ -25,6 +25,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { Prescription, PrescriptionStatus } from '@/types';
 
 export default function PrescriptionsPage() {
@@ -61,8 +62,11 @@ export default function PrescriptionsPage() {
         : (response.data as any).items || [];
       
       setPrescriptions(prescriptionsList);
-    } catch (error) {
-      console.error('Failed to load prescriptions:', error);
+    } catch (error: any) {
+      logger.error('Failed to load prescriptions', {
+        userId: user?.id,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +82,11 @@ export default function PrescriptionsPage() {
       alert('Prescription renewal requested successfully!');
       loadPrescriptions();
     } catch (error: any) {
-      console.error('Failed to renew prescription:', error);
+      logger.error('Failed to renew prescription', {
+        userId: user?.id,
+        prescriptionId,
+        errorMessage: error?.message,
+      }, error);
       alert(error.response?.data?.detail || 'Failed to renew prescription');
     }
   };

@@ -27,6 +27,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { Appointment, User as UserType, AppointmentStatus, AppointmentType } from '@/types';
 
 export default function AppointmentsPage() {
@@ -84,8 +85,11 @@ export default function AppointmentsPage() {
 
       setAppointments(appointmentsList);
       setDoctors(doctorsList);
-    } catch (error) {
-      console.error('Failed to load data:', error);
+    } catch (error: any) {
+      logger.error('Failed to load data', {
+        userId: user?.id,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoading(false);
     }
@@ -96,8 +100,13 @@ export default function AppointmentsPage() {
       const dateStr = date.toISOString().split('T')[0];
       const response = await api.appointments.getAvailableSlots(doctorId, dateStr);
       setAvailableSlots(response.data || []);
-    } catch (error) {
-      console.error('Failed to load available slots:', error);
+    } catch (error: any) {
+      logger.error('Failed to load available slots', {
+        userId: user?.id,
+        doctorId,
+        date: date.toISOString(),
+        errorMessage: error?.message,
+      }, error);
       // Generate sample slots if API fails
       const sampleSlots = [
         '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -153,7 +162,13 @@ export default function AppointmentsPage() {
       // Reload appointments
       loadData();
     } catch (error: any) {
-      console.error('Failed to book appointment:', error);
+      logger.error('Failed to book appointment', {
+        userId: user?.id,
+        doctorId: selectedDoctor,
+        date: selectedDate?.toISOString(),
+        slot: selectedSlot,
+        errorMessage: error?.message,
+      }, error);
       alert(error.response?.data?.detail || 'Failed to book appointment');
     }
   };
@@ -167,8 +182,12 @@ export default function AppointmentsPage() {
       await api.appointments.cancel(appointmentId, 'Cancelled by patient');
       alert('Appointment cancelled successfully');
       loadData();
-    } catch (error) {
-      console.error('Failed to cancel appointment:', error);
+    } catch (error: any) {
+      logger.error('Failed to cancel appointment', {
+        userId: user?.id,
+        appointmentId,
+        errorMessage: error?.message,
+      }, error);
       alert('Failed to cancel appointment');
     }
   };

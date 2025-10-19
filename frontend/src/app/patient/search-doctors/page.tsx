@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { User as UserType, DoctorSearchFilters } from '@/types';
 
 export default function DoctorSearchPage() {
@@ -50,8 +51,12 @@ export default function DoctorSearchPage() {
       const response = await api.users.doctors(filters);
       const doctorsList = Array.isArray(response.data) ? response.data : (response.data as any).items || [];
       setDoctors(doctorsList);
-    } catch (error) {
-      console.error('Failed to load doctors:', error);
+    } catch (error: any) {
+      logger.error('Failed to load doctors', {
+        userId: user?.id,
+        filters,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoading(false);
     }
