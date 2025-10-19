@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -66,8 +67,12 @@ export default function AdminDashboard() {
         pendingVerifications: pendingDoctors.length,
         activeUsers: users.filter((u: any) => u.is_active).length,
       });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+    } catch (error: any) {
+      logger.error('Failed to load dashboard data', {
+        userId: user?.id,
+        role: user?.role,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoadingData(false);
     }

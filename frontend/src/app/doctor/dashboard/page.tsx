@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { Appointment } from '@/types';
 
 export default function DoctorDashboard() {
@@ -65,8 +66,12 @@ export default function DoctorDashboard() {
         totalPatients: new Set(appointmentsList.map((apt: Appointment) => apt.patient_id)).size,
         revenue: 0, // Would be calculated from payments
       });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+    } catch (error: any) {
+      logger.error('Failed to load dashboard data', {
+        userId: user?.id,
+        role: user?.role,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoadingData(false);
     }

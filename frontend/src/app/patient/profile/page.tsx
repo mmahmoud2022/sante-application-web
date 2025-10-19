@@ -27,6 +27,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 
 export default function ProfilePage() {
   const { user, loading: authLoading, updateUser } = useAuth();
@@ -98,7 +99,10 @@ export default function ProfilePage() {
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setEditing(false);
     } catch (error: any) {
-      console.error('Failed to update profile:', error);
+      logger.error('Failed to update profile', {
+        userId: user?.id,
+        errorMessage: error.message,
+      }, error);
       setMessage({ 
         type: 'error', 
         text: error.message || 'Failed to update profile. Please try again.' 

@@ -28,6 +28,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
+import logger from '@/lib/logger';
 import { MedicalRecord, Document } from '@/types';
 
 export default function MedicalRecordsPage() {
@@ -76,8 +77,11 @@ export default function MedicalRecordsPage() {
 
       const documentsList = Array.isArray(documentsRes.data) ? documentsRes.data : [];
       setDocuments(documentsList);
-    } catch (error) {
-      console.error('Failed to load medical data:', error);
+    } catch (error: any) {
+      logger.error('Failed to load medical data', {
+        userId: user?.id,
+        errorMessage: error?.message,
+      }, error);
     } finally {
       setLoading(false);
     }
@@ -122,7 +126,11 @@ export default function MedicalRecordsPage() {
       
       loadMedicalData();
     } catch (error: any) {
-      console.error('Failed to upload document:', error);
+      logger.error('Failed to upload document', {
+        userId: user?.id,
+        documentType: uploadData.document_type,
+        errorMessage: error?.message,
+      }, error);
       alert(error.response?.data?.detail || 'Failed to upload document');
     } finally {
       setUploading(false);
@@ -139,8 +147,12 @@ export default function MedicalRecordsPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (error) {
-      console.error('Failed to download document:', error);
+    } catch (error: any) {
+      logger.error('Failed to download document', {
+        userId: user?.id,
+        documentId: doc.id,
+        errorMessage: error?.message,
+      }, error);
       alert('Failed to download document');
     }
   };
@@ -154,8 +166,12 @@ export default function MedicalRecordsPage() {
       await api.documents.delete(docId);
       alert('Document deleted successfully');
       loadMedicalData();
-    } catch (error) {
-      console.error('Failed to delete document:', error);
+    } catch (error: any) {
+      logger.error('Failed to delete document', {
+        userId: user?.id,
+        documentId: docId,
+        errorMessage: error?.message,
+      }, error);
       alert('Failed to delete document');
     }
   };
