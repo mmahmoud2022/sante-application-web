@@ -47,8 +47,11 @@ export default function PatientDashboard() {
         api.prescriptions.list({ limit: 5, status: 'active' }),
       ]);
       
-      setAppointments(appointmentsRes.data.items || appointmentsRes.data || []);
-      setPrescriptions(prescriptionsRes.data.items || prescriptionsRes.data || []);
+      const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : (appointmentsRes.data as any).items || [];
+      const prescriptions = Array.isArray(prescriptionsRes.data) ? prescriptionsRes.data : (prescriptionsRes.data as any).items || [];
+      
+      setAppointments(appointments);
+      setPrescriptions(prescriptions);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {

@@ -47,7 +47,7 @@ export default function DoctorDashboard() {
   const loadDashboardData = async () => {
     try {
       const appointmentsRes = await api.appointments.list();
-      const appointmentsList = appointmentsRes.data.items || appointmentsRes.data || [];
+      const appointmentsList = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : (appointmentsRes.data as any).items || [];
       setAppointments(appointmentsList);
 
       // Calculate stats

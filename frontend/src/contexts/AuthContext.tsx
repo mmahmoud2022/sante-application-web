@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateUser = async (data: Partial<User>) => {
     try {
-      const response = await api.users.update(data);
+      const response = await api.users.update(data as any);
       setUser(response.data);
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Update failed');
