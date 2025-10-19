@@ -155,6 +155,26 @@ const api = {
     delete: async (id: number) => {
       return axiosInstance.delete(`/users/${id}`);
     },
+    
+    getTwoFactorStatus: async () => {
+      return axiosInstance.get('/users/me/2fa/status');
+    },
+    
+    sendTwoFactorCode: async (data: any) => {
+      return axiosInstance.post('/users/me/2fa/send-code', data);
+    },
+    
+    generateTwoFactorSecret: async () => {
+      return axiosInstance.post('/users/me/2fa/generate-secret');
+    },
+    
+    enableTwoFactor: async (data: any) => {
+      return axiosInstance.post('/users/me/2fa/enable', data);
+    },
+    
+    disableTwoFactor: async () => {
+      return axiosInstance.post('/users/me/2fa/disable');
+    },
   },
 
   // Appointments
