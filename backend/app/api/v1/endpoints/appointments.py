@@ -1,14 +1,14 @@
-"""
-Appointment management endpoints
-"""
+"""Appointment management endpoints."""
+from datetime import datetime
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.security import get_current_active_user
 from app.models.user import User, UserRole
-from app.schemas.appointment import AppointmentCreate, AppointmentUpdate, AppointmentResponse
+from app.schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
 
 router = APIRouter()
 
@@ -25,15 +25,33 @@ def create_appointment(
     Patients can create appointments for themselves
     """
     from app.models.appointment import Appointment
-    
-    # Create appointment
+
+    appointment_datetime = appointment.appointment_date
+
+    if appointment.appointment_time:
+        try:
+            time_value = datetime.strptime(appointment.appointment_time, "%H:%M").time()
+        except ValueError as exc:  # pragma: no cover - defensive
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid appointment_time format. Use HH:MM."
+            ) from exc
+
+        appointment_datetime = appointment_datetime.replace(
+            hour=time_value.hour,
+            minute=time_value.minute,
+            second=0,
+            microsecond=0,
+        )
+
     db_appointment = Appointment(
         patient_id=current_user.id,
         doctor_id=appointment.doctor_id,
-        appointment_date=appointment.appointment_date,
+        appointment_date=appointment_datetime,
         duration_minutes=appointment.duration_minutes,
         appointment_type=appointment.appointment_type,
-        reason=appointment.reason
+        reason=appointment.chief_complaint or appointment.reason,
+        notes=appointment.notes,
     )
     
     db.add(db_appointment)

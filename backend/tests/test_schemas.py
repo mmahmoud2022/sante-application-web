@@ -14,6 +14,7 @@ from app.schemas.review import ReviewCreate, ReviewUpdate, DoctorResponse
 from app.schemas.schedule import DoctorScheduleCreate, DoctorScheduleUpdate
 from app.schemas.document import DocumentCreate, DocumentUpdate
 from app.schemas.health_device import HealthDeviceDataCreate, HealthDeviceDataUpdate
+from app.schemas.appointment import AppointmentCreate, AppointmentResponse
 
 from app.models.prescription import PrescriptionStatus
 from app.models.notification import NotificationType, NotificationChannel
@@ -21,6 +22,7 @@ from app.models.payment import PaymentMethod, PaymentStatus
 from app.models.schedule import DayOfWeek, ScheduleType
 from app.models.document import DocumentType
 from app.models.health_device import DeviceType, MeasurementType
+from app.models.appointment import AppointmentStatus, AppointmentType
 
 
 class TestPrescriptionSchemas:
@@ -207,6 +209,74 @@ class TestHealthDeviceDataSchemas:
         assert schema.device_type == DeviceType.FITNESS_TRACKER
         assert schema.measurement_type == MeasurementType.HEART_RATE
         assert schema.value == 72.0
+
+
+class TestAppointmentSchemas:
+    """Test appointment schemas"""
+
+    def test_appointment_create_normalizes_input(self):
+        """Ensure front-end payloads map to backend enums."""
+
+        payload = {
+            "doctor_id": 9,
+            "appointment_date": datetime(2024, 6, 1),
+            "appointment_time": "09:30",
+            "appointment_type": "video",
+            "chief_complaint": "General consultation",
+            "notes": "Prefer virtual visit",
+        }
+
+        schema = AppointmentCreate(**payload)
+
+        assert schema.appointment_type == AppointmentType.VIDEO_CALL
+        assert schema.chief_complaint == "General consultation"
+        assert schema.notes == "Prefer virtual visit"
+
+    def test_appointment_create_invalid_time(self):
+        """Invalid time formats should raise validation errors."""
+
+        payload = {
+            "doctor_id": 1,
+            "appointment_date": datetime(2024, 6, 1),
+            "appointment_time": "9h30",
+        }
+
+        with pytest.raises(ValidationError):
+            AppointmentCreate(**payload)
+
+    def test_appointment_response_serialization_aliases(self):
+        """Ensure response schema exposes UI-friendly aliases."""
+
+        schema = AppointmentResponse.model_validate(
+            {
+                "id": 1,
+                "patient_id": 2,
+                "doctor_id": 3,
+                "appointment_date": datetime(2024, 6, 1, 15, 45),
+                "duration_minutes": 30,
+                "appointment_type": AppointmentType.PHONE_CALL,
+                "status": AppointmentStatus.PENDING,
+                "reason": "At-home follow-up",
+                "notes": None,
+                "diagnosis": None,
+                "prescription": None,
+                "video_call_link": None,
+                "video_call_room_id": None,
+                "reminder_sent": False,
+                "reminder_sent_at": None,
+                "cancelled_by": None,
+                "cancellation_reason": None,
+                "cancelled_at": None,
+                "created_at": datetime(2024, 5, 1, 12, 0),
+                "updated_at": None,
+            }
+        )
+
+        assert schema.appointment_time == "15:45"
+        assert schema.chief_complaint == "At-home follow-up"
+
+        serialized = schema.model_dump(mode="json")
+        assert serialized["appointment_type"] == "home_visit"
 
 
 class TestVaccinationSchemas:

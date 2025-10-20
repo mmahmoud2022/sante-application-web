@@ -83,10 +83,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-warm-peach/20 to-secondary-50 py-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-warm-peach/20 to-secondary-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 py-12 px-4 relative overflow-hidden transition-colors duration-300">
       {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-200 to-secondary-200 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-warm-amber/20 to-warm-rose/20 rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-200 to-secondary-200 dark:from-primary-600/30 dark:to-secondary-600/20 rounded-full blur-3xl opacity-30 dark:opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-warm-amber/20 to-warm-rose/20 dark:from-warm-amber/10 dark:to-warm-rose/10 rounded-full blur-3xl opacity-40 dark:opacity-20 translate-y-1/2 -translate-x-1/2"></div>
       
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Logo and Header */}
@@ -97,18 +97,18 @@ export default function RegisterPage() {
             </div>
             <span className="text-4xl font-heading font-bold bg-gradient-to-r from-primary-600 via-warm-coral to-warm-sunset bg-clip-text text-transparent">Santé</span>
           </Link>
-          <h1 className="text-4xl font-heading font-bold text-neutral-800 mb-3 tracking-tight">
+          <h1 className="text-4xl font-heading font-bold text-neutral-800 dark:text-neutral-200 dark:text-neutral-50 mb-3 tracking-tight">
             Créer un compte
           </h1>
-          <p className="text-neutral-600 text-lg">
+          <p className="text-neutral-600 dark:text-neutral-400 dark:text-neutral-400 text-lg">
             Rejoignez notre plateforme de santé moderne
           </p>
         </div>
 
         {/* Role Selection */}
-        <Card className="mb-6 shadow-warm backdrop-blur-sm bg-white/95 border border-primary-100/50">
+        <Card className="mb-6 shadow-warm backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border border-primary-100/50 dark:border-slate-700/60 transition-colors duration-300">
           <div className="mb-4">
-            <h3 className="text-lg font-bold text-neutral-800 text-center">Sélectionnez votre profil</h3>
+            <h3 className="text-lg font-bold text-neutral-800 dark:text-neutral-200 dark:text-neutral-200 text-center">Sélectionnez votre profil</h3>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <button
@@ -117,7 +117,7 @@ export default function RegisterPage() {
               className={`relative py-6 px-6 rounded-xl border-2 transition-all duration-300 overflow-hidden group ${
                 role === UserRole.PATIENT
                   ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-primary-100 shadow-warm'
-                  : 'border-neutral-200 hover:border-primary-300 hover:shadow-soft'
+                  : 'border-neutral-200 dark:border-slate-600 hover:border-primary-300 hover:shadow-soft'
               }`}
             >
               <div className={`absolute inset-0 bg-gradient-to-br from-primary-400/0 to-primary-400/10 transition-opacity ${
@@ -126,9 +126,9 @@ export default function RegisterPage() {
               <div className="relative z-10">
                 <div className="text-3xl mb-2">🏥</div>
                 <p className={`font-bold text-lg mb-1 transition-colors ${
-                  role === UserRole.PATIENT ? 'text-primary-700' : 'text-neutral-800 group-hover:text-primary-600'
+                  role === UserRole.PATIENT ? 'text-primary-700' : 'text-neutral-800 dark:text-neutral-200 group-hover:text-primary-600'
                 }`}>Patient</p>
-                <p className="text-sm text-neutral-600">Je cherche un médecin</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">Je cherche un médecin</p>
               </div>
             </button>
             <button
@@ -137,7 +137,7 @@ export default function RegisterPage() {
               className={`relative py-6 px-6 rounded-xl border-2 transition-all duration-300 overflow-hidden group ${
                 role === UserRole.DOCTOR
                   ? 'border-secondary-500 bg-gradient-to-br from-secondary-50 to-secondary-100 shadow-warm'
-                  : 'border-neutral-200 hover:border-secondary-300 hover:shadow-soft'
+                  : 'border-neutral-200 dark:border-slate-600 hover:border-secondary-300 hover:shadow-soft'
               }`}
             >
               <div className={`absolute inset-0 bg-gradient-to-br from-secondary-400/0 to-secondary-400/10 transition-opacity ${
@@ -146,33 +146,33 @@ export default function RegisterPage() {
               <div className="relative z-10">
                 <div className="text-3xl mb-2">👨‍⚕️</div>
                 <p className={`font-bold text-lg mb-1 transition-colors ${
-                  role === UserRole.DOCTOR ? 'text-secondary-700' : 'text-neutral-800 group-hover:text-secondary-600'
+                  role === UserRole.DOCTOR ? 'text-secondary-700' : 'text-neutral-800 dark:text-neutral-200 group-hover:text-secondary-600'
                 }`}>Praticien</p>
-                <p className="text-sm text-neutral-600">Je suis médecin</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">Je suis médecin</p>
               </div>
             </button>
           </div>
         </Card>
 
         {/* Registration Form */}
-        <Card className="shadow-warm backdrop-blur-sm bg-white/95 border border-primary-100/50">
+        <Card className="shadow-warm backdrop-blur-sm bg-white/95 dark:bg-slate-800/95 border border-primary-100/50 dark:border-slate-700/60 transition-colors duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-accent-error rounded-xl p-4 flex items-start space-x-3 shadow-sm">
-                <AlertCircle className="h-5 w-5 text-accent-error mt-0.5 animate-pulse" />
-                <p className="text-sm text-red-800 font-medium">{error}</p>
+              <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border-l-4 border-accent-error rounded-xl p-4 flex items-start space-x-3 shadow-sm">
+                <AlertCircle className="h-5 w-5 text-accent-error dark:text-red-400 mt-0.5 animate-pulse" />
+                <p className="text-sm text-red-800 dark:text-red-300 font-medium">{error}</p>
               </div>
             )}
 
             {/* Personal Information */}
             <div>
-              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+              <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5 flex items-center">
                 <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
                 Informations personnelles
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Prénom <span className="text-accent-error">*</span>
                   </label>
                   <div className="relative group">
@@ -184,14 +184,14 @@ export default function RegisterPage() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Nom <span className="text-accent-error">*</span>
                   </label>
                   <div className="relative group">
@@ -203,7 +203,7 @@ export default function RegisterPage() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
@@ -213,13 +213,13 @@ export default function RegisterPage() {
 
             {/* Contact Information */}
             <div>
-              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+              <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5 flex items-center">
                 <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
                 Coordonnées
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Adresse e-mail <span className="text-accent-error">*</span>
                   </label>
                   <div className="relative group">
@@ -231,14 +231,14 @@ export default function RegisterPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Téléphone
                   </label>
                   <div className="relative group">
@@ -250,7 +250,7 @@ export default function RegisterPage() {
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       placeholder="+33 6 12 34 56 78"
                     />
                   </div>
@@ -261,7 +261,7 @@ export default function RegisterPage() {
             {/* Additional Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-neutral-800 mb-2">
+                <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                   Date de naissance
                 </label>
                 <div className="relative group">
@@ -273,20 +273,20 @@ export default function RegisterPage() {
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-neutral-800 mb-2">
+                <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                   Genre
                 </label>
                 <select
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                 >
                   <option value="">Sélectionner</option>
                   <option value="male">Homme</option>
@@ -299,13 +299,13 @@ export default function RegisterPage() {
             {/* Doctor Specific Fields */}
             {role === UserRole.DOCTOR && (
               <div className="bg-gradient-to-br from-secondary-50 to-white p-6 rounded-2xl border-2 border-secondary-200">
-                <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+                <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5 flex items-center">
                   <span className="bg-gradient-to-r from-secondary-500 to-warm-amber text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">👨‍⚕️</span>
                   Informations professionnelles
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                       Spécialisation <span className="text-accent-error">*</span>
                     </label>
                     <input
@@ -313,14 +313,14 @@ export default function RegisterPage() {
                       name="specialization"
                       value={formData.specialization}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
                       placeholder="Ex: Médecin généraliste, Cardiologue..."
                       required={role === UserRole.DOCTOR}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                       Numéro de licence <span className="text-accent-error">*</span>
                     </label>
                     <input
@@ -328,7 +328,7 @@ export default function RegisterPage() {
                       name="licenseNumber"
                       value={formData.licenseNumber}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
                       placeholder="Numéro RPPS"
                       required={role === UserRole.DOCTOR}
                     />
@@ -339,13 +339,13 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+              <h3 className="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-5 flex items-center">
                 <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">3</span>
                 Sécurité
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Mot de passe <span className="text-accent-error">*</span>
                   </label>
                   <div className="relative group">
@@ -357,18 +357,18 @@ export default function RegisterPage() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       minLength={8}
                       required
                     />
                   </div>
-                  <p className="text-xs text-neutral-600 mt-2 flex items-center">
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 flex items-center">
                     <span className="mr-2">ℹ️</span> Minimum 8 caractères
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                  <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                     Confirmer le mot de passe <span className="text-accent-error">*</span>
                   </label>
                   <div className="relative group">
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
+                      className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
@@ -389,16 +389,16 @@ export default function RegisterPage() {
             </div>
 
             {/* Terms and Conditions */}
-            <div className="mt-8 p-4 bg-gradient-to-br from-neutral-50 to-primary-50/20 rounded-xl border border-neutral-200">
+            <div className="mt-8 p-4 bg-gradient-to-br from-neutral-50 to-primary-50/20 rounded-xl border border-neutral-200 dark:border-slate-600">
               <label className="flex items-start cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="h-5 w-5 text-primary-600 focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 border-neutral-300 rounded mt-0.5 cursor-pointer transition-all"
+                  className="h-5 w-5 text-primary-600 focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 border-neutral-300 dark:border-slate-500 rounded mt-0.5 cursor-pointer transition-all"
                   required
                 />
-                <span className="ml-3 text-sm text-neutral-700 leading-relaxed">
+                <span className="ml-3 text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                   J&apos;accepte les{' '}
                   <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-bold hover:underline">
                     conditions d&apos;utilisation
@@ -422,7 +422,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-neutral-600 text-base">
+            <p className="text-neutral-600 dark:text-neutral-400 text-base">
               Vous avez déjà un compte?{' '}
               <Link
                 href="/login"
