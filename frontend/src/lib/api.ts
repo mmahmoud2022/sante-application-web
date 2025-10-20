@@ -3,13 +3,50 @@
  * Centralized API client for communicating with the backend
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosHeaders } from 'axios';
+import type {
+  AxiosError,
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const normalizeBaseUrl = (url?: string | null) => {
+  if (!url) {
+    return undefined;
+  }
+  return url.replace(/\/+$/, '');
+};
+
+const runtimeEnv = typeof process !== 'undefined' ? process.env : undefined;
+
+const envBrowserBaseUrl = normalizeBaseUrl(runtimeEnv?.NEXT_PUBLIC_API_URL);
+const envServerBaseUrl = normalizeBaseUrl(runtimeEnv?.NEXT_INTERNAL_API_URL);
+
+const resolveBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return envServerBaseUrl || envBrowserBaseUrl || 'http://localhost:8000';
+  }
+
+  if (envBrowserBaseUrl) {
+    return envBrowserBaseUrl;
+  }
+
+  return '';
+};
+
+const resolvedBaseUrl = resolveBaseUrl();
+const apiBaseUrl = resolvedBaseUrl ? `${resolvedBaseUrl}/api/v1` : '/api/v1';
+
+const buildApiUrl = (path: string) => {
+  const normalizedBase = apiBaseUrl.replace(/\/+$/, '');
+  const normalizedPath = path.replace(/^\/+/, '');
+  return `${normalizedBase}/${normalizedPath}`;
+};
 
 // Create axios instance
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,28 +54,28 @@ const axiosInstance: AxiosInstance = axios.create({
 
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('access_token');
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers = config.headers ?? new AxiosHeaders();
+        config.headers.set('Authorization', `Bearer ${token}`);
       }
     }
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor to handle token refresh
 axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
 
-    // If error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       if (typeof window !== 'undefined') {
@@ -46,7 +83,7 @@ axiosInstance.interceptors.response.use(
         
         if (refreshToken) {
           try {
-            const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+            const response = await axios.post(buildApiUrl('/auth/refresh'), {
               refresh_token: refreshToken,
             });
 
@@ -54,7 +91,8 @@ axiosInstance.interceptors.response.use(
             localStorage.setItem('access_token', access_token);
 
             // Retry the original request with new token
-            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+            originalRequest.headers = originalRequest.headers ?? new AxiosHeaders();
+            originalRequest.headers.set('Authorization', `Bearer ${access_token}`);
             return axiosInstance(originalRequest);
           } catch (refreshError) {
             // Refresh failed, clear tokens and redirect to login
@@ -77,10 +115,11 @@ axiosInstance.interceptors.response.use(
 const api = {
   // Authentication
   auth: {
-    login: async (email: string, password: string) => {
+    login: async (email: string, password: string, rememberMe = false) => {
       const formData = new URLSearchParams();
       formData.append('username', email);
       formData.append('password', password);
+      formData.append('remember_me', rememberMe ? 'true' : 'false');
       
       return axiosInstance.post('/auth/login', formData, {
         headers: {

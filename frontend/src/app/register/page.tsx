@@ -83,101 +83,127 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-warm-peach/20 to-secondary-50 py-12 px-4 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-200 to-secondary-200 rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-warm-amber/20 to-warm-rose/20 rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
+      
+      <div className="max-w-2xl mx-auto relative z-10">
         {/* Logo and Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 mb-6">
-            <Heart className="h-10 w-10 text-primary" />
-            <span className="text-3xl font-heading font-bold text-primary">Santé</span>
+          <Link href="/" className="inline-flex items-center space-x-3 mb-6 group">
+            <div className="bg-gradient-to-br from-primary-500 via-warm-coral to-warm-sunset p-3 rounded-2xl shadow-warm group-hover:shadow-glow group-hover:scale-110 transition-all duration-300">
+              <Heart className="h-9 w-9 text-white drop-shadow-lg" fill="white" />
+            </div>
+            <span className="text-4xl font-heading font-bold bg-gradient-to-r from-primary-600 via-warm-coral to-warm-sunset bg-clip-text text-transparent">Santé</span>
           </Link>
-          <h1 className="text-3xl font-heading font-bold text-neutral-800 mb-2">
+          <h1 className="text-4xl font-heading font-bold text-neutral-800 mb-3 tracking-tight">
             Créer un compte
           </h1>
-          <p className="text-neutral-600">
-            Rejoignez notre communauté santé
+          <p className="text-neutral-600 text-lg">
+            Rejoignez notre plateforme de santé moderne
           </p>
         </div>
 
         {/* Role Selection */}
-        <Card className="mb-6">
+        <Card className="mb-6 shadow-warm backdrop-blur-sm bg-white/95 border border-primary-100/50">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-neutral-800 text-center">Sélectionnez votre profil</h3>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => setRole(UserRole.PATIENT)}
-              className={`py-4 px-6 rounded-lg border-2 transition-all ${
+              className={`relative py-6 px-6 rounded-xl border-2 transition-all duration-300 overflow-hidden group ${
                 role === UserRole.PATIENT
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-neutral-200 hover:border-neutral-300'
+                  ? 'border-primary-500 bg-gradient-to-br from-primary-50 to-primary-100 shadow-warm'
+                  : 'border-neutral-200 hover:border-primary-300 hover:shadow-soft'
               }`}
             >
-              <p className="font-semibold text-lg">Patient</p>
-              <p className="text-sm mt-1 opacity-80">Je cherche un médecin</p>
+              <div className={`absolute inset-0 bg-gradient-to-br from-primary-400/0 to-primary-400/10 transition-opacity ${
+                role === UserRole.PATIENT ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
+              }`}></div>
+              <div className="relative z-10">
+                <div className="text-3xl mb-2">🏥</div>
+                <p className={`font-bold text-lg mb-1 transition-colors ${
+                  role === UserRole.PATIENT ? 'text-primary-700' : 'text-neutral-800 group-hover:text-primary-600'
+                }`}>Patient</p>
+                <p className="text-sm text-neutral-600">Je cherche un médecin</p>
+              </div>
             </button>
             <button
               type="button"
               onClick={() => setRole(UserRole.DOCTOR)}
-              className={`py-4 px-6 rounded-lg border-2 transition-all ${
+              className={`relative py-6 px-6 rounded-xl border-2 transition-all duration-300 overflow-hidden group ${
                 role === UserRole.DOCTOR
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-neutral-200 hover:border-neutral-300'
+                  ? 'border-secondary-500 bg-gradient-to-br from-secondary-50 to-secondary-100 shadow-warm'
+                  : 'border-neutral-200 hover:border-secondary-300 hover:shadow-soft'
               }`}
             >
-              <p className="font-semibold text-lg">Praticien</p>
-              <p className="text-sm mt-1 opacity-80">Je suis médecin</p>
+              <div className={`absolute inset-0 bg-gradient-to-br from-secondary-400/0 to-secondary-400/10 transition-opacity ${
+                role === UserRole.DOCTOR ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'
+              }`}></div>
+              <div className="relative z-10">
+                <div className="text-3xl mb-2">👨‍⚕️</div>
+                <p className={`font-bold text-lg mb-1 transition-colors ${
+                  role === UserRole.DOCTOR ? 'text-secondary-700' : 'text-neutral-800 group-hover:text-secondary-600'
+                }`}>Praticien</p>
+                <p className="text-sm text-neutral-600">Je suis médecin</p>
+              </div>
             </button>
           </div>
         </Card>
 
         {/* Registration Form */}
-        <Card>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="shadow-warm backdrop-blur-sm bg-white/95 border border-primary-100/50">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-accent-error rounded-xl p-4 flex items-start space-x-3 shadow-sm">
+                <AlertCircle className="h-5 w-5 text-accent-error mt-0.5 animate-pulse" />
+                <p className="text-sm text-red-800 font-medium">{error}</p>
               </div>
             )}
 
             {/* Personal Information */}
             <div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
+              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+                <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
                 Informations personnelles
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Prénom <span className="text-red-600">*</span>
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    Prénom <span className="text-accent-error">*</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-neutral-400" />
+                      <User className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="text"
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Nom <span className="text-red-600">*</span>
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    Nom <span className="text-accent-error">*</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-neutral-400" />
+                      <User className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="text"
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
@@ -187,43 +213,44 @@ export default function RegisterPage() {
 
             {/* Contact Information */}
             <div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4 mt-6">
+              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+                <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
                 Coordonnées
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Email <span className="text-red-600">*</span>
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    Adresse e-mail <span className="text-accent-error">*</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-neutral-400" />
+                      <Mail className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
                     Téléphone
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Phone className="h-5 w-5 text-neutral-400" />
+                      <Phone className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="tel"
                       name="phoneNumber"
                       value={formData.phoneNumber}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       placeholder="+33 6 12 34 56 78"
                     />
                   </div>
@@ -234,32 +261,32 @@ export default function RegisterPage() {
             {/* Additional Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                <label className="block text-sm font-bold text-neutral-800 mb-2">
                   Date de naissance
                 </label>
-                <div className="relative">
+                <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Calendar className="h-5 w-5 text-neutral-400" />
+                    <Calendar className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                   </div>
                   <input
                     type="date"
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                <label className="block text-sm font-bold text-neutral-800 mb-2">
                   Genre
                 </label>
                 <select
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                 >
                   <option value="">Sélectionner</option>
                   <option value="male">Homme</option>
@@ -271,36 +298,37 @@ export default function RegisterPage() {
 
             {/* Doctor Specific Fields */}
             {role === UserRole.DOCTOR && (
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-800 mb-4 mt-6">
+              <div className="bg-gradient-to-br from-secondary-50 to-white p-6 rounded-2xl border-2 border-secondary-200">
+                <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+                  <span className="bg-gradient-to-r from-secondary-500 to-warm-amber text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">👨‍⚕️</span>
                   Informations professionnelles
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      Spécialisation <span className="text-red-600">*</span>
+                    <label className="block text-sm font-bold text-neutral-800 mb-2">
+                      Spécialisation <span className="text-accent-error">*</span>
                     </label>
                     <input
                       type="text"
                       name="specialization"
                       value={formData.specialization}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
                       placeholder="Ex: Médecin généraliste, Cardiologue..."
                       required={role === UserRole.DOCTOR}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      Numéro de licence <span className="text-red-600">*</span>
+                    <label className="block text-sm font-bold text-neutral-800 mb-2">
+                      Numéro de licence <span className="text-accent-error">*</span>
                     </label>
                     <input
                       type="text"
                       name="licenseNumber"
                       value={formData.licenseNumber}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
                       placeholder="Numéro RPPS"
                       required={role === UserRole.DOCTOR}
                     />
@@ -311,47 +339,48 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4 mt-6">
-                Mot de passe
+              <h3 className="text-xl font-bold text-neutral-800 mb-5 flex items-center">
+                <span className="bg-gradient-to-r from-primary-500 to-warm-sunset text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">3</span>
+                Sécurité
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Mot de passe <span className="text-red-600">*</span>
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    Mot de passe <span className="text-accent-error">*</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-neutral-400" />
+                      <Lock className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="password"
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       minLength={8}
                       required
                     />
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Minimum 8 caractères
+                  <p className="text-xs text-neutral-600 mt-2 flex items-center">
+                    <span className="mr-2">ℹ️</span> Minimum 8 caractères
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    Confirmer le mot de passe <span className="text-red-600">*</span>
+                  <label className="block text-sm font-bold text-neutral-800 mb-2">
+                    Confirmer le mot de passe <span className="text-accent-error">*</span>
                   </label>
-                  <div className="relative">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-neutral-400" />
+                      <Lock className="h-5 w-5 text-primary-400 group-focus-within:text-primary-600 transition-colors" />
                     </div>
                     <input
                       type="password"
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 hover:border-primary-300 transition-all shadow-sm"
                       required
                     />
                   </div>
@@ -360,22 +389,22 @@ export default function RegisterPage() {
             </div>
 
             {/* Terms and Conditions */}
-            <div className="mt-6">
-              <label className="flex items-start">
+            <div className="mt-8 p-4 bg-gradient-to-br from-neutral-50 to-primary-50/20 rounded-xl border border-neutral-200">
+              <label className="flex items-start cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="h-4 w-4 text-primary focus:ring-primary border-neutral-300 rounded mt-1"
+                  className="h-5 w-5 text-primary-600 focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 border-neutral-300 rounded mt-0.5 cursor-pointer transition-all"
                   required
                 />
-                <span className="ml-2 text-sm text-neutral-700">
+                <span className="ml-3 text-sm text-neutral-700 leading-relaxed">
                   J&apos;accepte les{' '}
-                  <Link href="/terms" className="text-primary hover:underline">
+                  <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-bold hover:underline">
                     conditions d&apos;utilisation
                   </Link>
                   {' '}et la{' '}
-                  <Link href="/privacy" className="text-primary hover:underline">
+                  <Link href="/privacy" className="text-primary-600 hover:text-primary-700 font-bold hover:underline">
                     politique de confidentialité
                   </Link>
                 </span>
@@ -386,18 +415,18 @@ export default function RegisterPage() {
               type="submit"
               fullWidth
               loading={loading}
-              className="mt-6"
+              className="mt-8 !bg-gradient-to-r from-primary-500 to-warm-sunset hover:from-primary-600 hover:to-warm-sunset/90 shadow-warm hover:shadow-glow transition-all duration-300 text-lg py-4"
             >
               Créer mon compte
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-neutral-600">
+          <div className="mt-8 text-center">
+            <p className="text-neutral-600 text-base">
               Vous avez déjà un compte?{' '}
               <Link
                 href="/login"
-                className="text-primary hover:text-primary-dark font-semibold"
+                className="text-primary-600 hover:text-primary-700 font-bold hover:underline transition-all"
               >
                 Se connecter
               </Link>
