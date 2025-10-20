@@ -76,9 +76,9 @@ export default function PatientDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-soft border-b border-neutral-100 sticky top-0 z-50">
+      <header className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md shadow-soft border-b border-neutral-100 dark:border-neutral-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -94,10 +94,10 @@ export default function PatientDashboard() {
               </button>
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-neutral-800">
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
                     {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-xs text-primary-600 font-medium">Patient</p>
+                  <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">Patient</p>
                 </div>
                 <button
                   onClick={logout}
@@ -115,10 +115,10 @@ export default function PatientDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-neutral-800 mb-2">
+          <h1 className="text-3xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Bonjour, {user.first_name} 👋
           </h1>
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-neutral-400">
             Bienvenue sur votre espace personnel
           </p>
         </div>
@@ -127,27 +127,27 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <button
             onClick={() => router.push('/patient/search-doctors')}
-            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-primary-300"
+            className="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-500"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="p-3 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl group-hover:scale-110 transition-transform">
-                <Search className="h-6 w-6 text-primary-600" />
+              <div className="p-3 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 rounded-xl group-hover:scale-110 transition-transform">
+                <Search className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-5 w-5 text-neutral-400 dark:text-neutral-500 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
             </div>
-            <h3 className="font-semibold text-neutral-800 mb-1">Trouver un médecin</h3>
-            <p className="text-sm text-neutral-600">Rechercher et prendre RDV</p>
+            <h3 className="font-semibold text-neutral-800 dark:text-neutral-100 mb-1">Trouver un médecin</h3>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">Rechercher et prendre RDV</p>
           </button>
 
           <button
             onClick={() => router.push('/patient/appointments')}
-            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-secondary-300"
+            className="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 dark:border-neutral-700 hover:border-secondary-300 dark:hover:border-secondary-500"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="p-3 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl group-hover:scale-110 transition-transform">
-                <Calendar className="h-6 w-6 text-secondary-600" />
+              <div className="p-3 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-secondary-900 dark:to-secondary-800 rounded-xl group-hover:scale-110 transition-transform">
+                <Calendar className="h-6 w-6 text-secondary-600 dark:text-secondary-400" />
               </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-secondary-500 group-hover:translate-x-1 transition-all" />
+              <ChevronRight className="h-5 w-5 text-neutral-400 dark:text-neutral-500 group-hover:text-secondary-500 group-hover:translate-x-1 transition-all" />
             </div>
             <h3 className="font-semibold text-neutral-800 mb-1">Mes rendez-vous</h3>
             <p className="text-sm text-neutral-600">{upcomingAppointments.length} à venir</p>

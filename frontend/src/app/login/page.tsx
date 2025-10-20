@@ -18,15 +18,22 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [verificationPending, setVerificationPending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setVerificationPending(false);
     setLoading(true);
     try {
       await login({ email, password, remember_me: rememberMe });
     } catch (err: any) {
-      setError(err.message || 'Connexion échouée. Vérifiez vos identifiants.');
+      if (err.message === 'VERIFICATION_PENDING') {
+        setVerificationPending(true);
+        setError('');
+      } else {
+        setError(err.message || 'Connexion échouée. Vérifiez vos identifiants.');
+      }
     } finally {
       setLoading(false);
     }
@@ -65,6 +72,20 @@ export default function LoginPage() {
               <div className="flex items-start gap-3 p-4 border-l-4 border-accent-error bg-red-50/80 rounded-xl shadow-sm">
                 <AlertCircle className="h-5 w-5 text-accent-error mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-red-700 font-medium">{error}</p>
+              </div>
+            )}
+
+            {verificationPending && (
+              <div className="flex items-start gap-3 p-4 border-l-4 border-yellow-500 bg-yellow-50/80 rounded-xl shadow-sm">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-yellow-800 font-semibold mb-1">Compte en attente de vérification</p>
+                  <p className="text-sm text-yellow-700">
+                    Votre compte médecin est en cours de vérification par notre équipe. 
+                    Vous recevrez un email dès que votre compte sera approuvé. 
+                    Merci de votre patience.
+                  </p>
+                </div>
               </div>
             )}
 

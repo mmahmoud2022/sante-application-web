@@ -147,7 +147,7 @@ export default function AdminUsersPage() {
 
   const handleVerifyUser = async (userId: number) => {
     try {
-      await api.users.update(userId, { is_verified: true });
+      await api.users.verify(userId);
       await loadUsers();
     } catch (error) {
       console.error('Failed to verify user:', error);
@@ -195,14 +195,14 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-neutral-800 border-b dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Gestion des utilisateurs</h1>
-              <p className="text-gray-600">Gérez tous les utilisateurs de la plateforme</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Gestion des utilisateurs</h1>
+              <p className="text-gray-600 dark:text-neutral-400">Gérez tous les utilisateurs de la plateforme</p>
             </div>
             <Button variant="outline" onClick={() => router.push('/admin/dashboard')}>
               <ChevronLeft className="h-4 w-4 mr-2" />
@@ -282,7 +282,7 @@ export default function AdminUsersPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Rechercher un utilisateur..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:ring-2 focus:ring-primary dark:focus:ring-primary-400 focus:border-transparent"
                 />
               </div>
 
@@ -290,7 +290,7 @@ export default function AdminUsersPage() {
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary dark:focus:ring-primary-400 focus:border-transparent"
               >
                 <option value="all">Tous les rôles</option>
                 <option value="patient">Patients</option>
@@ -302,7 +302,7 @@ export default function AdminUsersPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary dark:focus:ring-primary-400 focus:border-transparent"
               >
                 <option value="all">Tous les statuts</option>
                 <option value="active">Actifs</option>
