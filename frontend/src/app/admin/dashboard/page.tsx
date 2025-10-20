@@ -87,21 +87,23 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
+      <header className="bg-white/80 backdrop-blur-md shadow-soft border-b border-neutral-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Heart className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-heading font-bold text-primary">Santé</span>
-              <span className="text-sm text-neutral-500">| Administration</span>
+              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 p-2 rounded-xl shadow-medical">
+                <Heart className="h-6 w-6 text-white" fill="white" />
+              </div>
+              <span className="text-2xl font-heading font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Santé</span>
+              <span className="text-sm text-neutral-500 font-medium">| Administration</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-neutral-600 hover:text-primary transition-colors">
+              <button className="relative p-2.5 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
                 <Bell className="h-6 w-6" />
                 {stats.pendingVerifications > 0 && (
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                  <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                 )}
               </button>
               <div className="flex items-center space-x-3">
@@ -109,11 +111,11 @@ export default function AdminDashboard() {
                   <p className="text-sm font-semibold text-neutral-800">
                     {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-xs text-neutral-500">Administrateur</p>
+                  <p className="text-xs text-purple-600 font-medium">Administrateur</p>
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-neutral-600 hover:text-red-600 transition-colors"
+                  className="p-2.5 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                   title="Se déconnecter"
                 >
                   <LogOut className="h-5 w-5" />
@@ -137,11 +139,13 @@ export default function AdminDashboard() {
 
         {/* Alert for pending verifications */}
         {stats.pendingVerifications > 0 && (
-          <Card className="mb-6 bg-yellow-50 border-yellow-200">
+          <Card className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 shadow-medium">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                  <div className="p-2 bg-yellow-200 rounded-xl">
+                    <AlertTriangle className="h-6 w-6 text-yellow-700" />
+                  </div>
                   <div>
                     <h4 className="font-semibold text-neutral-800">
                       {stats.pendingVerifications} médecin(s) en attente de vérification
@@ -165,58 +169,66 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 shadow-medium hover:shadow-large transition-all">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-medium mb-1">Utilisateurs</p>
-                  <p className="text-3xl font-bold text-blue-900">{stats.totalUsers}</p>
-                  <p className="text-xs text-blue-700 mt-1">
+                  <p className="text-sm text-blue-600 font-semibold mb-1">Utilisateurs</p>
+                  <p className="text-4xl font-bold text-blue-900">{stats.totalUsers}</p>
+                  <p className="text-xs text-blue-700 mt-1 font-medium">
                     {stats.activeUsers} actifs
                   </p>
                 </div>
-                <Users className="h-12 w-12 text-blue-500 opacity-80" />
+                <div className="p-3 bg-blue-200 rounded-xl">
+                  <Users className="h-10 w-10 text-blue-600" strokeWidth={2} />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 shadow-medium hover:shadow-large transition-all">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-medium mb-1">Médecins</p>
-                  <p className="text-3xl font-bold text-green-900">{stats.totalDoctors}</p>
-                  <p className="text-xs text-green-700 mt-1">
+                  <p className="text-sm text-green-600 font-semibold mb-1">Médecins</p>
+                  <p className="text-4xl font-bold text-green-900">{stats.totalDoctors}</p>
+                  <p className="text-xs text-green-700 mt-1 font-medium">
                     {stats.pendingVerifications} à vérifier
                   </p>
                 </div>
-                <UserCheck className="h-12 w-12 text-green-500 opacity-80" />
+                <div className="p-3 bg-green-200 rounded-xl">
+                  <UserCheck className="h-10 w-10 text-green-600" strokeWidth={2} />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 shadow-medium hover:shadow-large transition-all">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-medium mb-1">Patients</p>
-                  <p className="text-3xl font-bold text-purple-900">{stats.totalPatients}</p>
-                  <p className="text-xs text-purple-700 mt-1">Total inscrits</p>
+                  <p className="text-sm text-purple-600 font-semibold mb-1">Patients</p>
+                  <p className="text-4xl font-bold text-purple-900">{stats.totalPatients}</p>
+                  <p className="text-xs text-purple-700 mt-1 font-medium">Total inscrits</p>
                 </div>
-                <Heart className="h-12 w-12 text-purple-500 opacity-80" />
+                <div className="p-3 bg-purple-200 rounded-xl">
+                  <Heart className="h-10 w-10 text-purple-600" strokeWidth={2} />
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 shadow-medium hover:shadow-large transition-all">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 font-medium mb-1">Rendez-vous</p>
-                  <p className="text-3xl font-bold text-orange-900">{stats.totalAppointments}</p>
-                  <p className="text-xs text-orange-700 mt-1">Total réservés</p>
+                  <p className="text-sm text-orange-600 font-semibold mb-1">Rendez-vous</p>
+                  <p className="text-4xl font-bold text-orange-900">{stats.totalAppointments}</p>
+                  <p className="text-xs text-orange-700 mt-1 font-medium">Total réservés</p>
                 </div>
-                <Calendar className="h-12 w-12 text-orange-500 opacity-80" />
+                <div className="p-3 bg-orange-200 rounded-xl">
+                  <Calendar className="h-10 w-10 text-orange-600" strokeWidth={2} />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -225,7 +237,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quick Actions */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle>Actions rapides</CardTitle>
               </CardHeader>
@@ -233,9 +245,11 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => router.push('/admin/users')}
-                    className="p-6 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    className="p-6 border-2 border-neutral-100 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all text-left group"
                   >
-                    <Users className="h-8 w-8 text-primary mb-3" />
+                    <div className="p-3 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl inline-block mb-3 group-hover:scale-110 transition-transform">
+                      <Users className="h-6 w-6 text-primary-600" />
+                    </div>
                     <h4 className="font-semibold text-neutral-800 mb-1">
                       Gérer les utilisateurs
                     </h4>
@@ -246,9 +260,11 @@ export default function AdminDashboard() {
 
                   <button
                     onClick={() => router.push('/admin/content')}
-                    className="p-6 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    className="p-6 border-2 border-neutral-100 rounded-xl hover:border-secondary-300 hover:bg-secondary-50 transition-all text-left group"
                   >
-                    <Activity className="h-8 w-8 text-primary mb-3" />
+                    <div className="p-3 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl inline-block mb-3 group-hover:scale-110 transition-transform">
+                      <Activity className="h-6 w-6 text-secondary-600" />
+                    </div>
                     <h4 className="font-semibold text-neutral-800 mb-1">
                       Gestion du contenu
                     </h4>
@@ -259,9 +275,11 @@ export default function AdminDashboard() {
 
                   <button
                     onClick={() => router.push('/admin/reports')}
-                    className="p-6 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    className="p-6 border-2 border-neutral-100 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all text-left group"
                   >
-                    <TrendingUp className="h-8 w-8 text-primary mb-3" />
+                    <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl inline-block mb-3 group-hover:scale-110 transition-transform">
+                      <TrendingUp className="h-6 w-6 text-purple-600" />
+                    </div>
                     <h4 className="font-semibold text-neutral-800 mb-1">
                       Rapports et analytics
                     </h4>
@@ -272,9 +290,11 @@ export default function AdminDashboard() {
 
                   <button
                     onClick={() => router.push('/admin/settings')}
-                    className="p-6 border-2 border-neutral-200 rounded-lg hover:border-primary hover:bg-primary/5 transition-all text-left"
+                    className="p-6 border-2 border-neutral-100 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all text-left group"
                   >
-                    <Settings className="h-8 w-8 text-primary mb-3" />
+                    <div className="p-3 bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl inline-block mb-3 group-hover:scale-110 transition-transform">
+                      <Settings className="h-6 w-6 text-orange-600" />
+                    </div>
                     <h4 className="font-semibold text-neutral-800 mb-1">
                       Configuration système
                     </h4>
@@ -290,33 +310,35 @@ export default function AdminDashboard() {
           {/* Side Panel */}
           <div className="space-y-6">
             {/* System Health */}
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-6 w-6 text-primary" />
+                  <div className="p-2 bg-gradient-to-br from-green-100 to-green-200 rounded-lg">
+                    <Shield className="h-5 w-5 text-green-600" />
+                  </div>
                   <span>Santé du système</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-200">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
                     <span className="text-sm text-neutral-600">Status API</span>
-                    <span className="flex items-center text-green-600 font-semibold text-sm">
-                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2"></div>
+                    <span className="flex items-center text-green-600 font-semibold text-sm bg-green-50 px-3 py-1 rounded-full">
+                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2 animate-pulse"></div>
                       Opérationnel
                     </span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-200">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
                     <span className="text-sm text-neutral-600">Base de données</span>
-                    <span className="flex items-center text-green-600 font-semibold text-sm">
-                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2"></div>
+                    <span className="flex items-center text-green-600 font-semibold text-sm bg-green-50 px-3 py-1 rounded-full">
+                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2 animate-pulse"></div>
                       Connectée
                     </span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm text-neutral-600">Services</span>
-                    <span className="flex items-center text-green-600 font-semibold text-sm">
-                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2"></div>
+                    <span className="flex items-center text-green-600 font-semibold text-sm bg-green-50 px-3 py-1 rounded-full">
+                      <div className="h-2 w-2 bg-green-600 rounded-full mr-2 animate-pulse"></div>
                       Actifs
                     </span>
                   </div>
@@ -325,10 +347,12 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Recent Activity */}
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-6 w-6 text-primary" />
+                  <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg">
+                    <Activity className="h-5 w-5 text-blue-600" />
+                  </div>
                   <span>Activité récente</span>
                 </CardTitle>
               </CardHeader>
