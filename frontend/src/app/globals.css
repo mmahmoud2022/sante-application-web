@@ -3,18 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #00B894;
-  --primary-light: #4CD3A5;
-  --primary-dark: #00996F;
+  --primary-color: #1ABC9C;
+  --primary-light: #48C9B0;
+  --primary-dark: #117864;
   --secondary-color: #3498DB;
   --background: #FFFFFF;
-  --foreground: #1A202C;
+  --foreground: #212529;
+  --accent-success: #27AE60;
+  --accent-warning: #F39C12;
+  --accent-error: #E74C3C;
+  --medical-blue: #3498DB;
+  --medical-green: #1ABC9C;
+  --medical-purple: #9B59B6;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0F1419;
-    --foreground: #F1F2F6;
+    --background: #212529;
+    --foreground: #F8F9FA;
   }
 }
 
@@ -34,20 +40,40 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with modern medical theme */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #F8F9FA;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 5px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Modern card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }

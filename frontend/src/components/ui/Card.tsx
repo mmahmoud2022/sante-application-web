@@ -22,25 +22,25 @@ export function Card({
 }: CardProps) {
   const paddingStyles = {
     none: '',
-    sm: 'p-3',
+    sm: 'p-4',
     md: 'p-6',
     lg: 'p-8',
   };
 
   const shadowStyles = {
     none: '',
-    sm: 'shadow-sm',
-    md: 'shadow-md',
-    lg: 'shadow-lg',
+    sm: 'shadow-soft',
+    md: 'shadow-medium',
+    lg: 'shadow-large',
   };
 
   return (
     <div
       className={clsx(
-        'bg-white rounded-xl',
+        'bg-white rounded-2xl border border-neutral-100',
         paddingStyles[padding],
         shadowStyles[shadow],
-        hover && 'hover:shadow-lg transition-shadow duration-200',
+        hover && 'hover:shadow-hover hover:border-primary-200 transition-all duration-300 cursor-pointer',
         className
       )}
     >
@@ -56,7 +56,7 @@ interface CardHeaderProps {
 
 export function CardHeader({ children, className }: CardHeaderProps) {
   return (
-    <div className={clsx('mb-4 pb-4 border-b border-neutral-200', className)}>
+    <div className={clsx('mb-4 pb-4 border-b border-neutral-100', className)}>
       {children}
     </div>
   );
@@ -69,7 +69,7 @@ interface CardTitleProps {
 
 export function CardTitle({ children, className }: CardTitleProps) {
   return (
-    <h3 className={clsx('text-xl font-heading font-bold text-neutral-800', className)}>
+    <h3 className={clsx('text-xl font-heading font-bold text-neutral-800 flex items-center gap-2', className)}>
       {children}
     </h3>
   );
