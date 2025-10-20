@@ -76,30 +76,32 @@ export default function PatientDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
+      <header className="bg-white/80 backdrop-blur-md shadow-soft border-b border-neutral-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Heart className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-heading font-bold text-primary">Santé</span>
+              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 p-2 rounded-xl shadow-medical">
+                <Heart className="h-6 w-6 text-white" fill="white" />
+              </div>
+              <span className="text-2xl font-heading font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Santé</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-neutral-600 hover:text-primary transition-colors">
+              <button className="relative p-2.5 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
                 <Bell className="h-6 w-6" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white"></span>
               </button>
               <div className="flex items-center space-x-3">
                 <div className="text-right">
                   <p className="text-sm font-semibold text-neutral-800">
                     {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-xs text-neutral-500">Patient</p>
+                  <p className="text-xs text-primary-600 font-medium">Patient</p>
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-neutral-600 hover:text-red-600 transition-colors"
+                  className="p-2.5 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                   title="Se déconnecter"
                 >
                   <LogOut className="h-5 w-5" />
@@ -125,11 +127,13 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <button
             onClick={() => router.push('/patient/search-doctors')}
-            className="bg-white p-6 rounded-xl shadow-soft hover:shadow-medium transition-all group"
+            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-primary-300"
           >
             <div className="flex items-center justify-between mb-3">
-              <Search className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
+              <div className="p-3 bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl group-hover:scale-110 transition-transform">
+                <Search className="h-6 w-6 text-primary-600" />
+              </div>
+              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
             </div>
             <h3 className="font-semibold text-neutral-800 mb-1">Trouver un médecin</h3>
             <p className="text-sm text-neutral-600">Rechercher et prendre RDV</p>
@@ -137,11 +141,13 @@ export default function PatientDashboard() {
 
           <button
             onClick={() => router.push('/patient/appointments')}
-            className="bg-white p-6 rounded-xl shadow-soft hover:shadow-medium transition-all group"
+            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-secondary-300"
           >
             <div className="flex items-center justify-between mb-3">
-              <Calendar className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
+              <div className="p-3 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-xl group-hover:scale-110 transition-transform">
+                <Calendar className="h-6 w-6 text-secondary-600" />
+              </div>
+              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-secondary-500 group-hover:translate-x-1 transition-all" />
             </div>
             <h3 className="font-semibold text-neutral-800 mb-1">Mes rendez-vous</h3>
             <p className="text-sm text-neutral-600">{upcomingAppointments.length} à venir</p>
@@ -149,11 +155,13 @@ export default function PatientDashboard() {
 
           <button
             onClick={() => router.push('/patient/medical-records')}
-            className="bg-white p-6 rounded-xl shadow-soft hover:shadow-medium transition-all group"
+            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-accent-purple/30"
           >
             <div className="flex items-center justify-between mb-3">
-              <FileText className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
+              <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl group-hover:scale-110 transition-transform">
+                <FileText className="h-6 w-6 text-accent-purple" />
+              </div>
+              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-accent-purple group-hover:translate-x-1 transition-all" />
             </div>
             <h3 className="font-semibold text-neutral-800 mb-1">Dossier médical</h3>
             <p className="text-sm text-neutral-600">Historique et documents</p>
@@ -161,11 +169,13 @@ export default function PatientDashboard() {
 
           <button
             onClick={() => router.push('/patient/prescriptions')}
-            className="bg-white p-6 rounded-xl shadow-soft hover:shadow-medium transition-all group"
+            className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-large transition-all group border border-neutral-100 hover:border-accent-teal/30"
           >
             <div className="flex items-center justify-between mb-3">
-              <Pill className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
-              <ChevronRight className="h-5 w-5 text-neutral-400" />
+              <div className="p-3 bg-gradient-to-br from-teal-100 to-teal-200 rounded-xl group-hover:scale-110 transition-transform">
+                <Pill className="h-6 w-6 text-accent-teal" />
+              </div>
+              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-accent-teal group-hover:translate-x-1 transition-all" />
             </div>
             <h3 className="font-semibold text-neutral-800 mb-1">Ordonnances</h3>
             <p className="text-sm text-neutral-600">{prescriptions.length} actives</p>
@@ -175,16 +185,18 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Upcoming Appointments */}
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <CalendarCheck className="h-6 w-6 text-primary" />
+                    <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg">
+                      <CalendarCheck className="h-5 w-5 text-primary-600" />
+                    </div>
                     <span>Prochains rendez-vous</span>
                   </CardTitle>
                   <button
                     onClick={() => router.push('/patient/appointments')}
-                    className="text-sm text-primary hover:text-primary-dark font-semibold"
+                    className="text-sm text-primary-600 hover:text-primary-700 font-semibold px-4 py-2 hover:bg-primary-50 rounded-lg transition-all"
                   >
                     Voir tout
                   </button>
@@ -193,14 +205,14 @@ export default function PatientDashboard() {
               <CardContent>
                 {loadingData ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
                   </div>
                 ) : upcomingAppointments.length > 0 ? (
                   <div className="space-y-4">
                     {upcomingAppointments.map((appointment) => (
                       <div
                         key={appointment.id}
-                        className="border border-neutral-200 rounded-lg p-4 hover:border-primary transition-colors"
+                        className="border-2 border-neutral-100 rounded-xl p-4 hover:border-primary-300 hover:shadow-medium transition-all"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -211,21 +223,21 @@ export default function PatientDashboard() {
                               {appointment.doctor?.specialization || 'Médecin'}
                             </p>
                             <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                              <span className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1" />
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4 text-primary-500" />
                                 {new Date(appointment.appointment_date).toLocaleDateString('fr-FR')}
                               </span>
-                              <span className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1" />
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-4 w-4 text-secondary-500" />
                                 {appointment.appointment_time}
                               </span>
                             </div>
                           </div>
                           <div>
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
                               appointment.status === 'confirmed'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                                ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-800'
+                                : 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800'
                             }`}>
                               {appointment.status === 'confirmed' ? 'Confirmé' : 'En attente'}
                             </span>
@@ -253,24 +265,26 @@ export default function PatientDashboard() {
           {/* Side Panel */}
           <div className="space-y-6">
             {/* Active Prescriptions */}
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Pill className="h-6 w-6 text-primary" />
+                  <div className="p-2 bg-gradient-to-br from-teal-100 to-teal-200 rounded-lg">
+                    <Pill className="h-5 w-5 text-accent-teal" />
+                  </div>
                   <span>Ordonnances actives</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingData ? (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto"></div>
                   </div>
                 ) : prescriptions.length > 0 ? (
                   <div className="space-y-3">
                     {prescriptions.map((prescription) => (
                       <div
                         key={prescription.id}
-                        className="border-l-4 border-primary pl-3 py-2"
+                        className="border-l-4 border-primary-500 bg-primary-50 pl-3 py-2 rounded-r-lg"
                       >
                         <h5 className="font-semibold text-sm text-neutral-800">
                           {prescription.medication_name}
@@ -285,7 +299,7 @@ export default function PatientDashboard() {
                     ))}
                     <button
                       onClick={() => router.push('/patient/prescriptions')}
-                      className="w-full text-sm text-primary hover:text-primary-dark font-semibold py-2"
+                      className="w-full text-sm text-primary-600 hover:text-primary-700 font-semibold py-2 hover:bg-primary-50 rounded-lg transition-all"
                     >
                       Voir toutes les ordonnances
                     </button>
@@ -299,36 +313,40 @@ export default function PatientDashboard() {
             </Card>
 
             {/* Health Stats */}
-            <Card>
+            <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-6 w-6 text-primary" />
+                  <div className="p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg">
+                    <Activity className="h-5 w-5 text-accent-purple" />
+                  </div>
                   <span>Statistiques santé</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-200">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
                     <span className="text-sm text-neutral-600">Consultations</span>
-                    <span className="font-semibold text-neutral-800">{appointments.length}</span>
+                    <span className="font-semibold text-neutral-800 bg-primary-100 px-3 py-1 rounded-full text-sm">{appointments.length}</span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-200">
+                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
                     <span className="text-sm text-neutral-600">Ordonnances</span>
-                    <span className="font-semibold text-neutral-800">{prescriptions.length}</span>
+                    <span className="font-semibold text-neutral-800 bg-secondary-100 px-3 py-1 rounded-full text-sm">{prescriptions.length}</span>
                   </div>
                   <div className="flex items-center justify-between py-2">
                     <span className="text-sm text-neutral-600">Documents</span>
-                    <span className="font-semibold text-neutral-800">-</span>
+                    <span className="font-semibold text-neutral-800 bg-purple-100 px-3 py-1 rounded-full text-sm">-</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Profile Completion */}
-            <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20">
+            <Card className="bg-gradient-to-br from-primary-50 to-secondary-50 border-2 border-primary-200 shadow-medical">
               <CardContent className="py-4">
                 <div className="flex items-start space-x-3">
-                  <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
+                  <div className="p-2 bg-primary-500 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-white" />
+                  </div>
                   <div>
                     <h5 className="font-semibold text-neutral-800 mb-1">
                       Complétez votre profil
