@@ -5,7 +5,29 @@
 
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// Determine the API base URL based on environment
+// If running in browser and accessing via Nginx (port 80/443), use relative path
+// Otherwise use the configured API URL or localhost
+const getApiBaseUrl = () => {
+  // Server-side rendering: use the configured URL
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000';
+  }
+  
+  // Client-side: check if we're accessing via Nginx (port 80 or 443)
+  const currentPort = window.location.port;
+  const isNginxProxy = currentPort === '80' || currentPort === '443' || currentPort === '';
+  
+  if (isNginxProxy) {
+    // Use relative path to go through Nginx proxy
+    return window.location.origin;
+  }
+  
+  // Local development: use configured URL or default to localhost:8000
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance
 const axiosInstance: AxiosInstance = axios.create({
