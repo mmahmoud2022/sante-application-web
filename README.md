@@ -2,14 +2,24 @@
 
 A modern medical web application inspired by Doctolib France, facilitating online medical appointment booking and consultation management between patients and healthcare professionals.
 
+## ✨ New UI Features
+
+**🌓 Dark Mode** - Full dark theme with system preference detection  
+**🎯 Micro-Interactions** - Enhanced user feedback through smooth animations  
+**♿ WCAG 2.1 AAA** - Industry-leading accessibility compliance  
+**🏥 Medical Icons** - Custom library of 12 medical-specific icons  
+
+👉 [**View UI Enhancements Documentation**](ENHANCED_UI_FEATURES.md) | [**Try Demo Page**](/ui-showcase)
+
 ## 🎨 Design System
 
 ### Color Palette
-- **Primary Colors**: Medical Green (#00B894) and White (#FFFFFF)
-- **Secondary Colors**: Light Green (#4CD3A5), Light Gray (#F1F2F6) for backgrounds
-- **Accent Colors**: Medical Blue (#3498DB) for important actions, Red (#E74C3C) for alerts
+- **Primary Colors**: Medical Turquoise (#1ABC9C) and White (#FFFFFF)
+- **Secondary Colors**: Medical Blue (#3498DB), Light backgrounds (#F1F2F6)
+- **Accent Colors**: Success Green (#27AE60), Warning Orange (#F39C12), Error Red (#E74C3C)
+- **Dark Mode**: WCAG AAA compliant dark palette with proper contrast ratios
 - **Typography**: Montserrat for headings, Open Sans for body text
-- **Style**: Clean interface with Material Design/Neumorphism, responsive on all devices
+- **Style**: Clean interface with Material Design/Neumorphism, responsive on all devices, fully accessible
 
 ## 🚀 Tech Stack
 
