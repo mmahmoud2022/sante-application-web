@@ -26,6 +26,9 @@ export default function AdminDashboard() {
     totalAppointments: 0,
     pendingVerifications: 0,
     activeUsers: 0,
+    doctorsBySpecialization: {} as Record<string, number>,
+    cancelledByPatient: 0,
+    cancelledByDoctor: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
 
@@ -47,25 +50,24 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [usersRes, appointmentsRes] = await Promise.all([
-        api.users.list(),
-        api.appointments.list(),
+      const [userStatsRes, appointmentStatsRes] = await Promise.all([
+        api.users.stats(),
+        api.appointments.stats(),
       ]);
 
-      const users = Array.isArray(usersRes.data) ? usersRes.data : [];
-      const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : (appointmentsRes.data as any).items || [];
-
-      const doctors = users.filter((u: any) => u.role === 'doctor');
-      const patients = users.filter((u: any) => u.role === 'patient');
-      const pendingDoctors = doctors.filter((d: any) => !d.is_verified);
+      const userStats = userStatsRes.data;
+      const appointmentStats = appointmentStatsRes.data;
 
       setStats({
-        totalUsers: users.length,
-        totalDoctors: doctors.length,
-        totalPatients: patients.length,
-        totalAppointments: appointments.length,
-        pendingVerifications: pendingDoctors.length,
-        activeUsers: users.filter((u: any) => u.is_active).length,
+        totalUsers: userStats.total_users || 0,
+        totalDoctors: userStats.total_doctors || 0,
+        totalPatients: userStats.total_patients || 0,
+        totalAppointments: appointmentStats.total_appointments || 0,
+        pendingVerifications: userStats.unverified_doctors || 0,
+        activeUsers: userStats.active_users || 0,
+        doctorsBySpecialization: userStats.doctors_by_specialization || {},
+        cancelledByPatient: appointmentStats.cancelled_by_patient || 0,
+        cancelledByDoctor: appointmentStats.cancelled_by_doctor || 0,
       });
     } catch (error: any) {
       logger.error('Failed to load dashboard data', {
@@ -383,6 +385,63 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Additional Statistics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Doctors by Specialization */}
+          <Card className="border-2 border-neutral-100">
+            <CardHeader>
+              <CardTitle>Médecins par spécialité</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(stats.doctorsBySpecialization).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(stats.doctorsBySpecialization).map(([specialization, count]) => (
+                    <div key={specialization} className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0">
+                      <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{specialization}</span>
+                      <span className="text-sm font-bold text-primary-600 bg-primary-50 px-3 py-1 rounded-full">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-neutral-500 text-center py-4">Aucune donnée disponible</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Appointment Cancellations */}
+          <Card className="border-2 border-neutral-100">
+            <CardHeader>
+              <CardTitle>Annulations de rendez-vous</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-blue-600 font-semibold mb-1">Par les patients</p>
+                      <p className="text-3xl font-bold text-blue-900">{stats.cancelledByPatient}</p>
+                    </div>
+                    <div className="p-3 bg-blue-200 rounded-xl">
+                      <User className="h-8 w-8 text-blue-600" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-600 font-semibold mb-1">Par les médecins</p>
+                      <p className="text-3xl font-bold text-green-900">{stats.cancelledByDoctor}</p>
+                    </div>
+                    <div className="p-3 bg-green-200 rounded-xl">
+                      <UserCheck className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

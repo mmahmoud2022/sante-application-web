@@ -73,6 +73,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userData.role === 'patient') {
         router.push('/patient/dashboard');
       } else if (userData.role === 'doctor') {
+        // Check if doctor is verified
+        if (!userData.is_verified) {
+          // Don't redirect, stay on login page to show verification message
+          throw new Error('VERIFICATION_PENDING');
+        }
         router.push('/doctor/dashboard');
       } else if (userData.role === 'admin') {
         router.push('/admin/dashboard');

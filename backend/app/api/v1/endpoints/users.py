@@ -61,12 +61,25 @@ def list_doctors(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     specialization: Optional[str] = None,
+    city: Optional[str] = None,
+    min_rating: Optional[float] = Query(None, ge=0, le=5),
+    accepting_new_patients: Optional[bool] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
-    List all doctors with optional filtering by specialization
+    List all doctors with optional filtering by specialization, city, rating, and search
     """
-    return get_doctors(db, skip=skip, limit=limit, specialization=specialization)
+    return get_doctors(
+        db, 
+        skip=skip, 
+        limit=limit, 
+        specialization=specialization,
+        city=city,
+        min_rating=min_rating,
+        accepting_new_patients=accepting_new_patients,
+        search=search
+    )
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -130,3 +143,78 @@ def delete_user_by_id(
     """
     delete_user(db, user_id)
     return None
+
+
+@router.post("/{user_id}/verify", response_model=UserResponse)
+def verify_doctor(
+    user_id: int,
+    current_user: User = Depends(check_user_role("admin")),
+    db: Session = Depends(get_db)
+):
+    """
+    Verify a doctor account (admin only)
+    
+    Sets is_verified to True for the doctor
+    """
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    if user.role != UserRole.DOCTOR:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only doctors can be verified"
+        )
+    
+    user.is_verified = True
+    db.commit()
+    db.refresh(user)
+    
+    return user
+
+
+@router.get("/stats/overview", response_model=dict)
+def get_user_stats(
+    current_user: User = Depends(check_user_role("admin")),
+    db: Session = Depends(get_db)
+):
+    """
+    Get user statistics overview (admin only)
+    
+    Returns counts of users by role, verification status, etc.
+    """
+    from sqlalchemy import func
+    
+    total_users = db.query(func.count(User.id)).scalar()
+    total_patients = db.query(func.count(User.id)).filter(User.role == UserRole.PATIENT).scalar()
+    total_doctors = db.query(func.count(User.id)).filter(User.role == UserRole.DOCTOR).scalar()
+    verified_doctors = db.query(func.count(User.id)).filter(
+        User.role == UserRole.DOCTOR, 
+        User.is_verified == True
+    ).scalar()
+    unverified_doctors = db.query(func.count(User.id)).filter(
+        User.role == UserRole.DOCTOR, 
+        User.is_verified == False
+    ).scalar()
+    active_users = db.query(func.count(User.id)).filter(User.is_active == True).scalar()
+    
+    # Doctor count by specialization
+    doctors_by_specialization = db.query(
+        User.specialization,
+        func.count(User.id).label('count')
+    ).filter(User.role == UserRole.DOCTOR).group_by(User.specialization).all()
+    
+    specialization_stats = {spec: count for spec, count in doctors_by_specialization if spec}
+    
+    return {
+        "total_users": total_users,
+        "total_patients": total_patients,
+        "total_doctors": total_doctors,
+        "verified_doctors": verified_doctors,
+        "unverified_doctors": unverified_doctors,
+        "active_users": active_users,
+        "doctors_by_specialization": specialization_stats
+    }

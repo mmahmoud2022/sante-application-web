@@ -111,12 +111,33 @@ def get_doctors(
     db: Session,
     skip: int = 0,
     limit: int = 100,
-    specialization: Optional[str] = None
+    specialization: Optional[str] = None,
+    city: Optional[str] = None,
+    min_rating: Optional[float] = None,
+    accepting_new_patients: Optional[bool] = None,
+    search: Optional[str] = None
 ) -> List[User]:
     """Get list of doctors with optional filtering"""
-    query = db.query(User).filter(User.role == UserRole.DOCTOR)
+    query = db.query(User).filter(User.role == UserRole.DOCTOR, User.is_active == True)
     
     if specialization:
         query = query.filter(User.specialization.ilike(f"%{specialization}%"))
+    
+    if city:
+        query = query.filter(User.city.ilike(f"%{city}%"))
+    
+    if min_rating:
+        query = query.filter(User.rating_average >= min_rating)
+    
+    if accepting_new_patients is not None:
+        query = query.filter(User.accepting_new_patients == accepting_new_patients)
+    
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.first_name.ilike(search_filter)) |
+            (User.last_name.ilike(search_filter)) |
+            (User.specialization.ilike(search_filter))
+        )
     
     return query.offset(skip).limit(limit).all()

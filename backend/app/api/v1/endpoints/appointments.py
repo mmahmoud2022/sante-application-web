@@ -176,3 +176,46 @@ def delete_appointment(
     db.commit()
     
     return None
+
+
+@router.get("/stats/overview", response_model=dict)
+def get_appointment_stats(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get appointment statistics
+    
+    Admin can see all stats, users see their own stats
+    """
+    from app.models.appointment import Appointment, AppointmentStatus
+    from sqlalchemy import func
+    
+    query = db.query(Appointment)
+    
+    # Filter based on user role
+    if current_user.role == UserRole.PATIENT:
+        query = query.filter(Appointment.patient_id == current_user.id)
+    elif current_user.role == UserRole.DOCTOR:
+        query = query.filter(Appointment.doctor_id == current_user.id)
+    # Admin sees all
+    
+    total_appointments = query.count()
+    
+    # Count by status
+    status_counts = {}
+    for status in AppointmentStatus:
+        count = query.filter(Appointment.status == status).count()
+        status_counts[status.value] = count
+    
+    # Count cancellations
+    cancelled_appointments = query.filter(Appointment.status == AppointmentStatus.CANCELLED).all()
+    cancelled_by_patient = sum(1 for apt in cancelled_appointments if apt.cancelled_by == apt.patient_id)
+    cancelled_by_doctor = sum(1 for apt in cancelled_appointments if apt.cancelled_by == apt.doctor_id)
+    
+    return {
+        "total_appointments": total_appointments,
+        "status_counts": status_counts,
+        "cancelled_by_patient": cancelled_by_patient,
+        "cancelled_by_doctor": cancelled_by_doctor
+    }

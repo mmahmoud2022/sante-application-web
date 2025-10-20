@@ -195,6 +195,14 @@ const api = {
       return axiosInstance.delete(`/users/${id}`);
     },
     
+    verify: async (id: number) => {
+      return axiosInstance.post(`/users/${id}/verify`);
+    },
+    
+    stats: async () => {
+      return axiosInstance.get('/users/stats/overview');
+    },
+    
     getTwoFactorStatus: async () => {
       return axiosInstance.get('/users/me/2fa/status');
     },
@@ -252,6 +260,10 @@ const api = {
       return axiosInstance.get(`/appointments/available-slots`, {
         params: { doctor_id: doctorId, date }
       });
+    },
+    
+    stats: async () => {
+      return axiosInstance.get('/appointments/stats/overview');
     },
   },
 

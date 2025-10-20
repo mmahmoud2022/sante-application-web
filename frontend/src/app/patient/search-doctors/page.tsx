@@ -87,9 +87,9 @@ export default function DoctorSearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
+      <header className="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-200 dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -112,10 +112,10 @@ export default function DoctorSearchPage() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-neutral-800 mb-2">
+          <h1 className="text-3xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Rechercher un médecin
           </h1>
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-neutral-400">
             Trouvez le professionnel de santé qui correspond à vos besoins
           </p>
         </div>
@@ -136,7 +136,7 @@ export default function DoctorSearchPage() {
                       placeholder="Nom, spécialité..."
                       value={filters.search}
                       onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-400"
                     />
                   </div>
                 </div>
@@ -152,7 +152,7 @@ export default function DoctorSearchPage() {
                       placeholder="Ville"
                       value={filters.city}
                       onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-400"
                     />
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function DoctorSearchPage() {
                       <select
                         value={filters.min_rating || ''}
                         onChange={(e) => setFilters({ ...filters, min_rating: e.target.value ? parseFloat(e.target.value) : undefined })}
-                        className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-4 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-400"
                       >
                         <option value="">Toutes</option>
                         <option value="4.5">4.5+ ⭐</option>
@@ -243,7 +243,7 @@ export default function DoctorSearchPage() {
 
         {/* Results */}
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-neutral-400">
             {loading ? 'Recherche en cours...' : `${doctors.length} médecin(s) trouvé(s)`}
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function DoctorSearchPage() {
 
                       {/* Doctor Info */}
                       <div className="flex-1">
-                        <h3 className="text-xl font-heading font-bold text-neutral-800 mb-1">
+                        <h3 className="text-xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-1">
                           Dr. {doctor.first_name} {doctor.last_name}
                         </h3>
                         <p className="text-sm text-primary font-semibold mb-2">
@@ -287,24 +287,24 @@ export default function DoctorSearchPage() {
                         {doctor.rating_average && (
                           <div className="flex items-center mb-2">
                             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
-                            <span className="font-semibold text-neutral-800 mr-1">
+                            <span className="font-semibold text-neutral-800 dark:text-neutral-100 mr-1">
                               {doctor.rating_average.toFixed(1)}
                             </span>
-                            <span className="text-sm text-neutral-600">
+                            <span className="text-sm text-neutral-600 dark:text-neutral-400">
                               ({doctor.rating_count} avis)
                             </span>
                           </div>
                         )}
 
                         {/* Location */}
-                        <div className="flex items-center text-sm text-neutral-600 mb-2">
+                        <div className="flex items-center text-sm text-neutral-600 dark:text-neutral-400 mb-2">
                           <MapPin className="h-4 w-4 mr-1" />
                           {doctor.city || 'Localisation non spécifiée'}
                         </div>
 
                         {/* Fee */}
                         {doctor.consultation_fee && (
-                          <div className="flex items-center text-sm text-neutral-600 mb-3">
+                          <div className="flex items-center text-sm text-neutral-600 dark:text-neutral-400 mb-3">
                             <DollarSign className="h-4 w-4 mr-1" />
                             {doctor.consultation_fee}€ la consultation
                           </div>
@@ -312,7 +312,7 @@ export default function DoctorSearchPage() {
 
                         {/* Bio snippet */}
                         {doctor.bio && (
-                          <p className="text-sm text-neutral-600 line-clamp-2">
+                          <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
                             {doctor.bio}
                           </p>
                         )}
@@ -357,11 +357,11 @@ export default function DoctorSearchPage() {
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
-              <Search className="h-16 w-16 text-neutral-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+              <Search className="h-16 w-16 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-100 mb-2">
                 Aucun médecin trouvé
               </h3>
-              <p className="text-neutral-600 mb-4">
+              <p className="text-neutral-600 dark:text-neutral-400 mb-4">
                 Essayez de modifier vos critères de recherche
               </p>
               <Button onClick={clearFilters} variant="outline">
