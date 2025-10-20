@@ -152,6 +152,10 @@ sante-application-web/
 - Git
 - (Optional) Make utility for easier commands
 
+### ⚠️ Important: API Connection Configuration
+
+If you're experiencing connection issues on the login page, please refer to the [API Connection Fix Documentation](docs/API_CONNECTION_FIX.md) for detailed troubleshooting and configuration guidance.
+
 ### Quick Start with Make
 
 ```bash
