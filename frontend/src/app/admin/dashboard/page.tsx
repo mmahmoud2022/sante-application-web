@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Calendar, DollarSign, Heart, LogOut, Bell,
-  TrendingUp, Activity, Shield, Settings, UserCheck, AlertTriangle
+  TrendingUp, Activity, Shield, Settings, UserCheck, AlertTriangle, User
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';

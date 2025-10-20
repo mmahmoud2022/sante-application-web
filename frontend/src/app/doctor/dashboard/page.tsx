@@ -90,9 +90,9 @@ export default function DoctorDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md shadow-soft border-b border-neutral-100 sticky top-0 z-50">
+      <header className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md shadow-soft border-b border-neutral-100 dark:border-neutral-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -100,19 +100,19 @@ export default function DoctorDashboard() {
                 <Heart className="h-6 w-6 text-white" fill="white" />
               </div>
               <span className="text-2xl font-heading font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">Santé</span>
-              <span className="text-sm text-neutral-500 font-medium">| Espace Praticien</span>
+              <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">| Espace Praticien</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="relative p-2.5 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all">
+              <button className="relative p-2.5 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all">
                 <Bell className="h-6 w-6" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-neutral-800"></span>
               </button>
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-neutral-800">
+                  <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
                     Dr. {user.first_name} {user.last_name}
                   </p>
-                  <p className="text-xs text-secondary-600 font-medium">{user.specialization || 'Médecin'}</p>
+                  <p className="text-xs text-secondary-600 dark:text-secondary-400 font-medium">{user.specialization || 'Médecin'}</p>
                 </div>
                 <button
                   onClick={logout}
@@ -130,10 +130,10 @@ export default function DoctorDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-neutral-800 mb-2">
+          <h1 className="text-3xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-2">
             Bonjour, Dr. {user.last_name} 👨‍⚕️
           </h1>
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-neutral-400">
             Voici un aperçu de votre activité aujourd&apos;hui
           </p>
         </div>

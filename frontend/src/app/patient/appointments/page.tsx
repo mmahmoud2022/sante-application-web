@@ -305,14 +305,14 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-neutral-800 shadow-sm border-b dark:border-neutral-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
-              <p className="text-gray-600 mt-1">View and manage your appointments</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">My Appointments</h1>
+              <p className="text-gray-600 dark:text-neutral-400 mt-1">View and manage your appointments</p>
             </div>
             <Button onClick={() => setShowBookingForm(true)}>
               <CalendarIcon className="w-5 h-5 mr-2" />
