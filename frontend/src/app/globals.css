@@ -3,47 +3,49 @@
 @tailwind utilities;
 
 :root {
-  /* Light mode colors */
-  --primary-color: #1ABC9C;
-  --primary-light: #48C9B0;
-  --primary-dark: #117864;
-  --secondary-color: #3498DB;
+  /* Light mode colors - Modern & Sophisticated */
+  --primary-color: #0EA5E9;
+  --primary-light: #38BDF8;
+  --primary-dark: #0284C7;
+  --secondary-color: #D946EF;
   --background: #FFFFFF;
-  --background-secondary: #F8F9FA;
-  --foreground: #212529;
-  --foreground-secondary: #495057;
-  --border: #DEE2E6;
-  --border-hover: #ADB5BD;
-  --accent-success: #27AE60;
-  --accent-warning: #F39C12;
-  --accent-error: #E74C3C;
-  --medical-blue: #3498DB;
-  --medical-green: #1ABC9C;
-  --medical-purple: #9B59B6;
-  --shadow: rgba(0, 0, 0, 0.1);
-  --shadow-hover: rgba(0, 0, 0, 0.15);
+  --background-secondary: #F8FAFC;
+  --foreground: #1E293B;
+  --foreground-secondary: #475569;
+  --border: #E2E8F0;
+  --border-hover: #CBD5E1;
+  --accent-success: #10B981;
+  --accent-warning: #F59E0B;
+  --accent-error: #EF4444;
+  --medical-blue: #0EA5E9;
+  --medical-green: #10B981;
+  --medical-purple: #D946EF;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-hover: rgba(0, 0, 0, 0.12);
+  --shadow-glow: rgba(14, 165, 233, 0.3);
 }
 
 .dark {
-  /* Dark mode colors - WCAG AAA compliant */
-  --primary-color: #48C9B0;
-  --primary-light: #76D7C4;
-  --primary-dark: #1ABC9C;
-  --secondary-color: #5DADE2;
-  --background: #1A1D23;
-  --background-secondary: #23272F;
-  --foreground: #E9ECEF;
-  --foreground-secondary: #ADB5BD;
-  --border: #343A40;
-  --border-hover: #495057;
-  --accent-success: #51CF66;
-  --accent-warning: #FFC078;
-  --accent-error: #FF6B6B;
-  --medical-blue: #74C0FC;
-  --medical-green: #63E6BE;
-  --medical-purple: #CC5DE8;
-  --shadow: rgba(0, 0, 0, 0.3);
-  --shadow-hover: rgba(0, 0, 0, 0.4);
+  /* Dark mode colors - WCAG AAA compliant with modern palette */
+  --primary-color: #38BDF8;
+  --primary-light: #7DD3FC;
+  --primary-dark: #0EA5E9;
+  --secondary-color: #E879F9;
+  --background: #0F172A;
+  --background-secondary: #1E293B;
+  --foreground: #F1F5F9;
+  --foreground-secondary: #CBD5E1;
+  --border: #334155;
+  --border-hover: #475569;
+  --accent-success: #34D399;
+  --accent-warning: #FBBF24;
+  --accent-error: #F87171;
+  --medical-blue: #7DD3FC;
+  --medical-green: #6EE7B7;
+  --medical-purple: #F0ABFC;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow-hover: rgba(0, 0, 0, 0.5);
+  --shadow-glow: rgba(56, 189, 248, 0.4);
 }
 
 body {
@@ -86,54 +88,82 @@ h1, h2, h3, h4, h5, h6 {
   .button-press:active {
     transform: scale(0.98);
   }
+
+  /* Glassmorphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .dark .glass {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Modern gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Smooth glow effect */
+  .glow {
+    filter: drop-shadow(0 0 20px var(--shadow-glow));
+  }
 }
 
 /* Custom scrollbar with modern medical theme */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  border-radius: 4px;
+  border-radius: 8px;
   transition: background 0.3s ease;
+  border: 2px solid var(--background-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, var(--primary-dark), var(--secondary-color));
+  border-width: 1px;
 }
 
 /* Smooth transitions for all interactive elements */
 button, a, input, textarea, select {
-  transition-property: color, background-color, border-color, transform, box-shadow, opacity;
-  transition-duration: 200ms;
-  transition-timing-function: ease-in-out;
+  transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
+  transition-duration: 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Modern card hover effects */
+/* Modern card hover effects with depth */
 .card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px var(--shadow-hover);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 60px var(--shadow-hover);
 }
 
-/* Ripple effect for buttons */
+/* Ripple effect for buttons - Enhanced */
 @keyframes ripple {
   0% {
     transform: scale(0);
-    opacity: 0.6;
+    opacity: 0.7;
   }
   100% {
-    transform: scale(2);
+    transform: scale(2.5);
     opacity: 0;
   }
 }
@@ -150,14 +180,14 @@ button, a, input, textarea, select {
   left: 50%;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.5);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0);
   pointer-events: none;
 }
 
 .ripple-effect:active::after {
-  animation: ripple 0.6s ease-out;
+  animation: ripple 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Pulse animation for notifications */
@@ -174,27 +204,27 @@ button, a, input, textarea, select {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Fade in animation */
+/* Fade in animation - Enhanced */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Slide in from right animation */
+/* Slide in from right animation - Enhanced */
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(30px);
   }
   to {
     opacity: 1;
@@ -203,7 +233,7 @@ button, a, input, textarea, select {
 }
 
 .slide-in-right {
-  animation: slideInRight 0.4s ease-out;
+  animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Focus styles for accessibility */
