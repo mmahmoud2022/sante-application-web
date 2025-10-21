@@ -64,7 +64,10 @@ export default function PatientBookAppointmentPage() {
     }
 
     if (user) {
-      const defaultDate = new Date().toISOString().split('T')[0];
+      // Set default date to tomorrow to avoid booking conflicts
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const defaultDate = tomorrow.toISOString().split('T')[0];
       setSelectedDate(defaultDate);
       loadContext(queryDoctor, defaultDate);
     }
@@ -132,12 +135,16 @@ export default function PatientBookAppointmentPage() {
     setMessage(null);
 
     try {
+      // Format: YYYY-MM-DDTHH:MM:SS pour ISO datetime
+      const appointmentDateTime = `${selectedDate}T${selectedSlot}:00`;
+
       await api.appointments.create({
         doctor_id: selectedDoctorId,
-        appointment_date: selectedDate,
+        appointment_date: appointmentDateTime,
         appointment_time: selectedSlot,
         appointment_type: appointmentType,
         chief_complaint: chiefComplaint,
+        reason: chiefComplaint, // Backend uses 'reason' field
         notes: notes || undefined,
       });
 
@@ -155,10 +162,21 @@ export default function PatientBookAppointmentPage() {
         date: selectedDate,
         slot: selectedSlot,
         errorMessage: error?.message,
+        errorDetail: error?.response?.data,
       }, error);
+      
+      const errorDetail = error?.response?.data?.detail;
+      let errorMessage = 'La réservation a échoué. Merci de réessayer.';
+      
+      if (typeof errorDetail === 'string') {
+        errorMessage = errorDetail;
+      } else if (Array.isArray(errorDetail) && errorDetail.length > 0) {
+        errorMessage = errorDetail.map((err: any) => err.msg || err.message).join(', ');
+      }
+      
       setMessage({
         type: 'error',
-        text: error?.response?.data?.detail || 'La réservation a échoué. Merci de réessayer.',
+        text: errorMessage,
       });
     } finally {
       setBooking(false);
@@ -245,7 +263,12 @@ export default function PatientBookAppointmentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-neutral-600 mb-1 block">Date souhaitée</label>
-                  <Input type="date" value={selectedDate} onChange={handleDateChange} />
+                  <Input 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={handleDateChange}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-600 mb-1 block">Type de consultation</label>
@@ -254,8 +277,8 @@ export default function PatientBookAppointmentPage() {
                     onChange={(event) => setAppointmentType(event.target.value as AppointmentType)}
                   >
                     <option value={AppointmentType.IN_PERSON}>Au cabinet</option>
-                    <option value={AppointmentType.VIDEO}>Téléconsultation</option>
-                    <option value={AppointmentType.HOME_VISIT}>Visite à domicile</option>
+                    <option value={AppointmentType.VIDEO_CALL}>Téléconsultation</option>
+                    <option value={AppointmentType.PHONE_CALL}>Consultation téléphonique</option>
                   </Select>
                 </div>
               </div>

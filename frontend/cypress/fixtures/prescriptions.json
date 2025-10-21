@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "patient_id": 1,
+    "doctor_id": 2,
+    "appointment_id": 3,
+    "medications": [
+      {
+        "name": "Amoxicilline",
+        "dosage": "500mg",
+        "frequency": "3 fois par jour",
+        "duration": "7 jours"
+      }
+    ],
+    "instructions": "Prendre pendant les repas",
+    "start_date": "2025-09-10",
+    "end_date": "2025-09-17",
+    "status": "active",
+    "created_at": "2025-09-10T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "patient_id": 1,
+    "doctor_id": 2,
+    "appointment_id": 1,
+    "medications": [
+      {
+        "name": "Ibuprofène",
+        "dosage": "400mg",
+        "frequency": "2 fois par jour",
+        "duration": "5 jours"
+      }
+    ],
+    "instructions": "En cas de douleur",
+    "start_date": "2025-10-01",
+    "end_date": "2025-10-06",
+    "status": "expired",
+    "created_at": "2025-10-01T14:00:00Z"
+  }
+]

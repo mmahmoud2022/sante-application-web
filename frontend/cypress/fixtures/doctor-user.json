@@ -1,0 +1,15 @@
+{
+  "id": 2,
+  "email": "doctor@example.com",
+  "first_name": "Dr. Marie",
+  "last_name": "Martin",
+  "phone_number": "0612345679",
+  "role": "doctor",
+  "is_active": true,
+  "is_verified": true,
+  "specialization": "Médecine Générale",
+  "license_number": "12345678",
+  "consultation_fee": 50.0,
+  "bio": "Médecin généraliste avec 15 ans d'expérience",
+  "created_at": "2025-01-01T10:00:00Z"
+}

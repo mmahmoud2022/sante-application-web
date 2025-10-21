@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "patient_id": 1,
+    "doctor_id": 2,
+    "appointment_date": "2025-11-15",
+    "appointment_time": "10:00:00",
+    "status": "scheduled",
+    "reason": "Consultation de routine",
+    "notes": null,
+    "created_at": "2025-10-20T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "patient_id": 1,
+    "doctor_id": 2,
+    "appointment_date": "2025-12-01",
+    "appointment_time": "14:30:00",
+    "status": "confirmed",
+    "reason": "Suivi médical",
+    "notes": null,
+    "created_at": "2025-10-21T10:00:00Z"
+  },
+  {
+    "id": 3,
+    "patient_id": 1,
+    "doctor_id": 2,
+    "appointment_date": "2025-09-10",
+    "appointment_time": "11:00:00",
+    "status": "completed",
+    "reason": "Check-up annuel",
+    "notes": "Patient en bonne santé",
+    "created_at": "2025-08-15T10:00:00Z"
+  }
+]

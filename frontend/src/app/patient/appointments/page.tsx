@@ -139,9 +139,10 @@ export default function AppointmentsPage() {
     }
 
     try {
+      const datePart = selectedDate.toISOString().split('T')[0];
       const appointmentData = {
         doctor_id: selectedDoctor,
-        appointment_date: selectedDate.toISOString().split('T')[0],
+        appointment_date: `${datePart}T${selectedSlot}`,
         appointment_time: selectedSlot,
         appointment_type: appointmentType,
         chief_complaint: chiefComplaint,
@@ -289,9 +290,14 @@ export default function AppointmentsPage() {
     });
   };
 
-  const filteredAppointments = appointments.filter(apt => 
-    filterStatus === 'all' || apt.status === filterStatus
-  );
+  const filteredAppointments = appointments
+    .filter(apt => filterStatus === 'all' || apt.status === filterStatus)
+    .sort((a, b) => {
+      // Sort by date and time, most recent first
+      const dateA = new Date(`${a.appointment_date}T${a.appointment_time}`);
+      const dateB = new Date(`${b.appointment_date}T${b.appointment_time}`);
+      return dateB.getTime() - dateA.getTime();
+    });
 
   if (authLoading || loading) {
     return (

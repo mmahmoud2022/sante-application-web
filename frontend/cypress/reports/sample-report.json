@@ -1,0 +1,120 @@
+{
+  "stats": {
+    "suites": 10,
+    "tests": 155,
+    "passes": 153,
+    "pending": 2,
+    "failures": 0,
+    "start": "2025-10-21T10:00:00.000Z",
+    "end": "2025-10-21T10:15:00.000Z",
+    "duration": 900000
+  },
+  "results": [
+    {
+      "file": "cypress/e2e/auth.cy.ts",
+      "tests": 15,
+      "passes": 15,
+      "failures": 0,
+      "pending": 0,
+      "duration": 45000
+    },
+    {
+      "file": "cypress/e2e/patient-dashboard.cy.ts",
+      "tests": 25,
+      "passes": 25,
+      "failures": 0,
+      "pending": 0,
+      "duration": 120000
+    },
+    {
+      "file": "cypress/e2e/doctor-dashboard.cy.ts",
+      "tests": 22,
+      "passes": 22,
+      "failures": 0,
+      "pending": 0,
+      "duration": 110000
+    },
+    {
+      "file": "cypress/e2e/admin-dashboard.cy.ts",
+      "tests": 18,
+      "passes": 18,
+      "failures": 0,
+      "pending": 0,
+      "duration": 85000
+    },
+    {
+      "file": "cypress/e2e/navigation.cy.ts",
+      "tests": 12,
+      "passes": 12,
+      "failures": 0,
+      "pending": 0,
+      "duration": 60000
+    },
+    {
+      "file": "cypress/e2e/accessibility.cy.ts",
+      "tests": 10,
+      "passes": 9,
+      "failures": 0,
+      "pending": 1,
+      "duration": 50000
+    },
+    {
+      "file": "cypress/e2e/responsive.cy.ts",
+      "tests": 15,
+      "passes": 15,
+      "failures": 0,
+      "pending": 0,
+      "duration": 90000
+    },
+    {
+      "file": "cypress/e2e/performance.cy.ts",
+      "tests": 8,
+      "passes": 7,
+      "failures": 0,
+      "pending": 1,
+      "duration": 40000
+    },
+    {
+      "file": "cypress/e2e/error-handling.cy.ts",
+      "tests": 16,
+      "passes": 16,
+      "failures": 0,
+      "pending": 0,
+      "duration": 95000
+    },
+    {
+      "file": "cypress/e2e/security.cy.ts",
+      "tests": 14,
+      "passes": 14,
+      "failures": 0,
+      "pending": 0,
+      "duration": 75000
+    }
+  ],
+  "browsers": [
+    {
+      "name": "chrome",
+      "version": "118.0.5993.88",
+      "passes": 153,
+      "failures": 0
+    },
+    {
+      "name": "firefox",
+      "version": "119.0",
+      "passes": 152,
+      "failures": 1
+    },
+    {
+      "name": "edge",
+      "version": "118.0.2088.61",
+      "passes": 153,
+      "failures": 0
+    }
+  ],
+  "summary": {
+    "total_duration": "15 minutes",
+    "pass_rate": "98.7%",
+    "avg_test_duration": "5.8s",
+    "flaky_tests": 0
+  }
+}

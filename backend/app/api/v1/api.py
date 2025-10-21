@@ -14,6 +14,7 @@ from app.api.v1.endpoints import (
     notifications,
     doctor,
     patient,
+    documents,
 )
 
 api_router = APIRouter()
@@ -29,3 +30,4 @@ api_router.include_router(schedules.router, prefix="/schedules", tags=["Schedule
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(doctor.router, prefix="/doctor", tags=["Doctor"])
 api_router.include_router(patient.router, prefix="/patient", tags=["Patient"])
+api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])

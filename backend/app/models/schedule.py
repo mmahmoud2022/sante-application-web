@@ -67,6 +67,9 @@ class DoctorSchedule(Base):
     # Availability settings
     is_available = Column(Boolean, default=True, nullable=False)
     is_video_consultation = Column(Boolean, default=False, nullable=False)
+
+    # Soft delete flag
+    is_active = Column(Boolean, default=True, nullable=False)
     
     # Recurrence settings (for regular schedules)
     recurrence_end_date = Column(DateTime(timezone=True), nullable=True)

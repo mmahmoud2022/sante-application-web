@@ -17,8 +17,8 @@ export enum AppointmentStatus {
 
 export enum AppointmentType {
   IN_PERSON = 'in_person',
-  VIDEO = 'video',
-  HOME_VISIT = 'home_visit',
+  VIDEO_CALL = 'video_call',
+  PHONE_CALL = 'phone_call',
 }
 
 export enum PrescriptionStatus {
@@ -40,9 +40,16 @@ export enum NotificationType {
   APPOINTMENT_REMINDER = 'appointment_reminder',
   APPOINTMENT_CONFIRMED = 'appointment_confirmed',
   APPOINTMENT_CANCELLED = 'appointment_cancelled',
+  APPOINTMENT_RESCHEDULED = 'appointment_rescheduled',
+  APPOINTMENT_DELAYED = 'appointment_delayed',
   PRESCRIPTION_READY = 'prescription_ready',
-  PAYMENT_RECEIVED = 'payment_received',
+  PRESCRIPTION_RENEWAL = 'prescription_renewal',
+  VACCINATION_DUE = 'vaccination_due',
   MESSAGE_RECEIVED = 'message_received',
+  PAYMENT_RECEIVED = 'payment_received',
+  PAYMENT_FAILED = 'payment_failed',
+  DOCUMENT_READY = 'document_ready',
+  SYSTEM_ALERT = 'system_alert',
 }
 
 export interface User {
@@ -51,17 +58,19 @@ export interface User {
   first_name: string;
   last_name: string;
   role: UserRole;
-  phone_number?: string;
+  phone?: string;
   date_of_birth?: string;
   gender?: string;
-  address?: string;
+  address_line1?: string;
+  address_line2?: string;
   city?: string;
+  state?: string;
   postal_code?: string;
   country?: string;
-  profile_picture_url?: string;
+  profile_image?: string;
   is_active: boolean;
   is_verified: boolean;
-  two_factor_enabled: boolean;
+  mfa_enabled?: boolean;
   created_at: string;
   updated_at: string;
 
@@ -93,12 +102,17 @@ export interface Appointment {
   duration_minutes: number;
   appointment_type: AppointmentType;
   status: AppointmentStatus;
+  reason?: string;
   notes?: string;
   diagnosis?: string;
-  chief_complaint?: string;
-  is_video_consultation: boolean;
-  video_room_url?: string;
+  prescription?: string;
+  video_call_link?: string;
+  video_call_room_id?: string;
+  reminder_sent?: boolean;
+  reminder_sent_at?: string;
+  cancelled_by?: number;
   cancellation_reason?: string;
+  cancelled_at?: string;
   created_at: string;
   updated_at: string;
 
@@ -111,19 +125,31 @@ export interface MedicalRecord {
   id: number;
   patient_id: number;
   blood_type?: string;
-  allergies?: string;
-  chronic_conditions?: string;
-  current_medications?: string;
+  height_cm?: number;
+  weight_kg?: number;
+  allergies?: string[];
+  chronic_conditions?: string[];
+  medications?: Array<{
+    name: string;
+    dosage: string;
+    frequency: string;
+  }>;
+  surgeries?: Array<{
+    name: string;
+    date: string;
+  }>;
+  vaccinations?: Array<{
+    name: string;
+    date: string;
+  }>;
   family_history?: string;
-  immunization_history?: string;
-  previous_surgeries?: string;
-  lifestyle_notes?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  emergency_contact_relationship?: string;
+  emergency_contact_relation?: string;
   insurance_provider?: string;
   insurance_policy_number?: string;
-  insurance_expiry_date?: string;
+  insurance_valid_until?: string;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -137,14 +163,17 @@ export interface Prescription {
   dosage: string;
   frequency: string;
   duration_days: number;
-  start_date: string;
-  end_date?: string;
-  instructions?: string;
-  status: PrescriptionStatus;
+  quantity?: number;
   refills_allowed: number;
   refills_remaining: number;
+  instructions?: string;
+  notes?: string;
+  status: PrescriptionStatus;
+  prescribed_date: string;
+  start_date?: string;
+  end_date?: string;
   auto_renewal_enabled: boolean;
-  pharmacy_notes?: string;
+  last_renewed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -155,10 +184,14 @@ export interface Review {
   doctor_id: number;
   appointment_id?: number;
   rating: number;
-  comment?: string;
-  is_verified_visit: boolean;
+  title?: string;
+  review_text?: string;
+  verified_visit: boolean;
   doctor_response?: string;
-  is_hidden: boolean;
+  doctor_response_date?: string;
+  is_published: boolean;
+  is_flagged: boolean;
+  flagged_reason?: string;
   helpful_count: number;
   created_at: string;
   updated_at: string;
@@ -170,18 +203,22 @@ export interface Review {
 export interface DoctorSchedule {
   id: number;
   doctor_id: number;
+  schedule_type: string;
   day_of_week?: number;
+  specific_date?: string;
   start_time: string;
   end_time: string;
-  schedule_type: string;
-  is_recurring: boolean;
-  specific_date?: string;
   slot_duration_minutes: number;
-  break_start_time?: string;
-  break_end_time?: string;
-  max_appointments?: number;
+  buffer_time_minutes?: number;
+  max_patients_per_slot?: number;
   location?: string;
+  location_address?: string;
+  is_available: boolean;
+  is_video_consultation: boolean;
   is_active: boolean;
+  recurrence_end_date?: string;
+  custom_rules?: any;
+  notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -254,16 +291,24 @@ export interface Payment {
 export interface Document {
   id: number;
   patient_id: number;
-  uploaded_by_id: number;
+  uploaded_by?: number;
+  appointment_id?: number;
   document_type: string;
   title: string;
   description?: string;
-  file_url: string;
+  file_path: string;
   file_name: string;
-  file_size: number;
-  mime_type: string;
-  is_shared_with_doctors: boolean;
-  is_verified: boolean;
+  file_size_bytes?: number;
+  mime_type?: string;
+  is_shared: boolean;
+  shared_with?: string;
+  ocr_text?: string;
+  ocr_processed?: boolean;
+  document_date?: string;
+  tags?: string;
+  verified: boolean;
+  verified_by?: number;
+  verified_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -298,7 +343,7 @@ export interface RegisterFormData {
   first_name: string;
   last_name: string;
   role: UserRole;
-  phone_number?: string;
+  phone?: string;
   date_of_birth?: string;
   gender?: string;
   
@@ -313,18 +358,20 @@ export interface AppointmentFormData {
   appointment_date: string;
   appointment_time: string;
   appointment_type: AppointmentType;
-  chief_complaint: string;
+  reason: string;
   notes?: string;
 }
 
 export interface ProfileFormData {
   first_name: string;
   last_name: string;
-  phone_number?: string;
+  phone?: string;
   date_of_birth?: string;
   gender?: string;
-  address?: string;
+  address_line1?: string;
+  address_line2?: string;
   city?: string;
+  state?: string;
   postal_code?: string;
   country?: string;
   
@@ -336,6 +383,7 @@ export interface ProfileFormData {
   
   // Doctor specific
   bio?: string;
+  experience_years?: number;
   consultation_fee?: number;
   languages_spoken?: string;
   education?: string;

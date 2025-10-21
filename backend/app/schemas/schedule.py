@@ -26,6 +26,7 @@ class DoctorScheduleCreate(DoctorScheduleBase):
     location_address: Optional[str] = Field(None, max_length=500)
     is_available: bool = True
     is_video_consultation: bool = False
+    is_active: bool = True
     recurrence_end_date: Optional[datetime] = None
     custom_rules: Optional[dict] = None
     notes: Optional[str] = Field(None, max_length=500)
@@ -36,6 +37,7 @@ class DoctorScheduleUpdate(BaseModel):
     start_time: Optional[time] = None
     end_time: Optional[time] = None
     is_available: Optional[bool] = None
+    is_active: Optional[bool] = None
     notes: Optional[str] = Field(None, max_length=500)
 
 
@@ -49,6 +51,7 @@ class DoctorScheduleResponse(DoctorScheduleBase):
     location_address: Optional[str] = None
     is_available: bool
     is_video_consultation: bool
+    is_active: bool
     recurrence_end_date: Optional[datetime] = None
     custom_rules: Optional[dict] = None
     notes: Optional[str] = None
