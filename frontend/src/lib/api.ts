@@ -307,43 +307,43 @@ const api = {
   // Appointments
   appointments: {
     list: async (params?: any) => {
-      return axiosInstance.get('appointments/', { params });
+      return axiosInstance.get('/appointments', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`appointments/${id}`);
+      return axiosInstance.get(`/appointments/${id}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('appointments/', data);
+      return axiosInstance.post('/appointments', data);
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`appointments/${id}`, data);
+      return axiosInstance.put(`/appointments/${id}`, data);
     },
     
     cancel: async (id: number, reason?: string) => {
-      return axiosInstance.patch(`appointments/${id}/cancel`, { 
+      return axiosInstance.patch(`/appointments/${id}/cancel`, { 
         cancellation_reason: reason 
       });
     },
     
     confirm: async (id: number) => {
-      return axiosInstance.patch(`appointments/${id}/confirm`);
+      return axiosInstance.patch(`/appointments/${id}/confirm`);
     },
     
     complete: async (id: number, data?: any) => {
-      return axiosInstance.patch(`appointments/${id}/complete`, data);
+      return axiosInstance.patch(`/appointments/${id}/complete`, data);
     },
     
     getAvailableSlots: async (doctorId: number, date: string) => {
-      return axiosInstance.get('appointments/available-slots', {
+      return axiosInstance.get('/appointments/available-slots', {
         params: { doctor_id: doctorId, date }
       });
     },
     
     stats: async () => {
-      return axiosInstance.get('appointments/stats/overview');
+      return axiosInstance.get('/appointments/stats/overview');
     },
   },
 
@@ -520,7 +520,7 @@ const api = {
   // Patient helpers
   patient: {
     bookAppointmentContext: async (params?: any) => {
-      return axiosInstance.get('patient/book-appointment', { params });
+      return axiosInstance.get('/patient/book-appointment', { params });
     },
   },
 
