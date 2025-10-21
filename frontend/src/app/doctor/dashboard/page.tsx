@@ -1,5 +1,6 @@
 /**
  * Doctor Dashboard Page
+ * Enhanced with modern design, glassmorphism, carousels, and alerts
  */
 
 'use client';
@@ -8,11 +9,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar, Users, DollarSign, Heart, LogOut, Bell,
-  Clock, CheckCircle, XCircle, TrendingUp, FileText
+  Clock, CheckCircle, XCircle, TrendingUp, FileText, Stethoscope
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Carousel } from '@/components/ui/Carousel';
+import { AlertsPanel } from '@/components/ui/AlertsPanel';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
 import { Appointment } from '@/types';
@@ -91,8 +94,8 @@ export default function DoctorDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
-      {/* Header */}
-      <header className="bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md shadow-soft border-b border-neutral-100 dark:border-neutral-700 sticky top-0 z-50">
+      {/* Header with glassmorphism */}
+      <header className="glass-header sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -105,7 +108,7 @@ export default function DoctorDashboard() {
             <div className="flex items-center space-x-4">
               <button className="relative p-2.5 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all">
                 <Bell className="h-6 w-6" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-neutral-800"></span>
+                <span className="absolute top-2 right-2 h-2 w-2 bg-warm-coral rounded-full ring-2 ring-white dark:ring-neutral-800 animate-pulse"></span>
               </button>
               <div className="flex items-center space-x-3">
                 <div className="text-right">
@@ -138,63 +141,63 @@ export default function DoctorDashboard() {
           </p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards with modern design */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 shadow-medium hover:shadow-large transition-all">
+          <Card className="glass-card bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-2 border-blue-200 dark:border-blue-700 shadow-medium hover:shadow-large transition-all hover-lift">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-semibold mb-1">Aujourd&apos;hui</p>
-                  <p className="text-4xl font-bold text-blue-900">{stats.todayAppointments}</p>
-                  <p className="text-xs text-blue-700 mt-1 font-medium">Consultations</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold mb-1">Aujourd&apos;hui</p>
+                  <p className="text-4xl font-bold text-blue-900 dark:text-blue-100">{stats.todayAppointments}</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 font-medium">Consultations</p>
                 </div>
-                <div className="p-3 bg-blue-200 rounded-xl">
-                  <Calendar className="h-10 w-10 text-blue-600" strokeWidth={2} />
+                <div className="p-3 bg-blue-200 dark:bg-blue-800/50 rounded-xl">
+                  <Calendar className="h-10 w-10 text-blue-600 dark:text-blue-400" strokeWidth={2} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 shadow-medium hover:shadow-large transition-all">
+          <Card className="glass-card bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 border-2 border-yellow-200 dark:border-yellow-700 shadow-medium hover:shadow-large transition-all hover-lift">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-yellow-600 font-semibold mb-1">En attente</p>
-                  <p className="text-4xl font-bold text-yellow-900">{stats.pendingAppointments}</p>
-                  <p className="text-xs text-yellow-700 mt-1 font-medium">À confirmer</p>
+                  <p className="text-sm text-yellow-600 dark:text-yellow-400 font-semibold mb-1">En attente</p>
+                  <p className="text-4xl font-bold text-yellow-900 dark:text-yellow-100">{stats.pendingAppointments}</p>
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1 font-medium">À confirmer</p>
                 </div>
-                <div className="p-3 bg-yellow-200 rounded-xl">
-                  <Clock className="h-10 w-10 text-yellow-600" strokeWidth={2} />
+                <div className="p-3 bg-yellow-200 dark:bg-yellow-800/50 rounded-xl">
+                  <Clock className="h-10 w-10 text-yellow-600 dark:text-yellow-400" strokeWidth={2} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 shadow-medium hover:shadow-large transition-all">
+          <Card className="glass-card bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-2 border-green-200 dark:border-green-700 shadow-medium hover:shadow-large transition-all hover-lift">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-semibold mb-1">Patients</p>
-                  <p className="text-4xl font-bold text-green-900">{stats.totalPatients}</p>
-                  <p className="text-xs text-green-700 mt-1 font-medium">Total actifs</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 font-semibold mb-1">Patients</p>
+                  <p className="text-4xl font-bold text-green-900 dark:text-green-100">{stats.totalPatients}</p>
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-1 font-medium">Total actifs</p>
                 </div>
-                <div className="p-3 bg-green-200 rounded-xl">
-                  <Users className="h-10 w-10 text-green-600" strokeWidth={2} />
+                <div className="p-3 bg-green-200 dark:bg-green-800/50 rounded-xl">
+                  <Users className="h-10 w-10 text-green-600 dark:text-green-400" strokeWidth={2} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 shadow-medium hover:shadow-large transition-all">
+          <Card className="glass-card bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-2 border-purple-200 dark:border-purple-700 shadow-medium hover:shadow-large transition-all hover-lift">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-semibold mb-1">Revenus</p>
-                  <p className="text-4xl font-bold text-purple-900">-</p>
-                  <p className="text-xs text-purple-700 mt-1 font-medium">Ce mois</p>
+                  <p className="text-sm text-purple-600 dark:text-purple-400 font-semibold mb-1">Revenus</p>
+                  <p className="text-4xl font-bold text-purple-900 dark:text-purple-100">-</p>
+                  <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 font-medium">Ce mois</p>
                 </div>
-                <div className="p-3 bg-purple-200 rounded-xl">
-                  <DollarSign className="h-10 w-10 text-purple-600" strokeWidth={2} />
+                <div className="p-3 bg-purple-200 dark:bg-purple-800/50 rounded-xl">
+                  <DollarSign className="h-10 w-10 text-purple-600 dark:text-purple-400" strokeWidth={2} />
                 </div>
               </div>
             </CardContent>
@@ -202,20 +205,20 @@ export default function DoctorDashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Today's Appointments */}
+          {/* Today's Appointments with Carousel */}
           <div className="lg:col-span-2">
-            <Card className="border-2 border-neutral-100">
+            <Card className="glass-card border-2 border-primary-100 dark:border-primary-800">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center space-x-2">
-                    <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg">
-                      <Calendar className="h-5 w-5 text-primary-600" />
+                    <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 rounded-lg">
+                      <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                     </div>
                     <span>Consultations d&apos;aujourd&apos;hui</span>
                   </CardTitle>
                   <button
                     onClick={() => router.push('/doctor/appointments')}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-semibold px-4 py-2 hover:bg-primary-50 rounded-lg transition-all"
+                    className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-4 py-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all"
                   >
                     Voir tout
                   </button>
@@ -227,26 +230,33 @@ export default function DoctorDashboard() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
                   </div>
                 ) : todayAppointments.length > 0 ? (
-                  <div className="space-y-4">
+                  <Carousel itemsPerView={1} showIndicators={true} autoPlay={true}>
                     {todayAppointments.map((appointment) => (
                       <div
                         key={appointment.id}
-                        className="border-2 border-neutral-100 rounded-xl p-4 hover:border-primary-300 hover:shadow-medium transition-all"
+                        className="border-2 border-primary-100 dark:border-primary-800 bg-gradient-to-br from-primary-50/50 to-transparent dark:from-primary-900/20 dark:to-transparent rounded-xl p-6 hover:shadow-lg transition-all"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-neutral-800 mb-1">
-                              {appointment.patient?.first_name} {appointment.patient?.last_name}
-                            </h4>
-                            <p className="text-sm text-neutral-600 mb-2">
-                              {appointment.chief_complaint || 'Consultation'}
-                            </p>
-                            <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                              <span className="flex items-center gap-1 bg-primary-50 px-3 py-1 rounded-full">
-                                <Clock className="h-4 w-4 text-primary-600" />
+                            <div className="flex items-center space-x-3 mb-3">
+                              <div className="p-2 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg">
+                                <Stethoscope className="h-5 w-5 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-neutral-800 dark:text-neutral-100">
+                                  {appointment.patient?.first_name} {appointment.patient?.last_name}
+                                </h4>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                  {appointment.chief_complaint || 'Consultation générale'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4 text-sm">
+                              <span className="flex items-center gap-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-3 py-1.5 rounded-full font-medium">
+                                <Clock className="h-4 w-4" />
                                 {appointment.appointment_time}
                               </span>
-                              <span className="flex items-center gap-1 bg-secondary-50 px-3 py-1 rounded-full">
+                              <span className="flex items-center gap-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 px-3 py-1.5 rounded-full font-medium">
                                 {appointment.appointment_type === 'video' ? '📹 Vidéo' : '🏥 Cabinet'}
                               </span>
                             </div>
@@ -255,13 +265,13 @@ export default function DoctorDashboard() {
                             {appointment.status === 'pending' && (
                               <>
                                 <button
-                                  className="p-2.5 text-green-600 hover:bg-green-50 rounded-xl transition-all border-2 border-green-200 hover:border-green-300"
+                                  className="p-2.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-all border-2 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600"
                                   title="Confirmer"
                                 >
                                   <CheckCircle className="h-5 w-5" />
                                 </button>
                                 <button
-                                  className="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition-all border-2 border-red-200 hover:border-red-300"
+                                  className="p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all border-2 border-red-200 dark:border-red-700 hover:border-red-300 dark:hover:border-red-600"
                                   title="Annuler"
                                 >
                                   <XCircle className="h-5 w-5" />
@@ -272,21 +282,44 @@ export default function DoctorDashboard() {
                         </div>
                       </div>
                     ))}
-                  </div>
+                  </Carousel>
                 ) : (
                   <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-neutral-300 mx-auto mb-3" />
-                    <p className="text-neutral-600">Aucune consultation aujourd&apos;hui</p>
+                    <Calendar className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
+                    <p className="text-neutral-600 dark:text-neutral-400">Aucune consultation aujourd&apos;hui</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Patients Carousel */}
+            <Card className="glass-card border-2 border-secondary-100 dark:border-secondary-800 mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <div className="p-2 bg-gradient-to-br from-secondary-100 to-secondary-200 dark:from-secondary-900 dark:to-secondary-800 rounded-lg">
+                    <Users className="h-5 w-5 text-secondary-600 dark:text-secondary-400" />
+                  </div>
+                  <span>Patients récents</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-6">
+                  <Users className="h-10 w-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    Vue des patients récemment consultés
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Side Panel */}
           <div className="space-y-6">
+            {/* Urgent Alerts */}
+            <AlertsPanel />
+
             {/* Quick Actions */}
-            <Card className="border-2 border-neutral-100">
+            <Card className="glass-card border-2 border-neutral-100 dark:border-neutral-700">
               <CardHeader>
                 <CardTitle>Actions rapides</CardTitle>
               </CardHeader>
@@ -300,8 +333,8 @@ export default function DoctorDashboard() {
                     className="justify-start"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-primary-100 rounded-lg">
-                        <Calendar className="h-4 w-4 text-primary-600" />
+                      <div className="p-1.5 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                        <Calendar className="h-4 w-4 text-primary-600 dark:text-primary-400" />
                       </div>
                       Gérer mon agenda
                     </div>
@@ -314,8 +347,8 @@ export default function DoctorDashboard() {
                     className="justify-start"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-secondary-100 rounded-lg">
-                        <Users className="h-4 w-4 text-secondary-600" />
+                      <div className="p-1.5 bg-secondary-100 dark:bg-secondary-900/30 rounded-lg">
+                        <Users className="h-4 w-4 text-secondary-600 dark:text-secondary-400" />
                       </div>
                       Mes patients
                     </div>
@@ -328,8 +361,8 @@ export default function DoctorDashboard() {
                     className="justify-start"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-purple-100 rounded-lg">
-                        <FileText className="h-4 w-4 text-purple-600" />
+                      <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                        <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                       </div>
                       Mon profil
                     </div>
@@ -339,35 +372,35 @@ export default function DoctorDashboard() {
             </Card>
 
             {/* Performance */}
-            <Card className="border-2 border-neutral-100">
+            <Card className="glass-card border-2 border-warm-coral/30 shadow-warm">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <div className="p-2 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-orange-600" />
+                  <div className="p-2 bg-gradient-to-br from-warm-coral/20 to-warm-coral/10 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-warm-coral" />
                   </div>
                   <span>Performance</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
-                    <span className="text-sm text-neutral-600">Note moyenne</span>
+                  <div className="flex items-center justify-between py-3 border-b border-neutral-100 dark:border-neutral-700">
+                    <span className="text-sm text-neutral-600 dark:text-neutral-400">Note moyenne</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-neutral-800 bg-yellow-100 px-3 py-1 rounded-full text-sm">
+                      <span className="font-bold text-neutral-800 dark:text-neutral-100 bg-yellow-100 dark:bg-yellow-900/30 px-3 py-1 rounded-full text-sm">
                         {user.rating_average?.toFixed(1) || '-'}
                       </span>
                       <span className="text-xl">⭐</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-b border-neutral-100">
-                    <span className="text-sm text-neutral-600">Avis patients</span>
-                    <span className="font-semibold text-neutral-800 bg-blue-100 px-3 py-1 rounded-full text-sm">
+                  <div className="flex items-center justify-between py-3 border-b border-neutral-100 dark:border-neutral-700">
+                    <span className="text-sm text-neutral-600 dark:text-neutral-400">Avis patients</span>
+                    <span className="font-bold text-neutral-800 dark:text-neutral-100 bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full text-sm">
                       {user.rating_count || 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-neutral-600">Consultations</span>
-                    <span className="font-semibold text-neutral-800 bg-green-100 px-3 py-1 rounded-full text-sm">{appointments.length}</span>
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-sm text-neutral-600 dark:text-neutral-400">Consultations</span>
+                    <span className="font-bold text-neutral-800 dark:text-neutral-100 bg-green-100 dark:bg-green-900/30 px-3 py-1 rounded-full text-sm">{appointments.length}</span>
                   </div>
                 </div>
               </CardContent>
