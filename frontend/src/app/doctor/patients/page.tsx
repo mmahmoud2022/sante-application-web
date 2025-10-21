@@ -16,6 +16,8 @@ import {
   Search,
   MapPin,
   Clock3,
+  FileText,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -184,6 +186,9 @@ export default function DoctorPatientsPage() {
                       <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">
                         Prochain rendez-vous
                       </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-neutral-100">
@@ -228,6 +233,16 @@ export default function DoctorPatientsPage() {
                                 minute: '2-digit',
                               })
                             : '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/doctor/patients/${patient.id}`)}
+                          >
+                            <FileText className="h-4 w-4 mr-1" />
+                            Dossier
+                          </Button>
                         </td>
                       </tr>
                     ))}
