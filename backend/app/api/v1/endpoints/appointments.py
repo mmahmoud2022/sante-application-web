@@ -1,6 +1,6 @@
 """Appointment management endpoints."""
-from datetime import datetime
-from typing import List
+from datetime import datetime, date as date_type
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -8,9 +8,49 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_active_user
 from app.models.user import User, UserRole
-from app.schemas.appointment import AppointmentCreate, AppointmentResponse, AppointmentUpdate
+from app.schemas.appointment import (
+    AppointmentCreate,
+    AppointmentResponse,
+    AppointmentUpdate,
+    AppointmentCancelRequest,
+)
+from app.schemas.doctor import AppointmentSlot
+from app.services import doctor_service
 
 router = APIRouter()
+
+
+@router.get("/available-slots", response_model=dict)
+def get_available_slots(
+    doctor_id: int = Query(..., description="Doctor ID"),
+    date: str = Query(..., description="Target date in YYYY-MM-DD format"),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Return available appointment slots for a doctor on a given date.
+
+    Mirrors the logic used by schedules and patient booking helpers, exposed
+    under the appointments router to satisfy frontend expectations.
+    """
+    try:
+        target_date: date_type = date_type.fromisoformat(date)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid date format. Use YYYY-MM-DD.",
+        ) from exc
+
+    slots: List[AppointmentSlot] = doctor_service.get_available_slots_for_date(
+        db, doctor_id=doctor_id, target_date=target_date
+    )
+
+    # Shape matches other helpers: return simple dict with slots
+    return {
+        "doctor_id": doctor_id,
+        "date": target_date.isoformat(),
+        "slots": [slot.model_dump() for slot in slots],
+    }
 
 
 @router.post("/", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED)
@@ -85,6 +125,51 @@ def list_appointments(
         query = query.filter(Appointment.doctor_id == current_user.id)
     
     return query.offset(skip).limit(limit).all()
+
+
+@router.patch("/{appointment_id}/cancel", response_model=AppointmentResponse)
+def cancel_appointment(
+    appointment_id: int,
+    payload: AppointmentCancelRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Cancel an appointment by ID.
+
+    - Patients can cancel their own appointments
+    - Doctors can cancel appointments with them
+    - Admins can cancel any appointment
+    """
+    from app.models.appointment import Appointment, AppointmentStatus
+    from datetime import datetime as dt
+
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+
+    if not appointment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Appointment not found",
+        )
+
+    # Check permissions
+    if appointment.patient_id != current_user.id and appointment.doctor_id != current_user.id:
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions",
+            )
+
+    appointment.status = AppointmentStatus.CANCELLED
+    appointment.cancelled_by = current_user.id
+    appointment.cancelled_at = dt.utcnow()
+    if payload and payload.reason:
+        appointment.cancellation_reason = payload.reason
+
+    db.commit()
+    db.refresh(appointment)
+
+    return appointment
 
 
 @router.get("/{appointment_id}", response_model=AppointmentResponse)

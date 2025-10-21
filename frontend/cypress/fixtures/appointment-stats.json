@@ -1,0 +1,34 @@
+{
+  "total_appointments": 1250,
+  "completed_appointments": 980,
+  "cancelled_appointments": 120,
+  "pending_appointments": 150,
+  "appointments_by_month": [
+    { "month": "Janvier", "count": 95 },
+    { "month": "Février", "count": 102 },
+    { "month": "Mars", "count": 110 },
+    { "month": "Avril", "count": 98 },
+    { "month": "Mai", "count": 115 },
+    { "month": "Juin", "count": 108 },
+    { "month": "Juillet", "count": 92 },
+    { "month": "Août", "count": 85 },
+    { "month": "Septembre", "count": 120 },
+    { "month": "Octobre", "count": 125 },
+    { "month": "Novembre", "count": 130 },
+    { "month": "Décembre", "count": 70 }
+  ],
+  "appointments_by_specialty": [
+    { "specialty": "Médecine Générale", "count": 450 },
+    { "specialty": "Cardiologie", "count": 280 },
+    { "specialty": "Dermatologie", "count": 180 },
+    { "specialty": "Pédiatrie", "count": 150 },
+    { "specialty": "Ophtalmologie", "count": 120 },
+    { "specialty": "Autres", "count": 70 }
+  ],
+  "average_waiting_time": 15,
+  "patient_satisfaction": 4.5,
+  "total_patients": 850,
+  "new_patients_this_month": 45,
+  "total_doctors": 32,
+  "active_doctors": 28
+}

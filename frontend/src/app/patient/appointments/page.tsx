@@ -139,9 +139,10 @@ export default function AppointmentsPage() {
     }
 
     try {
+      const datePart = selectedDate.toISOString().split('T')[0];
       const appointmentData = {
         doctor_id: selectedDoctor,
-        appointment_date: selectedDate.toISOString().split('T')[0],
+        appointment_date: `${datePart}T${selectedSlot}`,
         appointment_time: selectedSlot,
         appointment_type: appointmentType,
         chief_complaint: chiefComplaint,

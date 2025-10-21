@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.models.schedule import DoctorSchedule
+from app.models.schedule import DoctorSchedule, DayOfWeek, ScheduleType
 from app.schemas.schedule import (
     DoctorScheduleCreate,
     DoctorScheduleUpdate,
@@ -96,15 +96,23 @@ def get_available_slots(
     """
     Get available time slots for a doctor on a specific date
     """
-    day_of_week = date.weekday()  # 0 = Monday, 6 = Sunday
+    day_name = date.strftime("%A").lower()
+
+    try:
+        day_of_week_enum = DayOfWeek(day_name)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date provided",
+        ) from exc
 
     # Get regular schedules for this day
     regular_schedules = (
         db.query(DoctorSchedule)
         .filter(
             DoctorSchedule.doctor_id == doctor_id,
-            DoctorSchedule.schedule_type == "regular",
-            DoctorSchedule.day_of_week == day_of_week,
+            DoctorSchedule.schedule_type == ScheduleType.REGULAR,
+            DoctorSchedule.day_of_week == day_of_week_enum,
             DoctorSchedule.is_active == True,
         )
         .all()
@@ -115,7 +123,7 @@ def get_available_slots(
         db.query(DoctorSchedule)
         .filter(
             DoctorSchedule.doctor_id == doctor_id,
-            DoctorSchedule.schedule_type == "exception",
+            DoctorSchedule.schedule_type == ScheduleType.EXCEPTION,
             DoctorSchedule.specific_date == date,
             DoctorSchedule.is_active == True,
         )
@@ -127,7 +135,7 @@ def get_available_slots(
         db.query(DoctorSchedule)
         .filter(
             DoctorSchedule.doctor_id == doctor_id,
-            DoctorSchedule.schedule_type.in_(["holiday", "blocked"]),
+            DoctorSchedule.schedule_type.in_([ScheduleType.HOLIDAY, ScheduleType.BLOCKED]),
             DoctorSchedule.specific_date == date,
             DoctorSchedule.is_active == True,
         )

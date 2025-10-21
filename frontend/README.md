@@ -14,8 +14,14 @@ npm run dev
 # Build for production
 npm run build
 
-# Run tests
+# Run unit tests
 npm test
+
+# Run E2E tests (interactive)
+npm run test:e2e
+
+# Run E2E tests (headless)
+npm run test:e2e:headless
 
 # Type checking
 npm run type-check
@@ -97,10 +103,12 @@ const profile = await api.users.me();
 
 ## 🧪 Testing
 
-The project uses Vitest for unit and integration testing:
+The project uses **Vitest** for unit tests and **Cypress** for E2E tests:
+
+### Unit Tests (Vitest)
 
 ```bash
-# Run all tests
+# Run all unit tests
 npm test
 
 # Run tests in watch mode
@@ -113,6 +121,43 @@ npm test -- --coverage
 Current test coverage:
 - Logger: 22 tests, 100% pass rate
 - Comprehensive test suite for all log levels and contexts
+
+### E2E Tests (Cypress)
+
+```bash
+# Run E2E tests interactively
+npm run test:e2e
+
+# Run E2E tests in headless mode (CI/CD)
+npm run test:e2e:headless
+
+# Run specific test file
+npx cypress run --spec "cypress/e2e/auth.cy.ts"
+
+# Run with specific browser
+npx cypress run --browser firefox
+
+# Using the helper script
+./scripts/run-e2e-tests.sh -b chrome -h
+```
+
+**E2E Test Coverage:**
+- ✅ **155+ tests** across 10 categories
+- ✅ Authentication & Authorization
+- ✅ Patient Dashboard (appointments, prescriptions, documents)
+- ✅ Doctor Dashboard (patients, consultations, schedules)
+- ✅ Admin Dashboard (user management, settings)
+- ✅ Navigation & Routing
+- ✅ Accessibility (WCAG compliance)
+- ✅ Responsive Design (mobile, tablet, desktop)
+- ✅ Performance Testing
+- ✅ Error Handling
+- ✅ Security (XSS, CSRF, injection protection)
+
+**Documentation:**
+- [E2E Testing Guide](./TESTING_E2E.md) - Complete E2E testing guide
+- [Cypress README](./cypress/README.md) - Detailed Cypress documentation
+- [Advanced Examples](./cypress/ADVANCED_EXAMPLES.md) - Advanced testing patterns
 
 ## 🏗️ Development
 
@@ -190,7 +235,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## 📚 Documentation
 
+### Frontend
+- [E2E Testing Guide](./TESTING_E2E.md) - Complete E2E testing guide
+- [Cypress Documentation](./cypress/README.md) - Cypress setup and usage
+- [Advanced Testing Examples](./cypress/ADVANCED_EXAMPLES.md) - Advanced patterns
 - [Logger Documentation](./docs/LOGGER.md) - Frontend logging system
+
+### Backend & General
 - [API Documentation](../docs/API.md) - Backend API reference
 - [Architecture](../docs/ARCHITECTURE.md) - System architecture
 

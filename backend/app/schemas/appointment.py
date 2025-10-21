@@ -152,3 +152,9 @@ class AppointmentResponse(AppointmentBase):
     @computed_field
     def chief_complaint(self) -> Optional[str]:
         return self.reason
+
+
+class AppointmentCancelRequest(BaseModel):
+    """Payload for cancelling an appointment."""
+
+    reason: Optional[str] = None
