@@ -324,10 +324,12 @@ const api = {
     
     cancel: async (id: number, reason?: string) => {
       return axiosInstance.patch(`/appointments/${id}/cancel`, { 
-        cancellation_reason: reason 
+        reason: reason 
       });
     },
     
+    // Note: confirm and complete endpoints are not yet implemented in backend
+    // These are placeholders for future implementation
     confirm: async (id: number) => {
       return axiosInstance.patch(`/appointments/${id}/confirm`);
     },
@@ -369,8 +371,9 @@ const api = {
       return axiosInstance.post(`/prescriptions/${id}/renew`);
     },
     
+    // Changed from PATCH to DELETE to match backend
     cancel: async (id: number) => {
-      return axiosInstance.patch(`/prescriptions/${id}/cancel`);
+      return axiosInstance.delete(`/prescriptions/${id}`);
     },
   },
 
@@ -438,12 +441,26 @@ const api = {
       return axiosInstance.get('/notifications', { params });
     },
     
-    markAsRead: async (id: number) => {
-      return axiosInstance.patch(`/notifications/${id}/read`);
+    get: async (id: number) => {
+      return axiosInstance.get(`/notifications/${id}`);
     },
     
+    unreadCount: async () => {
+      return axiosInstance.get('/notifications/unread-count');
+    },
+    
+    // Changed from PATCH to PUT to match backend
+    markAsRead: async (id: number) => {
+      return axiosInstance.put(`/notifications/${id}/read`);
+    },
+    
+    // Changed from POST /mark-all-read to PUT /read-all to match backend
     markAllAsRead: async () => {
-      return axiosInstance.post('/notifications/mark-all-read');
+      return axiosInstance.put('/notifications/read-all');
+    },
+    
+    delete: async (id: number) => {
+      return axiosInstance.delete(`/notifications/${id}`);
     },
   },
 
