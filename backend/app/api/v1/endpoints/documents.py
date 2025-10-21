@@ -14,7 +14,8 @@ from app.schemas.document import DocumentResponse
 router = APIRouter()
 
 
-@router.get("/", response_model=List[DocumentResponse])
+@router.get("", response_model=List[DocumentResponse])
+@router.get("/", response_model=List[DocumentResponse], include_in_schema=False)
 def list_documents(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),

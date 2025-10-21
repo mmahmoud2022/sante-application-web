@@ -53,7 +53,8 @@ def get_available_slots(
     }
 
 
-@router.post("/", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def create_appointment(
     appointment: AppointmentCreate,
     current_user: User = Depends(get_current_active_user),
@@ -101,7 +102,8 @@ def create_appointment(
     return db_appointment
 
 
-@router.get("/", response_model=List[AppointmentResponse])
+@router.get("", response_model=List[AppointmentResponse])
+@router.get("/", response_model=List[AppointmentResponse], include_in_schema=False)
 def list_appointments(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),

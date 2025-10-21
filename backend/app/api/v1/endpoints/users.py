@@ -42,7 +42,8 @@ def update_current_user(
     return update_user(db, current_user.id, user_update)
 
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("", response_model=List[UserResponse])
+@router.get("/", response_model=List[UserResponse], include_in_schema=False)
 def list_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),

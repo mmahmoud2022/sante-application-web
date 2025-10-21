@@ -14,7 +14,8 @@ from app.schemas.medical_record import MedicalRecordCreate, MedicalRecordUpdate,
 router = APIRouter()
 
 
-@router.post("/", response_model=MedicalRecordResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=MedicalRecordResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=MedicalRecordResponse, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def create_medical_record(
     medical_record: MedicalRecordCreate,
     current_user: User = Depends(get_current_active_user),
@@ -39,7 +40,8 @@ def create_medical_record(
     return db_record
 
 
-@router.get("/", response_model=List[MedicalRecordResponse])
+@router.get("", response_model=List[MedicalRecordResponse])
+@router.get("/", response_model=List[MedicalRecordResponse], include_in_schema=False)
 def list_medical_records(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),

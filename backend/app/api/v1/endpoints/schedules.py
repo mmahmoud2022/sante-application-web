@@ -19,7 +19,8 @@ from app.schemas.schedule import (
 router = APIRouter()
 
 
-@router.post("/", response_model=DoctorScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=DoctorScheduleResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=DoctorScheduleResponse, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def create_schedule(
     schedule: DoctorScheduleCreate,
     db: Session = Depends(get_db),
@@ -44,7 +45,8 @@ def create_schedule(
     return db_schedule
 
 
-@router.get("/", response_model=List[DoctorScheduleResponse])
+@router.get("", response_model=List[DoctorScheduleResponse])
+@router.get("/", response_model=List[DoctorScheduleResponse], include_in_schema=False)
 def list_schedules(
     skip: int = 0,
     limit: int = 100,

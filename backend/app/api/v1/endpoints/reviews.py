@@ -14,7 +14,8 @@ from app.schemas.review import ReviewCreate, ReviewUpdate, ReviewResponse
 router = APIRouter()
 
 
-@router.post("/", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def create_review(
     review: ReviewCreate,
     db: Session = Depends(get_db),
@@ -59,7 +60,8 @@ def create_review(
     return db_review
 
 
-@router.get("/", response_model=List[ReviewResponse])
+@router.get("", response_model=List[ReviewResponse])
+@router.get("/", response_model=List[ReviewResponse], include_in_schema=False)
 def list_reviews(
     skip: int = 0,
     limit: int = 100,
