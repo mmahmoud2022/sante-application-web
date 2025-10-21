@@ -413,6 +413,37 @@ const api = {
     },
   },
 
+  // Doctor helpers
+  doctor: {
+    profile: async () => {
+      return axiosInstance.get('/doctor/profile');
+    },
+
+    patients: async (params?: any) => {
+      return axiosInstance.get('/doctor/patients', { params });
+    },
+
+    schedule: async () => {
+      return axiosInstance.get('/doctor/schedule');
+    },
+
+    availableSlots: async (targetDate: string, doctorId?: number) => {
+      return axiosInstance.get('/doctor/schedule/available-slots', {
+        params: {
+          target_date: targetDate,
+          doctor_id: doctorId,
+        },
+      });
+    },
+  },
+
+  // Patient helpers
+  patient: {
+    bookAppointmentContext: async (params?: any) => {
+      return axiosInstance.get('/patient/book-appointment', { params });
+    },
+  },
+
   // Payments
   payments: {
     list: async (params?: any) => {

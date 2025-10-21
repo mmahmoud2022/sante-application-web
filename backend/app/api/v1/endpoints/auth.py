@@ -58,7 +58,17 @@ def register(
     - **first_name**: User first name
     - **last_name**: User last name
     - **role**: User role (patient, doctor, admin)
+    - **admin_secret**: Required only for admin registration
     """
+    # If registering as admin, validate admin secret
+    if user.role == "admin":
+        admin_secret = getattr(user, 'admin_secret', None)
+        if not admin_secret or admin_secret != settings.ADMIN_SECRET:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="INVALID_ADMIN_SECRET"
+            )
+    
     return create_user(db, user)
 
 

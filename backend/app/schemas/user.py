@@ -20,6 +20,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Schema for creating a new user"""
     password: str = Field(..., min_length=8, max_length=100)
+    admin_secret: Optional[str] = None  # Required only for admin registration
 
 
 class UserLogin(BaseModel):

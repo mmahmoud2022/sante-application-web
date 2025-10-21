@@ -11,6 +11,14 @@ from app.schemas.payment import PaymentCreate, PaymentUpdate, PaymentResponse, P
 from app.schemas.review import ReviewCreate, ReviewUpdate, ReviewResponse, DoctorResponse, ReviewModeration
 from app.schemas.schedule import DoctorScheduleCreate, DoctorScheduleUpdate, DoctorScheduleResponse
 from app.schemas.document import DocumentCreate, DocumentUpdate, DocumentResponse
+from app.schemas.doctor import (
+    DoctorPatientSummary,
+    DoctorProfileResponse,
+    DoctorScheduleOverview,
+    AppointmentSlot,
+    AppointmentBookingDoctor,
+    AppointmentBookingResponse,
+)
 from app.schemas.health_device import HealthDeviceDataCreate, HealthDeviceDataUpdate, HealthDeviceDataResponse
 
 __all__ = [
@@ -48,6 +56,12 @@ __all__ = [
     "DocumentCreate",
     "DocumentUpdate",
     "DocumentResponse",
+    "DoctorPatientSummary",
+    "DoctorProfileResponse",
+    "DoctorScheduleOverview",
+    "AppointmentSlot",
+    "AppointmentBookingDoctor",
+    "AppointmentBookingResponse",
     "HealthDeviceDataCreate",
     "HealthDeviceDataUpdate",
     "HealthDeviceDataResponse",

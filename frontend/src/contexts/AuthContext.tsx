@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         router.push('/doctor/dashboard');
       } else if (userData.role === 'admin') {
-        router.push('/admin/dashboard');
+        router.push('/admin/verify-doctors');
       }
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Login failed');

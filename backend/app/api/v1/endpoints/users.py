@@ -82,6 +82,25 @@ def list_doctors(
     )
 
 
+@router.get("/doctors/{doctor_id}", response_model=UserResponse)
+def get_doctor_details(
+    doctor_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Retrieve detailed information about a doctor by ID
+    """
+    doctor = get_user_by_id(db, doctor_id)
+
+    if not doctor or doctor.role != UserRole.DOCTOR:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor not found"
+        )
+
+    return doctor
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(
     user_id: int,

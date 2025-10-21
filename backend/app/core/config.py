@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ADMIN_SECRET: str = "ADMIN_SECRET_2025_CHANGE_IN_PRODUCTION"  # Secret for admin registration
     
     # Database
     DATABASE_URL: str = "postgresql://sante_user:sante_password@localhost:5432/sante_db"

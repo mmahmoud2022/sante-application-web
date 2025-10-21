@@ -186,6 +186,39 @@ export interface DoctorSchedule {
   updated_at: string;
 }
 
+export interface DoctorPatientSummary {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  last_appointment_date?: string;
+  next_appointment_date?: string;
+}
+
+export interface AppointmentSlot {
+  time: string;
+  duration: number;
+  location?: string | null;
+}
+
+export interface AppointmentBookingDoctorSummary {
+  id: number;
+  first_name: string;
+  last_name: string;
+  specialization?: string;
+  city?: string;
+  rating_average?: number;
+  rating_count?: number;
+  consultation_fee?: number;
+}
+
+export interface AppointmentBookingContext {
+  doctors: AppointmentBookingDoctorSummary[];
+  selected_doctor?: AppointmentBookingDoctorSummary;
+  available_slots?: AppointmentSlot[];
+}
+
 export interface Notification {
   id: number;
   user_id: number;

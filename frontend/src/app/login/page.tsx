@@ -75,21 +75,47 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Verification Pending Alert */}
             {verificationPending && (
-              <div className="flex items-start gap-3 p-4 border-l-4 border-yellow-500 bg-yellow-50/80 rounded-xl shadow-sm">
-                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-yellow-800 font-semibold mb-1">Compte en attente de vérification</p>
-                  <p className="text-sm text-yellow-700">
-                    Votre compte médecin est en cours de vérification par notre équipe. 
-                    Vous recevrez un email dès que votre compte sera approuvé. 
-                    Merci de votre patience.
-                  </p>
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 border-2 border-yellow-300 dark:border-yellow-700 rounded-xl p-5 shadow-lg">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="relative">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center shadow-md">
+                        <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                      <div className="absolute -top-1 -right-1 h-4 w-4 bg-orange-500 rounded-full border-2 border-white dark:border-neutral-800 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-yellow-900 dark:text-yellow-100 mb-2">
+                      🩺 Vérification en cours
+                    </h3>
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3 leading-relaxed">
+                      Votre compte docteur est actuellement en attente de vérification par notre équipe administrative. 
+                      Cette étape est nécessaire pour garantir la sécurité et la qualité de notre plateforme.
+                    </p>
+                    <div className="bg-white/50 dark:bg-neutral-800/50 rounded-lg p-3 border border-yellow-200 dark:border-yellow-800">
+                      <p className="text-xs font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                        ⏱️ Temps de traitement habituel : 24-48 heures
+                      </p>
+                      <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                        Vous recevrez un email de confirmation dès que votre compte sera activé.
+                      </p>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-yellow-700 dark:text-yellow-300">
+                      <span className="inline-flex items-center gap-1">
+                        <span className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                        En attente d&apos;approbation
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-
-            {/* Email */}
+            )}            {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2">
                 Adresse e-mail
