@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FileText, 
@@ -21,7 +21,9 @@ import {
   Pill,
   Syringe,
   Shield,
-  User
+  User,
+  Search,
+  Filter
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -45,6 +47,8 @@ export default function MedicalRecordsPage() {
     description: ''
   });
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -198,6 +202,16 @@ export default function MedicalRecordsPage() {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
+
+  const filteredDocuments = useMemo(() => {
+    return documents.filter(doc => {
+      const matchesSearch = !searchTerm ||
+        doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = filterType === 'all' || doc.document_type === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [documents, searchTerm, filterType]);
 
   if (authLoading || loading) {
     return (
@@ -457,6 +471,38 @@ export default function MedicalRecordsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Search and Filter */}
+                {documents.length > 0 && (
+                  <div className="mb-6 flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1 relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search documents by title or description..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Filter className="w-4 h-4 text-gray-500" />
+                      <Select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="w-48"
+                      >
+                        <option value="all">All Types</option>
+                        <option value="lab_result">Lab Results</option>
+                        <option value="prescription">Prescriptions</option>
+                        <option value="imaging">Imaging</option>
+                        <option value="vaccination">Vaccinations</option>
+                        <option value="insurance">Insurance</option>
+                        <option value="other">Other</option>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 {documents.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -465,9 +511,21 @@ export default function MedicalRecordsPage() {
                       Upload Your First Document
                     </Button>
                   </div>
+                ) : filteredDocuments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No documents match your search or filter</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => { setSearchTerm(''); setFilterType('all'); }} 
+                      className="mt-4"
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-3">
-                    {documents.map(doc => (
+                    {filteredDocuments.map(doc => (
                       <div key={doc.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3 flex-1">
