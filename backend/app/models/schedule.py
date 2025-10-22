@@ -76,6 +76,14 @@ class DoctorSchedule(Base):
     
     # Customizable rules (stored as JSON)
     custom_rules = Column(JSON, nullable=True)
+    # Example custom_rules structure:
+    # {
+    #   "minimum_booking_hours": 2,
+    #   "accepted_appointment_types": ["in_person", "video_call"],
+    #   "follow_up_duration": 15,
+    #   "initial_consultation_duration": 30,
+    #   "emergency_duration": 45
+    # }
     
     # Notes
     notes = Column(String(500), nullable=True)

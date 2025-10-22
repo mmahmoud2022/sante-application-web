@@ -16,6 +16,11 @@ from app.schemas.appointment import (
 )
 from app.schemas.doctor import AppointmentSlot
 from app.services import doctor_service
+from app.services.appointment_service import (
+    create_appointment_with_validation,
+    can_cancel_appointment,
+    verify_teleconsultation_readiness,
+)
 
 router = APIRouter()
 
@@ -61,12 +66,16 @@ def create_appointment(
     db: Session = Depends(get_db)
 ):
     """
-    Create a new appointment
+    Create a new appointment with validation
+    
+    Implements:
+    - Real-time slot availability checking (first-come-first-served)
+    - Minimum booking time validation
+    - Appointment type validation
+    - Automatic slot blocking
     
     Patients can create appointments for themselves
     """
-    from app.models.appointment import Appointment
-
     appointment_datetime = appointment.appointment_date
 
     if appointment.appointment_time:
@@ -84,20 +93,16 @@ def create_appointment(
             second=0,
             microsecond=0,
         )
-
-    db_appointment = Appointment(
-        patient_id=current_user.id,
-        doctor_id=appointment.doctor_id,
-        appointment_date=appointment_datetime,
-        duration_minutes=appointment.duration_minutes,
-        appointment_type=appointment.appointment_type,
-        reason=appointment.chief_complaint or appointment.reason,
-        notes=appointment.notes,
-    )
     
-    db.add(db_appointment)
-    db.commit()
-    db.refresh(db_appointment)
+    # Update appointment_date with combined datetime
+    appointment.appointment_date = appointment_datetime
+    
+    # Use the new validation service
+    db_appointment = create_appointment_with_validation(
+        db=db,
+        appointment_data=appointment,
+        patient_id=current_user.id
+    )
     
     return db_appointment
 
@@ -137,8 +142,12 @@ def cancel_appointment(
     db: Session = Depends(get_db),
 ):
     """
-    Cancel an appointment by ID.
-
+    Cancel an appointment by ID with cancellation policy validation.
+    
+    Implements:
+    - Cancellation policy (24-hour rule by default)
+    - Waiting list notification for earlier slots
+    
     - Patients can cancel their own appointments
     - Doctors can cancel appointments with them
     - Admins can cancel any appointment
@@ -160,6 +169,16 @@ def cancel_appointment(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions",
+            )
+    
+    # Check cancellation policy
+    can_cancel, cancel_error = can_cancel_appointment(appointment, cancellation_policy_hours=24)
+    if not can_cancel:
+        # Allow doctors and admins to override cancellation policy
+        if current_user.role not in [UserRole.DOCTOR, UserRole.ADMIN]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=cancel_error
             )
 
     appointment.status = AppointmentStatus.CANCELLED
@@ -323,4 +342,46 @@ def get_appointment_stats(
         "status_counts": status_counts,
         "cancelled_by_patient": cancelled_by_patient,
         "cancelled_by_doctor": cancelled_by_doctor
+    }
+
+
+@router.get("/{appointment_id}/teleconsultation-status", response_model=dict)
+def check_teleconsultation_status(
+    appointment_id: int,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Verify teleconsultation readiness for an appointment.
+    
+    Checks:
+    - Connection setup
+    - Access rights
+    - Time window validity
+    """
+    from app.models.appointment import Appointment
+    
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Appointment not found"
+        )
+    
+    # Check permissions
+    if appointment.patient_id != current_user.id and appointment.doctor_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions"
+        )
+    
+    # Verify teleconsultation readiness
+    is_ready, error_message = verify_teleconsultation_readiness(appointment, db)
+    
+    return {
+        "ready": is_ready,
+        "message": error_message if not is_ready else "Teleconsultation is ready",
+        "video_call_link": appointment.video_call_link if is_ready else None,
+        "waiting_room_enabled": appointment.waiting_room_enabled
     }
