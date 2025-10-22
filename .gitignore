@@ -90,6 +90,6 @@ Thumbs.db
 .DS_Store
 
 WARM_COLORS_UPDATE.md
-backend/alembic/versions/
+backend/alembic/versions/__pycache__/
 backend/celerybeat-schedule
 test.md
