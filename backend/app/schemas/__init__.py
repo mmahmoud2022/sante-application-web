@@ -20,6 +20,7 @@ from app.schemas.doctor import (
     AppointmentBookingResponse,
 )
 from app.schemas.health_device import HealthDeviceDataCreate, HealthDeviceDataUpdate, HealthDeviceDataResponse
+from app.schemas.waiting_list import WaitingListCreate, WaitingListUpdate, WaitingListResponse
 
 __all__ = [
     "UserCreate",
@@ -65,4 +66,7 @@ __all__ = [
     "HealthDeviceDataCreate",
     "HealthDeviceDataUpdate",
     "HealthDeviceDataResponse",
+    "WaitingListCreate",
+    "WaitingListUpdate",
+    "WaitingListResponse",
 ]
