@@ -15,6 +15,7 @@ from app.api.v1.endpoints import (
     doctor,
     patient,
     documents,
+    waiting_lists,
 )
 
 api_router = APIRouter()
@@ -31,3 +32,4 @@ api_router.include_router(notifications.router, prefix="/notifications", tags=["
 api_router.include_router(doctor.router, prefix="/doctor", tags=["Doctor"])
 api_router.include_router(patient.router, prefix="/patient", tags=["Patient"])
 api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])
+api_router.include_router(waiting_lists.router, prefix="/waiting-lists", tags=["Waiting Lists"])
