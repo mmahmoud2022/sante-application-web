@@ -259,16 +259,20 @@ export interface AppointmentBookingContext {
 export interface Notification {
   id: number;
   user_id: number;
-  type: NotificationType;
+  notification_type: NotificationType;
   channel: string;
   title: string;
   message: string;
-  is_read: boolean;
+  status: string;
   reference_id?: number;
   reference_type?: string;
+  action_url?: string;
   scheduled_for?: string;
   sent_at?: string;
+  delivered_at?: string;
+  read_at?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Payment {
