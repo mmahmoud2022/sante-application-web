@@ -101,22 +101,24 @@ sante-application-web/
 ### Patients
 - Account creation with two-step verification
 - Personal medical record (history, allergies, current treatments)
-- Advanced doctor search with filters and interactive map
-- Intelligent appointment booking with time slot suggestions
-- Integrated video teleconsultations with virtual waiting room
+- **Enhanced doctor search** with filters by specialty, location (city, postal code, distance), and consultation reason
+- **Intelligent appointment booking** with real-time slot availability (first-come-first-served)
+- **Waiting list feature** for earlier appointment slots when cancellations occur
+- Integrated video teleconsultations with **readiness verification** and virtual waiting room
 - Multi-channel customizable reminders (email, SMS, push)
 - Complete consultation history and medical documents
 - Prescription tracking and automatic renewals
 - Secure online payment (Credit Card, PayPal, Apple Pay)
 - Practitioner rating system
 - Real-time notifications for delays or changes
+- **Cancellation policy** enforcement (24-hour rule by default)
 - Digital vaccination record with reminder alerts
 - Synchronization with connected health devices
 - Family mode to manage appointments for dependents
 
 ### Doctors
 - Detailed professional profile with medical CV
-- Advanced calendar configuration with customizable rules
+- **Advanced calendar configuration** with customizable rules (appointment types, duration per type, minimum booking time)
 - Analytical activity dashboard with forecasts
 - Automated cancellation management with replacement suggestions
 - Complete electronic patient record with medical history
