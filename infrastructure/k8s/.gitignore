@@ -1,0 +1,20 @@
+# Ignore custom/local secrets
+02-secrets-custom.yaml
+*-local.yaml
+*-prod.yaml
+
+# Ignore backup files
+*.bak
+*.backup
+*.sql
+
+# Ignore editor files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore temporary files
+*.tmp
+temp/
+tmp/

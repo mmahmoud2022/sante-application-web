@@ -45,6 +45,7 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 
 ### Infrastructure
 - **Containerization**: Docker with Docker Compose
+- **Orchestration**: Kubernetes (k3s) - [📦 K8s Deployment Guide](K8S_DEPLOYMENT.md)
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Prometheus with Grafana
 - **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana)
@@ -217,6 +218,39 @@ docker-compose exec backend alembic upgrade head  # Run migrations
 3. **Database Changes**: Modify models, run `make migrate-create MSG="description"`, then `make migrate`
 
 For detailed instructions, see the [Quick Start Guide](docs/QUICKSTART.md).
+
+## 🚀 Production Deployment
+
+### Kubernetes (k3s) Deployment
+
+For production deployment on Kubernetes:
+
+```bash
+# See comprehensive deployment guide
+cat K8S_DEPLOYMENT.md
+
+# Quick deployment
+cd infrastructure/k8s
+./deploy.sh
+
+# Check status
+./check-status.sh
+```
+
+**📦 Full Kubernetes Documentation**: [K8S_DEPLOYMENT.md](K8S_DEPLOYMENT.md)
+
+Features:
+- ✅ Complete Kubernetes manifests for all services
+- ✅ Automated deployment scripts
+- ✅ High availability with multiple replicas
+- ✅ Persistent storage for data
+- ✅ Health checks and auto-recovery
+- ✅ Ingress configuration with Traefik
+- ✅ Comprehensive documentation in French
+
+### Docker Compose (Development)
+
+For local development, use Docker Compose as described in the Quick Start section above.
 
 ## 🧪 Testing
 
