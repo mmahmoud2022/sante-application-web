@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sante-config
+  namespace: sante
+data:
+  # Database Configuration
+  POSTGRES_DB: "sante_db"
+  
+  # Application Configuration
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  ENVIRONMENT: "production"
+  
+  # Frontend Configuration
+  NEXT_PUBLIC_API_URL: "http://backend:8000"
+  NEXT_INTERNAL_API_URL: "http://backend:8000"
+  NODE_ENV: "production"
+  
+  # Email Configuration
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  EMAIL_FROM: "noreply@sante-app.com"
+  
+  # CORS Configuration
+  CORS_ORIGINS: "http://localhost:3000,http://localhost:80"
+  
+  # Application URLs
+  FRONTEND_URL: "http://localhost:3000"
+  BACKEND_URL: "http://localhost:8000"
+  
+  # File Upload Configuration
+  MAX_UPLOAD_SIZE: "10485760"
+  ALLOWED_EXTENSIONS: ".pdf,.jpg,.jpeg,.png,.doc,.docx"
