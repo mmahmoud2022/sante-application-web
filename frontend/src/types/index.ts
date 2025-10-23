@@ -13,6 +13,7 @@ export enum AppointmentStatus {
   CONFIRMED = 'confirmed',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show',
 }
 
 export enum AppointmentType {
@@ -52,6 +53,23 @@ export enum NotificationType {
   SYSTEM_ALERT = 'system_alert',
 }
 
+export enum DayOfWeek {
+  MONDAY = 'monday',
+  TUESDAY = 'tuesday',
+  WEDNESDAY = 'wednesday',
+  THURSDAY = 'thursday',
+  FRIDAY = 'friday',
+  SATURDAY = 'saturday',
+  SUNDAY = 'sunday',
+}
+
+export enum ScheduleType {
+  REGULAR = 'regular',
+  EXCEPTION = 'exception',
+  HOLIDAY = 'holiday',
+  BLOCKED = 'blocked',
+}
+
 export interface User {
   id: number;
   email: string;
@@ -59,10 +77,12 @@ export interface User {
   last_name: string;
   role: UserRole;
   phone?: string;
+  phone_number?: string;
   date_of_birth?: string;
   gender?: string;
   address_line1?: string;
   address_line2?: string;
+  address?: string;
   city?: string;
   state?: string;
   postal_code?: string;
@@ -71,6 +91,7 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   mfa_enabled?: boolean;
+  two_factor_enabled?: boolean;
   created_at: string;
   updated_at: string;
 
@@ -129,6 +150,7 @@ export interface MedicalRecord {
   weight_kg?: number;
   allergies?: string[];
   chronic_conditions?: string[];
+  current_medications?: string;
   medications?: Array<{
     name: string;
     dosage: string;
@@ -146,8 +168,10 @@ export interface MedicalRecord {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   emergency_contact_relation?: string;
+  emergency_contact_relationship?: string;
   insurance_provider?: string;
   insurance_policy_number?: string;
+  insurance_expiry_date?: string;
   insurance_valid_until?: string;
   notes?: string;
   created_at: string;
@@ -168,6 +192,7 @@ export interface Prescription {
   refills_remaining: number;
   instructions?: string;
   notes?: string;
+  pharmacy_notes?: string;
   status: PrescriptionStatus;
   prescribed_date: string;
   start_date?: string;
@@ -203,8 +228,8 @@ export interface Review {
 export interface DoctorSchedule {
   id: number;
   doctor_id: number;
-  schedule_type: string;
-  day_of_week?: number;
+  schedule_type: ScheduleType;
+  day_of_week?: DayOfWeek;
   specific_date?: string;
   start_time: string;
   end_time: string;
@@ -217,10 +242,10 @@ export interface DoctorSchedule {
   is_video_consultation: boolean;
   is_active: boolean;
   recurrence_end_date?: string;
-  custom_rules?: any;
+  custom_rules?: Record<string, unknown> | null;
   notes?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface DoctorPatientSummary {
@@ -302,6 +327,7 @@ export interface Document {
   description?: string;
   file_path: string;
   file_name: string;
+  file_size?: number;
   file_size_bytes?: number;
   mime_type?: string;
   is_shared: boolean;
@@ -350,6 +376,7 @@ export interface RegisterFormData {
   phone?: string;
   date_of_birth?: string;
   gender?: string;
+  practice_name?: string;
   
   // Doctor specific
   specialization?: string;

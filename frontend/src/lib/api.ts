@@ -382,6 +382,18 @@ const api = {
     create: async (data: any) => {
       return axiosInstance.post('prescriptions/', data);
     },
+
+    upload: async (file: File, data: any) => {
+      const formData = new FormData();
+      formData.append('prescription_payload', JSON.stringify(data));
+      formData.append('file', file);
+
+      return axiosInstance.post('prescriptions/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
     
     update: async (id: number, data: any) => {
       return axiosInstance.put(`prescriptions/${id}`, data);
@@ -526,11 +538,11 @@ const api = {
     },
 
     schedules: async () => {
-      return axiosInstance.get('doctor/schedules');
+      return axiosInstance.get('doctor/schedule');
     },
 
     availableSlots: async (targetDate: string, doctorId?: number) => {
-      return axiosInstance.get('doctor/schedules/available-slots', {
+      return axiosInstance.get('doctor/schedule/available-slots', {
         params: {
           target_date: targetDate,
           doctor_id: doctorId,

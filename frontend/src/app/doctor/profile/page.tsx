@@ -21,6 +21,7 @@ import {
   Edit2,
   XCircle,
   CheckCircle,
+  ChevronLeft,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -204,23 +205,33 @@ export default function DoctorProfilePage() {
               </p>
             </div>
           </div>
-          {!editing ? (
-            <Button onClick={() => setEditing(true)}>
-              <Edit2 className="h-4 w-4 mr-2" />
-              Modifier
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push('/doctor/dashboard')}
+              className="hidden sm:inline-flex"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Tableau de bord
             </Button>
-          ) : (
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                <XCircle className="h-4 w-4 mr-2" />
-                Annuler
+            {!editing ? (
+              <Button onClick={() => setEditing(true)}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Modifier
               </Button>
-              <Button onClick={handleSave} loading={saving} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                Enregistrer
-              </Button>
-            </div>
-          )}
+            ) : (
+              <div className="flex space-x-3">
+                <Button variant="outline" onClick={handleCancel} disabled={saving}>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Annuler
+                </Button>
+                <Button onClick={handleSave} loading={saving} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Enregistrer
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

@@ -23,7 +23,8 @@ import {
   Shield,
   User,
   Search,
-  Filter
+  Filter,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -197,7 +198,10 @@ export default function MedicalRecordsPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes || Number.isNaN(bytes)) {
+      return '0 B';
+    }
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -218,7 +222,7 @@ export default function MedicalRecordsPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">Chargement...</p>
         </div>
       </div>
     );
@@ -229,15 +233,24 @@ export default function MedicalRecordsPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Medical Records</h1>
-              <p className="text-gray-600 mt-1">View your medical history and documents</p>
+              <h1 className="text-2xl font-bold text-gray-900">Dossiers médicaux</h1>
+              <p className="text-gray-600 mt-1">Consultez vos antécédents médicaux et vos documents</p>
             </div>
-            <Button onClick={() => setShowUploadModal(true)}>
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Document
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/patient/dashboard')}
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Retour au tableau de bord
+              </Button>
+              <Button onClick={() => setShowUploadModal(true)}>
+                <Upload className="w-5 h-5 mr-2" />
+                Télécharger le document
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -265,23 +278,23 @@ export default function MedicalRecordsPage() {
                       value={uploadData.document_type}
                       onChange={(e) => setUploadData({ ...uploadData, document_type: e.target.value })}
                     >
-                      <option value="lab_result">Lab Result</option>
-                      <option value="prescription">Prescription</option>
-                      <option value="imaging">Imaging (X-Ray, MRI, CT)</option>
-                      <option value="vaccination">Vaccination Record</option>
-                      <option value="insurance">Insurance Document</option>
-                      <option value="other">Other</option>
+                      <option value="lab_result">Résultat de laboratoire</option>
+                      <option value="prescription">Ordonnance</option>
+                      <option value="imaging">Imagerie (Radiographie, IRM, CT)</option>
+                      <option value="vaccination">Carnet de vaccination</option>
+                      <option value="insurance">Document d'assurance</option>
+                      <option value="other">Autre</option>
                     </Select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Title *
+                      Titre *
                     </label>
                     <Input
                       value={uploadData.title}
                       onChange={(e) => setUploadData({ ...uploadData, title: e.target.value })}
-                      placeholder="e.g., Blood Test Results - Jan 2024"
+                      placeholder="e.g., Résultats de tests sanguins - Jan 2024"
                     />
                   </div>
 
@@ -294,20 +307,20 @@ export default function MedicalRecordsPage() {
                       onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                       rows={3}
-                      placeholder="Additional notes about this document"
+                      placeholder="Notes complémentaires sur ce document"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select File * (Max 10MB)
+                      Sélectionner un fichier * (Max 10MB)
                     </label>
                     <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary transition-colors">
                       <div className="space-y-1 text-center">
                         <Upload className="mx-auto h-12 w-12 text-gray-400" />
                         <div className="flex text-sm text-gray-600">
                           <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark">
-                            <span>Upload a file</span>
+                            <span>Télécharger un fichier</span>
                             <input
                               type="file"
                               className="sr-only"
@@ -315,10 +328,10 @@ export default function MedicalRecordsPage() {
                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                             />
                           </label>
-                          <p className="pl-1">or drag and drop</p>
+                          <p className="pl-1">ou glisser-déposer</p>
                         </div>
                         <p className="text-xs text-gray-500">
-                          PDF, DOC, DOCX, JPG, JPEG, PNG up to 10MB
+                          PDF, DOC, DOCX, JPG, JPEG, PNG jusqu'à 10 Mo
                         </p>
                         {uploadFile && (
                           <p className="text-sm text-green-600 mt-2">
@@ -333,14 +346,14 @@ export default function MedicalRecordsPage() {
 
                 <div className="mt-6 flex justify-end space-x-3">
                   <Button variant="outline" onClick={() => setShowUploadModal(false)} disabled={uploading}>
-                    Cancel
+                    Annuler
                   </Button>
                   <Button 
                     onClick={handleUploadDocument}
                     disabled={!uploadFile || !uploadData.title || uploading}
                     loading={uploading}
                   >
-                    Upload Document
+                    Télécharger le document
                   </Button>
                 </div>
               </CardContent>
@@ -355,7 +368,7 @@ export default function MedicalRecordsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Heart className="w-5 h-5 mr-2 text-red-500" />
-                  Medical Information
+                  Informations médicales
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -363,7 +376,7 @@ export default function MedicalRecordsPage() {
                   <div className="space-y-4">
                     {medicalRecord.blood_type && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Blood Type</label>
+                        <label className="text-sm font-medium text-gray-600">Groupe Sanguin</label>
                         <p className="text-gray-900">{medicalRecord.blood_type}</p>
                       </div>
                     )}
@@ -375,13 +388,13 @@ export default function MedicalRecordsPage() {
                     )}
                     {medicalRecord.chronic_conditions && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Chronic Conditions</label>
+                        <label className="text-sm font-medium text-gray-600">Conditions Chroniques</label>
                         <p className="text-gray-900">{medicalRecord.chronic_conditions}</p>
                       </div>
                     )}
                     {medicalRecord.current_medications && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Current Medications</label>
+                        <label className="text-sm font-medium text-gray-600">Médicaments Actuels</label>
                         <p className="text-gray-900">{medicalRecord.current_medications}</p>
                       </div>
                     )}
@@ -389,8 +402,8 @@ export default function MedicalRecordsPage() {
                 ) : (
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-600 text-sm">No medical information on file</p>
-                    <p className="text-gray-500 text-xs mt-1">Your doctor will add this during visits</p>
+                    <p className="text-gray-600 text-sm">Aucune information médicale disponible</p>
+                    <p className="text-gray-500 text-xs mt-1">Votre médecin ajoutera cela lors des visites</p>
                   </div>
                 )}
               </CardContent>
@@ -401,24 +414,24 @@ export default function MedicalRecordsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Shield className="w-5 h-5 mr-2 text-blue-500" />
-                    Insurance Information
+                    Informations d'Assurance
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Provider</label>
+                      <label className="text-sm font-medium text-gray-600">Fournisseur</label>
                       <p className="text-gray-900">{medicalRecord.insurance_provider}</p>
                     </div>
                     {medicalRecord.insurance_policy_number && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Policy Number</label>
+                        <label className="text-sm font-medium text-gray-600">Numéro de Police</label>
                         <p className="text-gray-900">{medicalRecord.insurance_policy_number}</p>
                       </div>
                     )}
                     {medicalRecord.insurance_expiry_date && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Expiry Date</label>
+                        <label className="text-sm font-medium text-gray-600">Date d'Expiration</label>
                         <p className="text-gray-900">
                           {new Date(medicalRecord.insurance_expiry_date).toLocaleDateString()}
                         </p>
@@ -434,24 +447,24 @@ export default function MedicalRecordsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <User className="w-5 h-5 mr-2 text-orange-500" />
-                    Emergency Contact
+                    Contact d'Urgence
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Name</label>
+                      <label className="text-sm font-medium text-gray-600">Nom</label>
                       <p className="text-gray-900">{medicalRecord.emergency_contact_name}</p>
                     </div>
                     {medicalRecord.emergency_contact_phone && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Phone</label>
+                        <label className="text-sm font-medium text-gray-600">Téléphone</label>
                         <p className="text-gray-900">{medicalRecord.emergency_contact_phone}</p>
                       </div>
                     )}
                     {medicalRecord.emergency_contact_relationship && (
                       <div>
-                        <label className="text-sm font-medium text-gray-600">Relationship</label>
+                        <label className="text-sm font-medium text-gray-600">Relation</label>
                         <p className="text-gray-900">{medicalRecord.emergency_contact_relationship}</p>
                       </div>
                     )}
@@ -467,7 +480,7 @@ export default function MedicalRecordsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="w-5 h-5 mr-2" />
-                  Medical Documents ({documents.length})
+                  Documents Médicaux ({documents.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -478,7 +491,7 @@ export default function MedicalRecordsPage() {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
                         type="text"
-                        placeholder="Search documents by title or description..."
+                        placeholder="Rechercher des documents par titre ou par description..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"
@@ -491,13 +504,13 @@ export default function MedicalRecordsPage() {
                         onChange={(e) => setFilterType(e.target.value)}
                         className="w-48"
                       >
-                        <option value="all">All Types</option>
-                        <option value="lab_result">Lab Results</option>
+                        <option value="all">Tous les Types</option>
+                        <option value="lab_result">Résultats de Laboratoire</option>
                         <option value="prescription">Prescriptions</option>
-                        <option value="imaging">Imaging</option>
+                        <option value="imaging">Imagerie</option>
                         <option value="vaccination">Vaccinations</option>
-                        <option value="insurance">Insurance</option>
-                        <option value="other">Other</option>
+                        <option value="insurance">Assurance</option>
+                        <option value="other">Autre</option>
                       </Select>
                     </div>
                   </div>
@@ -506,21 +519,21 @@ export default function MedicalRecordsPage() {
                 {documents.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No documents uploaded yet</p>
+                    <p className="text-gray-600">Aucun document téléchargé pour le moment</p>
                     <Button onClick={() => setShowUploadModal(true)} className="mt-4">
-                      Upload Your First Document
+                      Télécharger votre premier document
                     </Button>
                   </div>
                 ) : filteredDocuments.length === 0 ? (
                   <div className="text-center py-12">
                     <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No documents match your search or filter</p>
+                    <p className="text-gray-600">Aucun document ne correspond à votre recherche ou à votre filtre</p>
                     <Button 
                       variant="outline" 
                       onClick={() => { setSearchTerm(''); setFilterType('all'); }} 
                       className="mt-4"
                     >
-                      Clear Filters
+                      Effacer les filtres
                     </Button>
                   </div>
                 ) : (
@@ -535,13 +548,13 @@ export default function MedicalRecordsPage() {
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium text-gray-900 truncate">{doc.title}</h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size)}
+                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size ?? doc.file_size_bytes)}
                               </p>
                               {doc.description && (
                                 <p className="text-sm text-gray-500 mt-2">{doc.description}</p>
                               )}
                               <p className="text-xs text-gray-400 mt-2">
-                                Uploaded on {new Date(doc.created_at).toLocaleDateString()}
+                                Téléchargé le {new Date(doc.created_at).toLocaleDateString()}
                               </p>
                             </div>
                           </div>

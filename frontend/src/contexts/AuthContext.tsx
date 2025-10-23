@@ -80,10 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         router.push('/doctor/dashboard');
       } else if (userData.role === 'admin') {
-        router.push('/admin/verify-doctors');
+        router.push('/admin/dashboard');
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      if (error?.message === 'VERIFICATION_PENDING') {
+        throw error;
+      }
+      const detail = error?.response?.data?.detail;
+      const message = typeof detail === 'string' && detail.trim().length > 0 ? detail : error?.message;
+      throw new Error(message || 'Login failed');
     }
   };
 

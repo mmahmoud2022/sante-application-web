@@ -34,6 +34,7 @@ interface Medication {
   frequency: string;
   duration_days: number;
   instructions: string;
+  file: File | null;
 }
 
 export default function CreatePrescriptionPage() {
@@ -53,6 +54,7 @@ export default function CreatePrescriptionPage() {
       frequency: '',
       duration_days: 7,
       instructions: '',
+      file: null,
     },
   ]);
   const [refillsAllowed, setRefillsAllowed] = useState(0);
@@ -113,6 +115,7 @@ export default function CreatePrescriptionPage() {
         frequency: '',
         duration_days: 7,
         instructions: '',
+        file: null,
       },
     ]);
   };
@@ -161,8 +164,10 @@ export default function CreatePrescriptionPage() {
 
     try {
       // Create each medication as a separate prescription
-      const prescriptionPromises = medications.map(med =>
-        api.prescriptions.create({
+      const today = new Date().toISOString().split('T')[0];
+
+      const prescriptionPromises = medications.map(med => {
+        const payload = {
           patient_id: selectedPatientId,
           medication_name: med.medication_name,
           dosage: med.dosage,
@@ -171,10 +176,16 @@ export default function CreatePrescriptionPage() {
           instructions: med.instructions || undefined,
           refills_allowed: refillsAllowed,
           auto_renewal_enabled: autoRenewal,
-          pharmacy_notes: pharmacyNotes || undefined,
-          start_date: new Date().toISOString().split('T')[0],
-        })
-      );
+          notes: pharmacyNotes || undefined,
+          start_date: today,
+        };
+
+        if (med.file) {
+          return api.prescriptions.upload(med.file, payload);
+        }
+
+        return api.prescriptions.create(payload);
+      });
 
       await Promise.all(prescriptionPromises);
 
@@ -418,6 +429,21 @@ export default function CreatePrescriptionPage() {
                           rows={2}
                           placeholder="Additional instructions for taking this medication"
                         />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Attach Prescription Document (optional)
+                        </label>
+                        <input
+                          type="file"
+                          accept="application/pdf,image/*"
+                          onChange={(e) => updateMedication(med.id, 'file', e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        {med.file && (
+                          <p className="mt-1 text-xs text-gray-600">Selected: {med.file.name}</p>
+                        )}
                       </div>
                     </div>
                   </div>

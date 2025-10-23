@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Heart, Mail, Lock, User, Phone, Calendar, AlertCircle } from 'lucide-react';
+import { Heart, Mail, Lock, User, Phone, Calendar, AlertCircle, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -31,6 +31,7 @@ export default function RegisterPage() {
     gender: '',
     specialization: '',
     licenseNumber: '',
+    practiceName: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -60,6 +61,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (role === UserRole.DOCTOR && !formData.practiceName.trim()) {
+      setError('Le nom du cabinet ou de l\'hôpital est obligatoire pour les praticiens.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -74,6 +80,7 @@ export default function RegisterPage() {
         gender: formData.gender || undefined,
         specialization: role === UserRole.DOCTOR ? formData.specialization : undefined,
         license_number: role === UserRole.DOCTOR ? formData.licenseNumber : undefined,
+        practice_name: role === UserRole.DOCTOR ? formData.practiceName.trim() : undefined,
       });
     } catch (err: any) {
       setError(err.message || 'L\'inscription a échoué. Veuillez réessayer.');
@@ -304,6 +311,26 @@ export default function RegisterPage() {
                   Informations professionnelles
                 </h3>
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+                      Nom du cabinet ou de l'hôpital <span className="text-accent-error">*</span>
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Building2 className="h-5 w-5 text-secondary-400 group-focus-within:text-secondary-600 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        name="practiceName"
+                        value={formData.practiceName}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                        placeholder="Clinique du Parc, Hôpital Saint-Pierre..."
+                        required={role === UserRole.DOCTOR}
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                       Spécialisation <span className="text-accent-error">*</span>

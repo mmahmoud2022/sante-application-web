@@ -14,6 +14,7 @@ import {
   X,
   DollarSign,
   User,
+  ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -52,7 +53,8 @@ export default function DoctorSearchPage({ isPatientView = false }: DoctorSearch
       const doctorsList = Array.isArray(response.data)
         ? response.data
         : (response.data as { items?: UserType[] }).items ?? [];
-      setDoctors(doctorsList);
+      const verifiedDoctors = doctorsList.filter((doctor) => doctor.is_verified);
+      setDoctors(verifiedDoctors);
     } catch (error: any) {
       logger.error(
         "Failed to load doctors",
@@ -113,6 +115,17 @@ export default function DoctorSearchPage({ isPatientView = false }: DoctorSearch
     router.push(`/login?redirect=${encodeURIComponent(bookingPath)}`);
   };
 
+  const scrollToResults = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const element = document.getElementById("doctor-search-results");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
   const isAuthenticatedPatient = user?.role === UserRole.PATIENT;
   const canBookAppointment = isAuthenticatedPatient;
   const backDestination = isAuthenticatedPatient ? "/patient/dashboard" : "/";
@@ -121,61 +134,103 @@ export default function DoctorSearchPage({ isPatientView = false }: DoctorSearch
   const loginUrl = `/login?redirect=${encodeURIComponent(currentPagePath)}`;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <header className="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-200 dark:border-neutral-700">
+    <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-neutral-50 dark:from-neutral-900 dark:via-neutral-950 dark:to-neutral-900">
+      <header className="bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => router.push(backDestination)}
-                className="p-2 rounded-xl bg-primary/10 text-primary"
+                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/20 text-white transition hover:bg-white/30"
                 aria-label="Retour"
               >
                 <Heart className="h-6 w-6" />
               </button>
-              <span className="text-2xl font-heading font-bold text-primary">Santé</span>
+              <div>
+                <span className="block text-xs uppercase tracking-widest text-white/80">Santé connect</span>
+                <span className="text-2xl font-heading font-semibold">Votre réseau de spécialistes</span>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
+                className="text-white hover:bg-white/20"
                 onClick={() => router.push(backDestination)}
               >
                 {backLabel}
               </Button>
               {!isPatientView && !user && (
-                <Button size="sm" onClick={() => router.push(loginUrl)}>Se connecter</Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="bg-white text-primary-600 hover:bg-white/90"
+                  onClick={() => router.push(loginUrl)}
+                >
+                  Se connecter
+                </Button>
               )}
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {!user && (
-          <Card className="mb-6 border border-primary/20 bg-primary/5">
-            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-4 text-sm text-neutral-700 dark:text-neutral-200">
-              <p>
-                <span className="font-semibold text-primary">Vous n\u2019êtes pas connecté.</span> Vous pouvez consulter les profils des médecins, mais il faudra vous connecter pour réserver un rendez-vous.
+      <div className="max-w-7xl mx-auto px-4 py-10 sm:px-6 lg:px-8">
+        <section className="relative mb-10 overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-2xl backdrop-blur dark:border-neutral-700/60 dark:bg-neutral-800/70">
+          <div className="absolute right-[-20%] top-[-40%] h-72 w-72 rounded-full bg-primary-200/70 blur-3xl dark:bg-primary-900/40" />
+          <div className="absolute left-[-10%] bottom-[-30%] h-60 w-60 rounded-full bg-secondary-200/60 blur-3xl dark:bg-secondary-900/40" />
+          <div className="relative grid gap-10 lg:grid-cols-[1.3fr,0.7fr]">
+            <div>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary-700 dark:text-primary-300">
+                Nouvelle expérience patient
+              </span>
+              <h1 className="mt-4 text-3xl font-heading font-bold text-neutral-900 sm:text-4xl lg:text-5xl dark:text-neutral-50">
+                Trouvez le spécialiste idéal en quelques secondes
+              </h1>
+              <p className="mt-4 max-w-3xl text-base leading-relaxed text-neutral-600 sm:text-lg dark:text-neutral-300">
+                Parcourez un réseau certifié de médecins et découvrez leurs disponibilités avant même de vous connecter. Le parcours de soin devient simple, rapide et personnalisé.
               </p>
-              <Button size="sm" onClick={() => router.push(loginUrl)}>
-                Se connecter
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Button size="lg" className="shadow-lg" onClick={scrollToResults}>
+                  Explorer les médecins
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+                {!user && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => router.push(loginUrl)}
+                    className="border-primary-500 text-primary-600 hover:bg-primary-50"
+                  >
+                    Se connecter pour réserver
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="grid gap-4 rounded-2xl bg-white/85 p-6 shadow-xl dark:bg-neutral-900/80">
+              <div>
+                <p className="text-sm uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Professionnels vérifiés</p>
+                <p className="text-3xl font-semibold text-neutral-900 dark:text-neutral-100">120+</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+                <div>
+                  <p className="text-2xl font-semibold text-primary-600 dark:text-primary-300">98%</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Patients satisfaits</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-semibold text-primary-600 dark:text-primary-300">24h</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Délai moyen de rendez-vous</p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-primary-50/60 p-4 text-sm text-primary-700 dark:bg-primary-900/20 dark:text-primary-200">
+                Accédez aux profils détaillés, aux langues parlées, aux honoraires et réservez en seulement trois étapes.
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-2">
-            Rechercher un médecin
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Trouvez le professionnel de santé qui correspond à vos besoins
-          </p>
-        </div>
-
-        <Card className="mb-6">
+        <Card className="mb-10">
           <CardContent className="py-6">
             <form onSubmit={handleSearch}>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -324,10 +379,27 @@ export default function DoctorSearchPage({ isPatientView = false }: DoctorSearch
           </CardContent>
         </Card>
 
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-neutral-600 dark:text-neutral-400">
-            {loading ? "Recherche en cours..." : `${doctors.length} médecin(s) trouvé(s)`}
+        <div
+          id="doctor-search-results"
+          className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 sm:text-base">
+            {loading
+              ? "Analyse des disponibilités en cours..."
+              : `${doctors.length} spécialiste(s) correspondent à vos critères`}
           </p>
+          {!loading && (
+            <div className="flex items-center gap-3 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-primary-700 dark:text-primary-300">
+                <span className="h-2 w-2 rounded-full bg-primary-500 shadow-[0_0_0_3px_rgba(59,130,246,0.2)]" />
+                Disponibilités actualisées en temps réel
+              </span>
+              <span className="hidden sm:inline text-neutral-400">|</span>
+              <span className="text-neutral-500 dark:text-neutral-400">
+                Ajustez les filtres pour affiner votre recherche
+              </span>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -342,9 +414,9 @@ export default function DoctorSearchPage({ isPatientView = false }: DoctorSearch
                   <div className="flex items-start justify-between">
                     <div className="flex space-x-4 flex-1">
                       <div className="flex-shrink-0">
-                        {doctor.profile_picture_url ? (
+                        {doctor.profile_image ? (
                           <Image
-                            src={doctor.profile_picture_url}
+                            src={doctor.profile_image}
                             alt={`Dr. ${doctor.last_name}`}
                             width={80}
                             height={80}

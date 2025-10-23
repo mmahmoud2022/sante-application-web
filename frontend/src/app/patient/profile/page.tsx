@@ -20,7 +20,8 @@ import {
   Edit2,
   CheckCircle,
   AlertCircle,
-  Heart
+  Heart,
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -96,7 +97,7 @@ export default function ProfilePage() {
       
       await updateUser(formData as any);
       
-      setMessage({ type: 'success', text: 'Profile updated successfully!' });
+  setMessage({ type: 'success', text: 'Profil mis à jour avec succès !' });
       setEditing(false);
     } catch (error: any) {
       logger.error('Failed to update profile', {
@@ -105,7 +106,7 @@ export default function ProfilePage() {
       }, error);
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Failed to update profile. Please try again.' 
+        text: error.message || 'Échec de la mise à jour du profil. Veuillez réessayer.' 
       });
     } finally {
       setSaving(false);
@@ -141,7 +142,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">Chargement...</p>
         </div>
       </div>
     );
@@ -152,27 +153,37 @@ export default function ProfilePage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="text-gray-600 mt-1">Manage your personal information and preferences</p>
+              <h1 className="text-2xl font-bold text-gray-900">Paramètres du profil</h1>
+              <p className="text-gray-600 mt-1">Gérez vos informations personnelles et vos préférences</p>
             </div>
-            {!editing ? (
-              <Button onClick={() => setEditing(true)}>
-                <Edit2 className="w-5 h-5 mr-2" />
-                Edit Profile
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/patient/dashboard')}
+                disabled={saving}
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Retour au tableau de bord
               </Button>
-            ) : (
-              <div className="flex space-x-3">
-                <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                  Cancel
+              {!editing ? (
+                <Button onClick={() => setEditing(true)}>
+                  <Edit2 className="w-5 h-5 mr-2" />
+                  Modifier le profil
                 </Button>
-                <Button onClick={handleSave} loading={saving} disabled={saving}>
-                  <Save className="w-5 h-5 mr-2" />
-                  Save Changes
-                </Button>
-              </div>
-            )}
+              ) : (
+                <div className="flex gap-2 sm:gap-3">
+                  <Button variant="outline" onClick={handleCancel} disabled={saving}>
+                    Annuler
+                  </Button>
+                  <Button onClick={handleSave} loading={saving} disabled={saving}>
+                    <Save className="w-5 h-5 mr-2" />
+                    Enregistrer
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -209,7 +220,7 @@ export default function ProfilePage() {
                 <div className="mt-4 pt-4 border-t">
                   <div className="flex items-center justify-center text-sm text-gray-600">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Member since {new Date(user?.created_at || '').toLocaleDateString()}
+                    Membre depuis {new Date(user?.created_at || '').toLocaleDateString('fr-FR')}
                   </div>
                 </div>
               </CardContent>
@@ -219,50 +230,50 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center text-base">
                   <Shield className="w-5 h-5 mr-2 text-green-500" />
-                  Account Status
+                  Statut du compte
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Email Verified</span>
+                    <span className="text-sm text-gray-600">E-mail vérifié</span>
                     {user?.is_verified ? (
                       <span className="flex items-center text-green-600 text-sm">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Verified
+                        Vérifié
                       </span>
                     ) : (
                       <span className="flex items-center text-orange-600 text-sm">
                         <AlertCircle className="w-4 h-4 mr-1" />
-                        Not Verified
+                        Non vérifié
                       </span>
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Account Active</span>
+                    <span className="text-sm text-gray-600">Compte actif</span>
                     {user?.is_active ? (
                       <span className="flex items-center text-green-600 text-sm">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Active
+                        Actif
                       </span>
                     ) : (
                       <span className="flex items-center text-red-600 text-sm">
                         <AlertCircle className="w-4 h-4 mr-1" />
-                        Inactive
+                        Inactif
                       </span>
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">2FA Enabled</span>
+                    <span className="text-sm text-gray-600">Double authentification</span>
                     {user?.two_factor_enabled ? (
                       <span className="flex items-center text-green-600 text-sm">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Enabled
+                        Activée
                       </span>
                     ) : (
                       <span className="flex items-center text-gray-600 text-sm">
                         <AlertCircle className="w-4 h-4 mr-1" />
-                        Disabled
+                        Désactivée
                       </span>
                     )}
                   </div>
@@ -278,14 +289,14 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <User className="w-5 h-5 mr-2" />
-                  Personal Information
+                  Informations personnelles
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      First Name *
+                      Prénom *
                     </label>
                     <Input
                       name="first_name"
@@ -296,7 +307,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Last Name *
+                      Nom *
                     </label>
                     <Input
                       name="last_name"
@@ -307,7 +318,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
+                      E-mail *
                     </label>
                     <Input
                       name="email"
@@ -320,7 +331,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
+                      Numéro de téléphone
                     </label>
                     <Input
                       name="phone_number"
@@ -332,7 +343,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date of Birth
+                      Date de naissance
                     </label>
                     <Input
                       name="date_of_birth"
@@ -344,7 +355,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender
+                      Genre
                     </label>
                     <Select
                       name="gender"
@@ -352,10 +363,10 @@ export default function ProfilePage() {
                       onChange={handleInputChange}
                       disabled={!editing}
                     >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
+                      <option value="">Sélectionner</option>
+                      <option value="male">Homme</option>
+                      <option value="female">Femme</option>
+                      <option value="other">Autre</option>
                     </Select>
                   </div>
                 </div>
@@ -367,14 +378,14 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  Address Information
+                  Coordonnées postales
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Street Address
+                      Adresse
                     </label>
                     <Input
                       name="address"
@@ -387,7 +398,7 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        City
+                        Ville
                       </label>
                       <Input
                         name="city"
@@ -399,7 +410,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Postal Code
+                        Code postal
                       </label>
                       <Input
                         name="postal_code"
@@ -411,7 +422,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Country
+                        Pays
                       </label>
                       <Input
                         name="country"
@@ -431,14 +442,14 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Shield className="w-5 h-5 mr-2" />
-                  Insurance Information
+                  Informations d'assurance
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Insurance Provider
+                      Assureur
                     </label>
                     <Input
                       name="insurance_provider"
@@ -450,7 +461,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Insurance Number
+                      Numéro d'assurance
                     </label>
                     <Input
                       name="insurance_number"
@@ -469,26 +480,26 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Heart className="w-5 h-5 mr-2 text-red-500" />
-                  Emergency Contact
+                  Contact d'urgence
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Name
+                      Nom du contact
                     </label>
                     <Input
                       name="emergency_contact_name"
                       value={formData.emergency_contact_name}
                       onChange={handleInputChange}
                       disabled={!editing}
-                      placeholder="John Doe"
+                      placeholder="Jean Dupont"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Phone
+                      Téléphone du contact
                     </label>
                     <Input
                       name="emergency_contact_phone"
@@ -507,29 +518,29 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Lock className="w-5 h-5 mr-2" />
-                  Security Settings
+                  Sécurité
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Password</p>
-                      <p className="text-sm text-gray-600">Change your password</p>
+                      <p className="font-medium text-gray-900">Mot de passe</p>
+                      <p className="text-sm text-gray-600">Modifiez votre mot de passe</p>
                     </div>
                     <Button variant="outline" size="sm">
-                      Change Password
+                      Modifier
                     </Button>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="font-medium text-gray-900">Two-Factor Authentication</p>
+                      <p className="font-medium text-gray-900">Authentification à deux facteurs</p>
                       <p className="text-sm text-gray-600">
-                        {user?.two_factor_enabled ? 'Disable 2FA' : 'Add an extra layer of security'}
+                        {user?.two_factor_enabled ? 'Désactiver la 2FA' : 'Ajoutez une couche de sécurité supplémentaire'}
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
-                      {user?.two_factor_enabled ? 'Disable' : 'Enable'} 2FA
+                      {user?.two_factor_enabled ? 'Désactiver' : 'Activer'} la 2FA
                     </Button>
                   </div>
                 </div>
@@ -541,29 +552,29 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Bell className="w-5 h-5 mr-2" />
-                  Notification Preferences
+                  Préférences de notification
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">Email Notifications</p>
-                      <p className="text-sm text-gray-600">Receive email about appointments and updates</p>
+                      <p className="font-medium text-gray-900">Notifications e-mail</p>
+                      <p className="text-sm text-gray-600">Recevez des e-mails concernant vos rendez-vous et vos mises à jour</p>
                     </div>
                     <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" defaultChecked />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">SMS Notifications</p>
-                      <p className="text-sm text-gray-600">Receive SMS reminders for appointments</p>
+                      <p className="font-medium text-gray-900">Notifications SMS</p>
+                      <p className="text-sm text-gray-600">Recevez des SMS de rappel pour vos rendez-vous</p>
                     </div>
                     <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" defaultChecked />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">Push Notifications</p>
-                      <p className="text-sm text-gray-600">Receive push notifications in the app</p>
+                      <p className="font-medium text-gray-900">Notifications push</p>
+                      <p className="text-sm text-gray-600">Recevez des notifications push dans l'application</p>
                     </div>
                     <input type="checkbox" className="h-4 w-4 text-primary border-gray-300 rounded" />
                   </div>
