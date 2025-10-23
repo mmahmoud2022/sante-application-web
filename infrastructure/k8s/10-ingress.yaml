@@ -1,0 +1,138 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sante-ingress
+  namespace: sante
+  annotations:
+    # Traefik is the default ingress controller in k3s
+    kubernetes.io/ingress.class: traefik
+    # Enable SSL redirect (uncomment when using HTTPS)
+    # traefik.ingress.kubernetes.io/redirect-entry-point: https
+    # traefik.ingress.kubernetes.io/redirect-permanent: "true"
+    # CORS settings
+    traefik.ingress.kubernetes.io/custom-response-headers: |
+      Access-Control-Allow-Origin:*
+      Access-Control-Allow-Methods:GET,POST,PUT,DELETE,OPTIONS
+      Access-Control-Allow-Headers:Content-Type,Authorization
+spec:
+  rules:
+  # Frontend route
+  - host: sante.local  # Update with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+  
+  # Backend API route
+  - host: api.sante.local  # Update with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
+
+---
+# Alternative: Single host with path-based routing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sante-ingress-single-host
+  namespace: sante
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    # Strip prefix for API calls
+    traefik.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: sante.local  # Update with your domain
+    http:
+      paths:
+      # Backend API routes (must be first for priority)
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
+      - path: /health
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 8000
+      # Frontend routes (catch-all)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
+
+# Uncomment for TLS/HTTPS support
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: sante-tls
+#   namespace: sante
+# type: kubernetes.io/tls
+# data:
+#   tls.crt: <base64-encoded-cert>
+#   tls.key: <base64-encoded-key>
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: sante-ingress-tls
+#   namespace: sante
+#   annotations:
+#     kubernetes.io/ingress.class: traefik
+#     cert-manager.io/cluster-issuer: letsencrypt-prod  # If using cert-manager
+# spec:
+#   tls:
+#   - hosts:
+#     - sante.local
+#     - api.sante.local
+#     secretName: sante-tls
+#   rules:
+#   - host: sante.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: frontend
+#             port:
+#               number: 3000
+#   - host: api.sante.local
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: backend
+#             port:
+#               number: 8000
