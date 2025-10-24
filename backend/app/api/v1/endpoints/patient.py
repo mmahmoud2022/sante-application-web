@@ -70,7 +70,6 @@ def get_book_appointment_context(
         limit=limit,
         specialization=specialty,
         city=city or postal_code,  # Use postal_code as city fallback
-        accepting_new_patients=True
     )
     doctor_payload: List[AppointmentBookingDoctor] = [_map_doctor(doc) for doc in doctors]
 

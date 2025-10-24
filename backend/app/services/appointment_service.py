@@ -3,16 +3,34 @@ Service layer for appointment booking and management
 """
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+import json
+import logging
+from datetime import datetime, timedelta, timezone, time
 from typing import List, Optional, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.appointment import Appointment, AppointmentStatus, AppointmentType
+from app.models.notification import NotificationChannel, NotificationType
 from app.models.schedule import DoctorSchedule, ScheduleType
 from app.models.user import User
+from app.models.waiting_list import WaitingList
 from app.schemas.appointment import AppointmentCreate
+from app.services.notification_service import NotificationService
+
+
+logger = logging.getLogger(__name__)
+
+
+def _aware_utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 def check_slot_availability(
@@ -29,46 +47,40 @@ def check_slot_availability(
     Implements real-time booking logic (first-come-first-served)
     """
     # Check if slot is in the past
-    if appointment_date < datetime.utcnow():
+    appointment_date = _ensure_utc(appointment_date)
+    now_utc = _aware_utc_now()
+
+    if appointment_date < now_utc:
         return False, "Cannot book appointments in the past"
     
     # Calculate end time for the requested slot
     slot_end = appointment_date + timedelta(minutes=duration_minutes)
-    
-    # Query for overlapping appointments
+
+    # Limit overlap search to the same day to keep result set small
+    day_start = appointment_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
     query = db.query(Appointment).filter(
         Appointment.doctor_id == doctor_id,
         Appointment.status.in_([
             AppointmentStatus.PENDING,
             AppointmentStatus.CONFIRMED
         ]),
-        or_(
-            # New appointment starts during existing appointment
-            and_(
-                Appointment.appointment_date <= appointment_date,
-                Appointment.appointment_date + timedelta(minutes=Appointment.duration_minutes) > appointment_date
-            ),
-            # New appointment ends during existing appointment
-            and_(
-                Appointment.appointment_date < slot_end,
-                Appointment.appointment_date + timedelta(minutes=Appointment.duration_minutes) >= slot_end
-            ),
-            # New appointment completely contains existing appointment
-            and_(
-                Appointment.appointment_date >= appointment_date,
-                Appointment.appointment_date + timedelta(minutes=Appointment.duration_minutes) <= slot_end
-            )
-        )
+        Appointment.appointment_date >= day_start,
+        Appointment.appointment_date < day_end,
     )
-    
+
     if exclude_appointment_id:
         query = query.filter(Appointment.id != exclude_appointment_id)
-    
-    conflicting_appointment = query.first()
-    
-    if conflicting_appointment:
-        return False, "This time slot is already booked"
-    
+
+    for existing in query.all():
+        existing_start = _ensure_utc(existing.appointment_date)
+        existing_end = existing_start + timedelta(minutes=existing.duration_minutes)
+
+        # Overlap occurs when start is before the other's end and end is after the other's start
+        if existing_start < slot_end and existing_end > appointment_date:
+            return False, "This time slot is already booked"
+
     return True, None
 
 
@@ -100,8 +112,10 @@ def validate_booking_time(
     e.g., no same-day appointments if doctor requires minimum 2 hours notice
     """
     min_hours = get_minimum_booking_time(doctor_id, db)
-    min_booking_time = datetime.utcnow() + timedelta(hours=min_hours)
+    min_booking_time = _aware_utc_now() + timedelta(hours=min_hours)
     
+    appointment_date = _ensure_utc(appointment_date)
+
     if appointment_date < min_booking_time:
         return False, f"Appointments must be booked at least {min_hours} hours in advance"
     
@@ -148,7 +162,8 @@ def can_cancel_appointment(
     if appointment.status == AppointmentStatus.COMPLETED:
         return False, "Cannot cancel completed appointment"
     
-    hours_until_appointment = (appointment.appointment_date - datetime.utcnow()).total_seconds() / 3600
+    appointment_dt = _ensure_utc(appointment.appointment_date)
+    hours_until_appointment = (appointment_dt - _aware_utc_now()).total_seconds() / 3600
     
     if hours_until_appointment < cancellation_policy_hours:
         return False, f"Cannot cancel appointments less than {cancellation_policy_hours} hours before scheduled time"
@@ -167,6 +182,8 @@ def create_appointment_with_validation(
     - Minimum booking time validation
     - Appointment type validation
     """
+    normalized_date = _ensure_utc(appointment_data.appointment_date)
+
     # Validate appointment type is accepted
     type_valid, type_error = validate_appointment_type(
         appointment_data.doctor_id,
@@ -182,7 +199,7 @@ def create_appointment_with_validation(
     # Validate booking time
     time_valid, time_error = validate_booking_time(
         appointment_data.doctor_id,
-        appointment_data.appointment_date,
+        normalized_date,
         db
     )
     if not time_valid:
@@ -195,7 +212,7 @@ def create_appointment_with_validation(
     slot_available, slot_error = check_slot_availability(
         db,
         appointment_data.doctor_id,
-        appointment_data.appointment_date,
+        normalized_date,
         appointment_data.duration_minutes
     )
     if not slot_available:
@@ -208,7 +225,7 @@ def create_appointment_with_validation(
     new_appointment = Appointment(
         patient_id=patient_id,
         doctor_id=appointment_data.doctor_id,
-        appointment_date=appointment_data.appointment_date,
+        appointment_date=normalized_date,
         duration_minutes=appointment_data.duration_minutes,
         appointment_type=appointment_data.appointment_type,
         reason=appointment_data.reason,
@@ -218,6 +235,7 @@ def create_appointment_with_validation(
     db.add(new_appointment)
     db.commit()
     db.refresh(new_appointment)
+    db.refresh(new_appointment, attribute_names=["doctor", "patient"])
     
     return new_appointment
 
@@ -250,6 +268,191 @@ def get_waiting_list_candidates(
     return patients
 
 
+def _deserialize_preferred_slots(raw_value: Optional[str]) -> List[str]:
+    if not raw_value:
+        return []
+
+    trimmed = raw_value.strip()
+    if not trimmed:
+        return []
+
+    try:
+        data = json.loads(trimmed)
+    except (json.JSONDecodeError, TypeError):
+        return [segment.strip() for segment in trimmed.split(',') if segment.strip()]
+
+    if isinstance(data, list):
+        return [str(item).strip() for item in data if str(item).strip()]
+
+    return []
+
+
+def _parse_time_range(range_string: str) -> Optional[Tuple[time, time]]:
+    cleaned = (range_string or '').strip()
+    if not cleaned:
+        return None
+
+    parts = cleaned.split('-', 1)
+
+    try:
+        if len(parts) == 1:
+            start = datetime.strptime(parts[0], "%H:%M").time()
+            return start, start
+
+        start_part, end_part = parts
+        start = datetime.strptime(start_part.strip(), "%H:%M").time()
+        end = datetime.strptime(end_part.strip(), "%H:%M").time()
+        return start, end
+    except ValueError:
+        logger.warning("Unable to parse preferred time slot '%s'", range_string)
+        return None
+
+
+def _time_in_range(slot_time: time, start: time, end: time) -> bool:
+    if start <= end:
+        return start <= slot_time <= end
+    return slot_time >= start or slot_time <= end
+
+
+def _matches_waiting_list_preferences(entry: WaitingList, slot_datetime: datetime) -> bool:
+    slot_datetime = _ensure_utc(slot_datetime)
+
+    if entry.preferred_date_start and slot_datetime < entry.preferred_date_start:
+        return False
+
+    if entry.preferred_date_end and slot_datetime > entry.preferred_date_end:
+        return False
+
+    preferred_slots = _deserialize_preferred_slots(entry.preferred_time_slots)
+    if not preferred_slots:
+        return True
+
+    slot_time = slot_datetime.time()
+    has_valid_range = False
+
+    for raw_slot in preferred_slots:
+        parsed = _parse_time_range(raw_slot)
+        if not parsed:
+            continue
+
+        has_valid_range = True
+        start, end = parsed
+
+        if start == end:
+            if slot_time == start:
+                return True
+        elif _time_in_range(slot_time, start, end):
+            return True
+
+    return not has_valid_range
+
+
+def notify_waiting_list_of_cancellation(
+    db: Session,
+    appointment: Appointment,
+    limit: int = 10
+) -> None:
+    """Notify waiting list members when a slot is freed by a cancellation."""
+    slot_datetime = _ensure_utc(appointment.appointment_date)
+
+    query = (
+        db.query(WaitingList)
+        .options(selectinload(WaitingList.patient))
+        .filter(
+            WaitingList.doctor_id == appointment.doctor_id,
+            WaitingList.is_active == True,  # noqa: E712
+            WaitingList.notified == False,  # noqa: E712
+        )
+    )
+
+    if appointment.patient_id is not None:
+        query = query.filter(WaitingList.patient_id != appointment.patient_id)
+
+    waiting_entries = (
+        query
+        .order_by(WaitingList.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+
+    if not waiting_entries:
+        return
+
+    doctor_name = (
+        appointment.doctor.full_name
+        if getattr(appointment, "doctor", None) and appointment.doctor.full_name
+        else "votre médecin"
+    )
+
+    date_label = slot_datetime.strftime("%d %B %Y")
+    time_label = slot_datetime.strftime("%H:%M")
+
+    notification_service = NotificationService(db)
+    notified_any = False
+
+    for entry in waiting_entries:
+        patient = entry.patient
+        if not patient:
+            continue
+
+        if not _matches_waiting_list_preferences(entry, slot_datetime):
+            continue
+
+        message = (
+            f"Un créneau s'est libéré avec Dr. {doctor_name} le {date_label} à {time_label}. "
+            "Connectez-vous à votre espace patient pour le réserver."
+        )
+        title = "Créneau disponible"
+
+        # Always create an in-app notification as fallback
+        notification_service.create_notification(
+            user_id=patient.id,
+            notification_type=NotificationType.SYSTEM_ALERT,
+            title=title,
+            message=message,
+            channel=NotificationChannel.IN_APP,
+            reference_id=appointment.id,
+            reference_type="waiting_list",
+        )
+
+        if patient.email:
+            notification_service.create_notification(
+                user_id=patient.id,
+                notification_type=NotificationType.SYSTEM_ALERT,
+                title=title,
+                message=message,
+                channel=NotificationChannel.EMAIL,
+                reference_id=appointment.id,
+                reference_type="waiting_list",
+            )
+
+        if getattr(patient, "phone", None):
+            notification_service.create_notification(
+                user_id=patient.id,
+                notification_type=NotificationType.SYSTEM_ALERT,
+                title=title,
+                message=message,
+                channel=NotificationChannel.SMS,
+                reference_id=appointment.id,
+                reference_type="waiting_list",
+            )
+
+        entry.notified = True
+        entry.notified_at = _aware_utc_now()
+        entry.is_active = False
+        notified_any = True
+
+    if notified_any:
+        db.commit()
+        logger.info(
+            "Waiting list notification dispatched",
+            extra={
+                "doctor_id": appointment.doctor_id,
+                "appointment_id": appointment.id,
+                "notified_count": sum(1 for entry in waiting_entries if entry.notified),
+            },
+        )
+
 def verify_teleconsultation_readiness(
     appointment: Appointment,
     db: Session
@@ -266,7 +469,8 @@ def verify_teleconsultation_readiness(
         return False, "Video call link not set up"
     
     # Check appointment is within valid timeframe (e.g., can join 15 minutes before)
-    minutes_until = (appointment.appointment_date - datetime.utcnow()).total_seconds() / 60
+    appointment_dt = _ensure_utc(appointment.appointment_date)
+    minutes_until = (appointment_dt - _aware_utc_now()).total_seconds() / 60
     
     if minutes_until > 15:
         return False, "Teleconsultation can only be accessed 15 minutes before scheduled time"

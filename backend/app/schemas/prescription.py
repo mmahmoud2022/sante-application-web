@@ -6,6 +6,7 @@ from typing import Optional
 from datetime import datetime
 
 from app.models.prescription import PrescriptionStatus
+from app.schemas.document import DocumentResponse
 
 
 class PrescriptionBase(BaseModel):
@@ -23,8 +24,8 @@ class PrescriptionBase(BaseModel):
 class PrescriptionCreate(PrescriptionBase):
     """Schema for creating a new prescription"""
     patient_id: int
-    doctor_id: int
     appointment_id: Optional[int] = None
+    document_id: Optional[int] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     auto_renewal_enabled: bool = False
@@ -36,6 +37,7 @@ class PrescriptionUpdate(BaseModel):
     refills_remaining: Optional[int] = Field(None, ge=0)
     notes: Optional[str] = None
     auto_renewal_enabled: Optional[bool] = None
+    document_id: Optional[int] = None
 
 
 class PrescriptionResponse(PrescriptionBase):
@@ -44,6 +46,7 @@ class PrescriptionResponse(PrescriptionBase):
     patient_id: int
     doctor_id: int
     appointment_id: Optional[int] = None
+    document_id: Optional[int] = None
     refills_remaining: int
     status: PrescriptionStatus
     prescribed_date: datetime
@@ -53,5 +56,6 @@ class PrescriptionResponse(PrescriptionBase):
     last_renewed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    document: Optional[DocumentResponse] = None
     
     model_config = ConfigDict(from_attributes=True)

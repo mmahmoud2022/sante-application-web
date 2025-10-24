@@ -39,14 +39,15 @@ def update_current_user(
     """
     Update current user information
     """
-    return update_user(db, current_user.id, user_update)
+    allow_privileged = current_user.role == UserRole.ADMIN
+    return update_user(db, current_user.id, user_update, allow_privileged_fields=allow_privileged)
 
 
 @router.get("", response_model=List[UserResponse])
 @router.get("/", response_model=List[UserResponse], include_in_schema=False)
 def list_users(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=200),
     role: Optional[UserRole] = None,
     current_user: User = Depends(check_user_role("admin")),
     db: Session = Depends(get_db)
@@ -147,7 +148,8 @@ def update_user_by_id(
             detail="Not enough permissions"
         )
     
-    return update_user(db, user_id, user_update)
+    allow_privileged = current_user.role == UserRole.ADMIN
+    return update_user(db, user_id, user_update, allow_privileged_fields=allow_privileged)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

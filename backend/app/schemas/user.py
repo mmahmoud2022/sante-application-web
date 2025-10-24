@@ -45,6 +45,8 @@ class UserUpdate(BaseModel):
     state: Optional[str] = Field(None, max_length=100)
     postal_code: Optional[str] = Field(None, max_length=20)
     country: Optional[str] = Field(None, max_length=100)
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
 
 
 class UserResponse(UserBase):

@@ -71,7 +71,7 @@ def list_reviews(
     """
     List reviews
     """
-    query = db.query(Review).filter(Review.is_hidden == False)
+    query = db.query(Review).filter(Review.is_published == True)
 
     if doctor_id:
         query = query.filter(Review.doctor_id == doctor_id)
@@ -92,7 +92,7 @@ def get_doctor_reviews(
     """
     reviews = (
         db.query(Review)
-        .filter(Review.doctor_id == doctor_id, Review.is_hidden == False)
+    .filter(Review.doctor_id == doctor_id, Review.is_published == True)
         .offset(skip)
         .limit(limit)
         .all()
@@ -231,7 +231,7 @@ def update_doctor_rating(db: Session, doctor_id: int):
     """
     reviews = db.query(Review).filter(
         Review.doctor_id == doctor_id,
-        Review.is_hidden == False,
+    Review.is_published == True,
     ).all()
 
     if reviews:

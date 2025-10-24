@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.models.appointment import AppointmentStatus, AppointmentType
+from app.schemas.user import UserResponse
 
 _TYPE_ALIASES: dict[str, AppointmentType] = {
     "in_person": AppointmentType.IN_PERSON,
@@ -140,6 +141,8 @@ class AppointmentResponse(AppointmentBase):
     cancelled_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    patient: Optional[UserResponse] = None
+    doctor: Optional[UserResponse] = None
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 

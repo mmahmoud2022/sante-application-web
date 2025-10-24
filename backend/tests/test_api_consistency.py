@@ -274,6 +274,7 @@ class TestPrescriptionSchemas:
             id=1,
             patient_id=1,
             doctor_id=2,
+            document_id=55,
             medication_name="Aspirin",
             dosage="100mg",
             frequency="Once daily",
@@ -295,7 +296,7 @@ class TestPrescriptionSchemas:
             "id", "patient_id", "doctor_id", "medication_name",
             "dosage", "frequency", "duration_days", "quantity",
             "refills_allowed", "refills_remaining", "instructions",
-            "status"
+            "status", "document_id", "document"
         ]
         
         for field in expected_fields:
@@ -304,6 +305,7 @@ class TestPrescriptionSchemas:
         # Verify values
         assert data["quantity"] == 30
         assert data["instructions"] == "Take with food"
+        assert data["document_id"] == 55
 
 
 class TestReviewSchemas:

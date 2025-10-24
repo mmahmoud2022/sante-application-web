@@ -89,7 +89,7 @@ def get_medical_record(
     return record
 
 
-@router.get("/patient/{patient_id}", response_model=MedicalRecordResponse)
+@router.get("/patient/{patient_id}", response_model=List[MedicalRecordResponse])
 def get_patient_medical_record(
     patient_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -105,15 +105,12 @@ def get_patient_medical_record(
             detail="Not enough permissions"
         )
     
-    record = db.query(MedicalRecord).filter(MedicalRecord.patient_id == patient_id).first()
-    
-    if not record:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Medical record not found for this patient"
-        )
-    
-    return record
+    records = db.query(MedicalRecord).filter(MedicalRecord.patient_id == patient_id).all()
+
+    if not records:
+        return []
+
+    return records
 
 
 @router.put("/{record_id}", response_model=MedicalRecordResponse)

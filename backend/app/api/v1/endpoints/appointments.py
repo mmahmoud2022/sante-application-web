@@ -1,9 +1,10 @@
 """Appointment management endpoints."""
-from datetime import datetime, date as date_type
+import logging
+from datetime import datetime, date as date_type, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.database import get_db
 from app.core.security import get_current_active_user
@@ -19,10 +20,13 @@ from app.services import doctor_service
 from app.services.appointment_service import (
     create_appointment_with_validation,
     can_cancel_appointment,
+    notify_waiting_list_of_cancellation,
     verify_teleconsultation_readiness,
 )
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.get("/available-slots", response_model=dict)
@@ -124,7 +128,10 @@ def list_appointments(
     """
     from app.models.appointment import Appointment
     
-    query = db.query(Appointment)
+    query = db.query(Appointment).options(
+        selectinload(Appointment.doctor),
+        selectinload(Appointment.patient),
+    )
     
     if current_user.role == UserRole.PATIENT:
         query = query.filter(Appointment.patient_id == current_user.id)
@@ -153,9 +160,16 @@ def cancel_appointment(
     - Admins can cancel any appointment
     """
     from app.models.appointment import Appointment, AppointmentStatus
-    from datetime import datetime as dt
 
-    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    appointment = (
+        db.query(Appointment)
+        .options(
+            selectinload(Appointment.doctor),
+            selectinload(Appointment.patient),
+        )
+        .filter(Appointment.id == appointment_id)
+        .first()
+    )
 
     if not appointment:
         raise HTTPException(
@@ -183,12 +197,24 @@ def cancel_appointment(
 
     appointment.status = AppointmentStatus.CANCELLED
     appointment.cancelled_by = current_user.id
-    appointment.cancelled_at = dt.utcnow()
+    appointment.cancelled_at = datetime.now(timezone.utc)
     if payload and payload.reason:
         appointment.cancellation_reason = payload.reason
 
     db.commit()
     db.refresh(appointment)
+    db.refresh(appointment, attribute_names=["doctor", "patient"])
+
+    try:
+        notify_waiting_list_of_cancellation(db, appointment)
+    except Exception:  # pragma: no cover - defensive logging
+        logger.exception(
+            "Failed to notify waiting list after cancellation",
+            extra={
+                "appointment_id": appointment_id,
+                "doctor_id": appointment.doctor_id,
+            },
+        )
 
     return appointment
 
@@ -204,7 +230,15 @@ def get_appointment(
     """
     from app.models.appointment import Appointment
     
-    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    appointment = (
+        db.query(Appointment)
+        .options(
+            selectinload(Appointment.doctor),
+            selectinload(Appointment.patient),
+        )
+        .filter(Appointment.id == appointment_id)
+        .first()
+    )
     
     if not appointment:
         raise HTTPException(
@@ -260,6 +294,7 @@ def update_appointment(
     
     db.commit()
     db.refresh(appointment)
+    db.refresh(appointment, attribute_names=["doctor", "patient"])
     
     return appointment
 
@@ -274,7 +309,6 @@ def delete_appointment(
     Cancel/delete appointment
     """
     from app.models.appointment import Appointment, AppointmentStatus
-    from datetime import datetime
     
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     
@@ -295,7 +329,7 @@ def delete_appointment(
     # Mark as cancelled instead of deleting
     appointment.status = AppointmentStatus.CANCELLED
     appointment.cancelled_by = current_user.id
-    appointment.cancelled_at = datetime.utcnow()
+    appointment.cancelled_at = datetime.now(timezone.utc)
     
     db.commit()
     

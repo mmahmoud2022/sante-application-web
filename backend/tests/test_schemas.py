@@ -32,7 +32,6 @@ class TestPrescriptionSchemas:
         """Test valid prescription creation schema"""
         data = {
             "patient_id": 1,
-            "doctor_id": 2,
             "medication_name": "Aspirin",
             "dosage": "100mg",
             "frequency": "Once daily",
@@ -48,7 +47,6 @@ class TestPrescriptionSchemas:
         """Test prescription creation with invalid duration"""
         data = {
             "patient_id": 1,
-            "doctor_id": 2,
             "medication_name": "Aspirin",
             "dosage": "100mg",
             "frequency": "Once daily",
