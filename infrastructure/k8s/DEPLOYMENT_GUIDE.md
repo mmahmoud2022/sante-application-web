@@ -312,3 +312,11 @@ Pour toute question :
 ---
 
 **Note**: Ce guide est un résumé. Consultez `README.md` pour la documentation complète et détaillée.
+
+```bash 
+kubectl create secret docker-registry ghcr-secret \
+  --docker-server=ghcr.io \
+  --docker-username=YOUR_GITHUB_USERNAME \
+  --docker-password=YOUR_GITHUB_TOKEN \
+  --docker-email=you@example.com
+```

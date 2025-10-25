@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -68,23 +68,7 @@ export default function AdminDashboard() {
   const [patientInsights, setPatientInsights] = useState<PatientInsight[]>([]);
   const [deletingUserIds, setDeletingUserIds] = useState<number[]>([]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'admin') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user, loading, router]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setLoadingData(true);
 
     try {
@@ -122,7 +106,23 @@ export default function AdminDashboard() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadDashboardData();
+    }
+  }, [user, loading, router, loadDashboardData]);
 
   const handleDeleteUser = async (targetId: number, displayName: string) => {
     if (!confirm(`Confirmez-vous la suppression du compte ${displayName} ?`)) {

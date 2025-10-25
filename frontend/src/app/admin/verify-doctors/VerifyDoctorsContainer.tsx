@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Heart,
@@ -52,27 +52,7 @@ export default function VerifyDoctorsContainer() {
   const [loadingData, setLoadingData] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/admin/login');
-      return;
-    }
-
-    if (user && user.role !== 'admin') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadDoctors();
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    filterDoctorsList();
-  }, [doctors, searchTerm, filterStatus]);
-
-  const loadDoctors = async () => {
+  const loadDoctors = useCallback(async () => {
     try {
       const response = await api.users.doctors();
       const doctorsList = Array.isArray(response.data) ? response.data : (response.data as any).items || [];
@@ -90,9 +70,9 @@ export default function VerifyDoctorsContainer() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
 
-  const filterDoctorsList = () => {
+  const filterDoctorsList = useCallback(() => {
     let filtered = [...doctors];
 
     if (filterStatus === 'pending') {
@@ -114,7 +94,27 @@ export default function VerifyDoctorsContainer() {
     }
 
     setFilteredDoctors(filtered);
-  };
+  }, [doctors, filterStatus, searchTerm]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/admin/login');
+      return;
+    }
+
+    if (user && user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadDoctors();
+    }
+  }, [user, loading, router, loadDoctors]);
+
+  useEffect(() => {
+    filterDoctorsList();
+  }, [filterDoctorsList]);
 
   const handleVerifyDoctor = async (doctorId: number) => {
     setProcessingId(doctorId);

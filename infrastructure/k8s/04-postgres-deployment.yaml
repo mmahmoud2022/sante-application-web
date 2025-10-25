@@ -42,6 +42,8 @@ spec:
             secretKeyRef:
               name: sante-secrets
               key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
@@ -52,8 +54,8 @@ spec:
           exec:
             command:
             - pg_isready
-            - -U
-            - sante_user
+            - -d
+            - sante_db
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -61,8 +63,8 @@ spec:
           exec:
             command:
             - pg_isready
-            - -U
-            - sante_user
+            - -d
+            - sante_db
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 3

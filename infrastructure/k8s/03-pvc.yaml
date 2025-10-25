@@ -37,8 +37,9 @@ metadata:
   namespace: sante
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
   storageClassName: local-path
+# https://santeapp.k8s.opensionlabs.cloud

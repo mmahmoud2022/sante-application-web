@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Calendar as CalendarIcon,
@@ -26,7 +26,7 @@ import {
   AppointmentType,
 } from '@/types';
 
-export default function PatientBookAppointmentPage() {
+function PatientBookAppointmentContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -385,6 +385,20 @@ export default function PatientBookAppointmentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PatientBookAppointmentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <PatientBookAppointmentContent />
+    </Suspense>
   );
 }
 

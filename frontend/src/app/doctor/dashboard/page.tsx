@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar,
@@ -145,22 +145,6 @@ export default function DoctorDashboard() {
   const [confirmingAppointmentId, setConfirmingAppointmentId] = useState<number | null>(null);
   const [cancellingAppointmentId, setCancellingAppointmentId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user, loading, router]);
-
   const todayAppointments = useMemo(() => {
     const todayIso = new Date().toISOString().slice(0, 10);
     return appointments.filter((appointment) => toISODate(appointment.appointment_date) === todayIso);
@@ -183,7 +167,7 @@ export default function DoctorDashboard() {
     ).length;
   }, [appointments]);
 
-  const loadDashboardData = async (options?: { showLoader?: boolean }) => {
+  const loadDashboardData = useCallback(async (options?: { showLoader?: boolean }) => {
     if (!user) {
       return;
     }
@@ -269,7 +253,23 @@ export default function DoctorDashboard() {
         setLoadingData(false);
       }
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadDashboardData();
+    }
+  }, [user, loading, router, loadDashboardData]);
 
   const handleConfirmAppointment = async (appointment: Appointment) => {
     setConfirmingAppointmentId(appointment.id);

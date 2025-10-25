@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users,
@@ -35,23 +35,7 @@ export default function DoctorPatientsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadPatients();
-    }
-  }, [user, authLoading, router]);
-
-  const loadPatients = async () => {
+  const loadPatients = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.doctor.patients();
@@ -67,7 +51,23 @@ export default function DoctorPatientsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadPatients();
+    }
+  }, [user, authLoading, router, loadPatients]);
 
   const filteredPatients = useMemo(() => {
     if (!searchTerm) {

@@ -46,9 +46,11 @@ spec:
             sleep 2
           done
           echo "PostgreSQL is ready!"
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: celery-worker
-        image: mmahmoud2022/sante-backend:latest  # Update with your registry
+        image: ghcr.io/mmahmoud2022/sante-backend:v1  # Update with your registry
         imagePullPolicy: Always
         command:
         - celery

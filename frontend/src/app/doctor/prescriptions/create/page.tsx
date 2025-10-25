@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Pill,
@@ -37,7 +37,7 @@ interface Medication {
   file: File | null;
 }
 
-export default function CreatePrescriptionPage() {
+function CreatePrescriptionContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,30 +62,7 @@ export default function CreatePrescriptionPage() {
   const [pharmacyNotes, setPharmacyNotes] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadPatients();
-    }
-  }, [user, authLoading, router]);
-
-  useEffect(() => {
-    const patientId = searchParams.get('patient_id');
-    if (patientId) {
-      setSelectedPatientId(Number(patientId));
-    }
-  }, [searchParams]);
-
-  const loadPatients = async () => {
+  const loadPatients = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.doctor.patients();
@@ -102,7 +79,31 @@ export default function CreatePrescriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadPatients();
+    }
+  }, [user, authLoading, router, loadPatients]);
+
+  useEffect(() => {
+    const patientId = searchParams.get('patient_id');
+    if (patientId) {
+      setSelectedPatientId(Number(patientId));
+    }
+  }, [searchParams]);
+
 
   const addMedication = () => {
     const newId = String(Date.now());
@@ -555,5 +556,19 @@ export default function CreatePrescriptionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreatePrescriptionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <CreatePrescriptionContent />
+    </Suspense>
   );
 }

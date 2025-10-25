@@ -11,6 +11,7 @@ import logger, { LogEntry } from '@/lib/logger';
 import apiMonitor from '@/lib/api-monitor';
 
 export default function DevTools() {
+  const isDev = process.env.NODE_ENV === 'development';
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'logs' | 'api' | 'performance'>('logs');
   const [errors, setErrors] = useState<LogEntry[]>([]);
@@ -18,18 +19,20 @@ export default function DevTools() {
   const [performanceMetrics, setPerformanceMetrics] = useState<ReturnType<typeof logger.getPerformanceMetrics>>([]);
 
   // Only show in development
-  if (process.env.NODE_ENV !== 'development') {
+  useEffect(() => {
+    if (!isDev || !isOpen) {
+      return;
+    }
+
+    // Refresh data when panel is opened
+    setErrors(logger.getStoredErrors());
+    setApiSummary(apiMonitor.getSummary());
+    setPerformanceMetrics(logger.getPerformanceMetrics());
+  }, [isDev, isOpen, activeTab]);
+
+  if (!isDev) {
     return null;
   }
-
-  useEffect(() => {
-    if (isOpen) {
-      // Refresh data when panel is opened
-      setErrors(logger.getStoredErrors());
-      setApiSummary(apiMonitor.getSummary());
-      setPerformanceMetrics(logger.getPerformanceMetrics());
-    }
-  }, [isOpen, activeTab]);
 
   const handleExportLogs = () => {
     const data = {

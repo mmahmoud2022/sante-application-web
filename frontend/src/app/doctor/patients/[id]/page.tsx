@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   FileText,
@@ -55,23 +55,7 @@ export default function PatientDocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user && patientId) {
-      loadPatientData();
-    }
-  }, [user, authLoading, router, patientId]);
-
-  const loadPatientData = async () => {
+  const loadPatientData = useCallback(async () => {
     try {
       setLoading(true);
       const [patientsRes, recordsRes, documentsRes] = await Promise.all([
@@ -106,7 +90,23 @@ export default function PatientDocumentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientId, user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user && patientId) {
+      void loadPatientData();
+    }
+  }, [user, authLoading, router, patientId, loadPatientData]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -146,7 +146,7 @@ export default function PatientDocumentsPage() {
         description: '',
       });
 
-      loadPatientData();
+      await loadPatientData();
     } catch (error: any) {
       logger.error('Failed to upload document', {
         userId: user?.id,
@@ -189,9 +189,9 @@ export default function PatientDocumentsPage() {
     }
 
     try {
-      await api.documents.delete(docId);
-      setMessage({ type: 'success', text: 'Document deleted successfully' });
-      loadPatientData();
+  await api.documents.delete(docId);
+  setMessage({ type: 'success', text: 'Document deleted successfully' });
+  await loadPatientData();
     } catch (error: any) {
       logger.error('Failed to delete document', {
         userId: user?.id,
@@ -219,7 +219,10 @@ export default function PatientDocumentsPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes || Number.isNaN(bytes)) {
+      return '0 B';
+    }
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';

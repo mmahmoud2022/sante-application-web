@@ -46,18 +46,21 @@ spec:
             sleep 2
           done
           echo "Redis is ready!"
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: backend
-        image: mmahmoud2022/sante-backend:latest  # Update with your registry
+        image: ghcr.io/mmahmoud2022/sante-backend:v1.1  # Update with your registry
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: http
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000
         env:
-        - name: DATABASE_URL
-          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
-        - name: REDIS_URL
-          value: "redis://redis:6379/0"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -73,6 +76,10 @@ spec:
             configMapKeyRef:
               name: sante-config
               key: POSTGRES_DB
+        - name: DATABASE_URL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
+        - name: REDIS_URL
+          value: "redis://redis:6379/0"
         - name: SECRET_KEY
           valueFrom:
             secretKeyRef:
@@ -118,6 +125,11 @@ spec:
             configMapKeyRef:
               name: sante-config
               key: EMAIL_FROM
+        - name: ADMIN_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: sante-config
+              key: ADMIN_SECRET
         volumeMounts:
         - name: backend-uploads
           mountPath: /app/uploads

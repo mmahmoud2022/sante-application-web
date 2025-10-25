@@ -15,7 +15,7 @@ data:
   ENVIRONMENT: "production"
   
   # Frontend Configuration
-  NEXT_PUBLIC_API_URL: "http://backend:8000"
+  NEXT_PUBLIC_API_URL: "https://santeapp.serveirc.com"
   NEXT_INTERNAL_API_URL: "http://backend:8000"
   NODE_ENV: "production"
   
@@ -25,12 +25,14 @@ data:
   EMAIL_FROM: "noreply@sante-app.com"
   
   # CORS Configuration
-  CORS_ORIGINS: "http://localhost:3000,http://localhost:80"
+  CORS_ORIGINS: "https://santeapp.serveirc.com,http://localhost:3000,http://localhost:80"
   
   # Application URLs
-  FRONTEND_URL: "http://localhost:3000"
-  BACKEND_URL: "http://localhost:8000"
+  FRONTEND_URL: "https://santeapp.serveirc.com"
+  BACKEND_URL: "https://backend.sante.svc:8000"
   
   # File Upload Configuration
   MAX_UPLOAD_SIZE: "10485760"
   ALLOWED_EXTENSIONS: ".pdf,.jpg,.jpeg,.png,.doc,.docx"
+  # Admin Configuration 
+  ADMIN_SECRET: "ad4d0a63f37e4b79b4f8bacd8e8ee0c5"

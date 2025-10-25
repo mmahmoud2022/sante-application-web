@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   FileText, 
@@ -51,23 +51,7 @@ export default function MedicalRecordsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'patient') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadMedicalData();
-    }
-  }, [user, authLoading, router]);
-
-  const loadMedicalData = async () => {
+  const loadMedicalData = useCallback(async () => {
     try {
       setLoading(true);
       const [recordsRes, documentsRes] = await Promise.all([
@@ -90,7 +74,23 @@ export default function MedicalRecordsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'patient') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadMedicalData();
+    }
+  }, [user, authLoading, router, loadMedicalData]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,8 +128,8 @@ export default function MedicalRecordsPage() {
         title: '',
         description: ''
       });
-      
-      loadMedicalData();
+
+      await loadMedicalData();
     } catch (error: any) {
       logger.error('Failed to upload document', {
         userId: user?.id,
@@ -168,9 +168,9 @@ export default function MedicalRecordsPage() {
     }
 
     try {
-      await api.documents.delete(docId);
-      alert('Document deleted successfully');
-      loadMedicalData();
+  await api.documents.delete(docId);
+  alert('Document deleted successfully');
+  await loadMedicalData();
     } catch (error: any) {
       logger.error('Failed to delete document', {
         userId: user?.id,

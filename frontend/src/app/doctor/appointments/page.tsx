@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar, Clock, User, Phone, Mail, MapPin,
@@ -69,27 +69,17 @@ export default function DoctorAppointmentsPage() {
     today: 0,
   });
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
+  const calculateStats = useCallback((appts: Appointment[]) => {
+    const today = new Date().toISOString().split('T')[0];
+    setStats({
+      pending: appts.filter(a => a.status === 'pending').length,
+      confirmed: appts.filter(a => a.status === 'confirmed').length,
+      completed: appts.filter(a => a.status === 'completed').length,
+      today: appts.filter(a => a.date === today).length,
+    });
+  }, []);
 
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadAppointments();
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    filterAppointments();
-  }, [appointments, statusFilter, typeFilter, searchTerm, dateFilter]);
-
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     setLoadingData(true);
     try {
       const response = await api.appointments.list();
@@ -101,19 +91,9 @@ export default function DoctorAppointmentsPage() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [calculateStats]);
 
-  const calculateStats = (appts: Appointment[]) => {
-    const today = new Date().toISOString().split('T')[0];
-    setStats({
-      pending: appts.filter(a => a.status === 'pending').length,
-      confirmed: appts.filter(a => a.status === 'confirmed').length,
-      completed: appts.filter(a => a.status === 'completed').length,
-      today: appts.filter(a => a.date === today).length,
-    });
-  };
-
-  const filterAppointments = () => {
+  const filterAppointments = useCallback(() => {
     let filtered = [...appointments];
 
     // Status filter
@@ -156,7 +136,27 @@ export default function DoctorAppointmentsPage() {
     }
 
     setFilteredAppointments(filtered);
-  };
+  }, [appointments, statusFilter, typeFilter, dateFilter, searchTerm]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadAppointments();
+    }
+  }, [user, loading, router, loadAppointments]);
+
+  useEffect(() => {
+    filterAppointments();
+  }, [filterAppointments]);
 
   const handleConfirmAppointment = async (appointmentId: number) => {
     try {

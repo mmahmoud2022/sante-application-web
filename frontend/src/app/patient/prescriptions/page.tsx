@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Pill,
@@ -57,23 +57,7 @@ export default function PrescriptionsPage() {
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'patient') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadPrescriptions();
-    }
-  }, [user, authLoading, router]);
-
-  const loadPrescriptions = async () => {
+  const loadPrescriptions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.prescriptions.list();
@@ -90,7 +74,23 @@ export default function PrescriptionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'patient') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadPrescriptions();
+    }
+  }, [user, authLoading, router, loadPrescriptions]);
 
   const handleRenewPrescription = async (prescriptionId: number) => {
     if (!confirm('Souhaitez-vous demander le renouvellement de cette ordonnance ?')) {
@@ -98,9 +98,9 @@ export default function PrescriptionsPage() {
     }
 
     try {
-      await api.prescriptions.renew(prescriptionId);
-      alert('Renouvellement demandé avec succès !');
-      loadPrescriptions();
+  await api.prescriptions.renew(prescriptionId);
+  alert('Renouvellement demandé avec succès !');
+  await loadPrescriptions();
     } catch (error: any) {
       logger.error('Failed to renew prescription', {
         userId: user?.id,

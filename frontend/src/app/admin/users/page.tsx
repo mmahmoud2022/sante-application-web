@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Users, Search, Filter, Plus, Edit, Trash2, CheckCircle,
@@ -58,27 +58,18 @@ export default function AdminUsersPage() {
     inactive: 0,
   });
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
+  const calculateStats = useCallback((userList: User[]) => {
+    setStats({
+      total: userList.length,
+      patients: userList.filter(u => u.role === 'patient').length,
+      doctors: userList.filter(u => u.role === 'doctor').length,
+      admins: userList.filter(u => u.role === 'admin').length,
+      active: userList.filter(u => u.is_active).length,
+      inactive: userList.filter(u => !u.is_active).length,
+    });
+  }, []);
 
-    if (user && user.role !== 'admin') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadUsers();
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    filterUsers();
-  }, [users, roleFilter, statusFilter, searchTerm]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setLoadingData(true);
     try {
       const response = await api.users.list();
@@ -90,20 +81,9 @@ export default function AdminUsersPage() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [calculateStats]);
 
-  const calculateStats = (userList: User[]) => {
-    setStats({
-      total: userList.length,
-      patients: userList.filter(u => u.role === 'patient').length,
-      doctors: userList.filter(u => u.role === 'doctor').length,
-      admins: userList.filter(u => u.role === 'admin').length,
-      active: userList.filter(u => u.is_active).length,
-      inactive: userList.filter(u => !u.is_active).length,
-    });
-  };
-
-  const filterUsers = () => {
+  const filterUsers = useCallback(() => {
     let filtered = [...users];
 
     // Role filter
@@ -133,7 +113,27 @@ export default function AdminUsersPage() {
     }
 
     setFilteredUsers(filtered);
-  };
+  }, [users, roleFilter, statusFilter, searchTerm]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadUsers();
+    }
+  }, [user, loading, router, loadUsers]);
+
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
 
   const handleToggleUserStatus = async (userId: number, currentStatus: boolean) => {
     try {

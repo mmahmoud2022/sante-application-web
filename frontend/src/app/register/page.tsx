@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Heart, Mail, Lock, User, Phone, Calendar, AlertCircle, Building2 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { UserRole } from '@/types';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const searchParams = useSearchParams();
   const { register } = useAuth();
   
@@ -462,5 +462,19 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-warm-peach/20 to-secondary-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
   );
 }

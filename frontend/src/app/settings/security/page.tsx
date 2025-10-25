@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Shield, Smartphone, Mail, CheckCircle, AlertCircle,
@@ -341,7 +342,14 @@ export default function TwoFactorAuthPage() {
                         </p>
                         {qrCodeUrl && (
                           <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
-                            <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+                            <Image
+                              src={qrCodeUrl}
+                              alt="QR Code"
+                              width={192}
+                              height={192}
+                              className="w-48 h-48"
+                              unoptimized
+                            />
                           </div>
                         )}
                       </div>
