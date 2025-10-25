@@ -13,7 +13,6 @@ interface Notification {
   notification_type: string;
   title: string;
   message: string;
-  is_read: boolean;
   read_at?: string;
   created_at: string;
   action_url?: string;
@@ -64,7 +63,7 @@ export default function NotificationBell() {
       await api.put(`/notifications/${notificationId}/read`);
       setNotifications(prev =>
         prev.map(notif =>
-          notif.id === notificationId ? { ...notif, is_read: true } : notif
+          notif.id === notificationId ? { ...notif, read_at: new Date().toISOString() } : notif
         )
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -77,7 +76,7 @@ export default function NotificationBell() {
     try {
       await api.put('/notifications/read-all');
       setNotifications(prev =>
-        prev.map(notif => ({ ...notif, is_read: true }))
+        prev.map(notif => ({ ...notif, read_at: new Date().toISOString() }))
       );
       setUnreadCount(0);
     } catch (error) {
@@ -179,10 +178,10 @@ export default function NotificationBell() {
                     <div
                       key={notification.id}
                       className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
-                        !notification.is_read ? 'bg-primary-50 dark:bg-primary-900/10' : ''
+                        !notification.read_at ? 'bg-primary-50 dark:bg-primary-900/10' : ''
                       }`}
                       onClick={() => {
-                        if (!notification.is_read) {
+                        if (!notification.read_at) {
                           markAsRead(notification.id);
                         }
                         if (notification.action_url) {
@@ -193,7 +192,7 @@ export default function NotificationBell() {
                       <div className="flex items-start">
                         <div
                           className={`flex-shrink-0 w-2 h-2 mt-2 rounded-full ${
-                            !notification.is_read ? 'bg-primary-600' : 'bg-transparent'
+                            !notification.read_at ? 'bg-primary-600' : 'bg-transparent'
                           }`}
                         />
                         <div className="ml-3 flex-1 min-w-0">
