@@ -13,7 +13,6 @@ import {
   DollarSign,
   Heart,
   LogOut,
-  Bell,
   Clock,
   CheckCircle,
   XCircle,
@@ -22,12 +21,14 @@ import {
   Stethoscope,
   Star,
   Loader2,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Carousel } from '@/components/ui/Carousel';
 import { AlertsPanel } from '@/components/ui/AlertsPanel';
+import NotificationBell from '@/components/NotificationBell';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
 import {
@@ -330,9 +331,13 @@ export default function DoctorDashboard() {
               <span className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">| Espace Praticien</span>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="relative p-2.5 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-warm-coral rounded-full ring-2 ring-white dark:ring-neutral-800 animate-pulse"></span>
+              <NotificationBell />
+              <button
+                onClick={() => router.push('/doctor/messages')}
+                className="relative p-2.5 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"
+                title="Messages"
+              >
+                <MessageSquare className="h-6 w-6" />
               </button>
               <div className="flex items-center space-x-3">
                 <div className="text-right">

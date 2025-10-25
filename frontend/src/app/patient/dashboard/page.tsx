@@ -9,7 +9,6 @@ import {
   Heart,
   User,
   LogOut,
-  Bell,
   Search,
   Clock,
   ChevronRight,
@@ -24,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Carousel } from '@/components/ui/Carousel';
+import NotificationBell from '@/components/NotificationBell';
 //import { HealthMetrics } from '@/components/ui/HealthMetrics';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
@@ -290,13 +290,13 @@ export default function PatientDashboard() {
             </div>
 
             <div className="flex items-center space-x-4">
+              <NotificationBell />
               <button
-                aria-label="Notifications"
-                title="Notifications"
-                className="relative p-2.5 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all"
+                onClick={() => router.push('/patient/messages')}
+                className="relative p-2.5 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"
+                title="Messages"
               >
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-2 right-2 h-2 w-2 bg-warm-coral rounded-full ring-2 ring-white animate-pulse" />
+                <MessageSquare className="h-6 w-6" />
               </button>
 
               <div className="flex items-center space-x-3">
