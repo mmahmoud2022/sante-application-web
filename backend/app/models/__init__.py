@@ -13,6 +13,7 @@ from app.models.schedule import DoctorSchedule, DayOfWeek, ScheduleType
 from app.models.document import Document, DocumentType
 from app.models.health_device import HealthDeviceData, DeviceType, MeasurementType
 from app.models.waiting_list import WaitingList
+from app.models.message import Message
 
 __all__ = [
     "User",
@@ -41,4 +42,5 @@ __all__ = [
     "DeviceType",
     "MeasurementType",
     "WaitingList",
+    "Message",
 ]
