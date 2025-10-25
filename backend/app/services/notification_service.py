@@ -45,7 +45,7 @@ class NotificationService:
         """
         notification = Notification(
             user_id=user_id,
-            type=notification_type,
+            notification_type=notification_type,
             channel=channel,
             title=title,
             message=message,
@@ -171,17 +171,19 @@ class NotificationService:
             self.db.query(Notification).filter(Notification.id == notification_id).first()
         )
         if notification:
-            notification.is_read = True
+            from datetime import datetime
+            notification.read_at = datetime.utcnow()
             self.db.commit()
             return True
         return False
 
     def mark_all_as_read(self, user_id: int) -> int:
         """Mark all notifications for a user as read"""
+        from datetime import datetime
         count = (
             self.db.query(Notification)
-            .filter(Notification.user_id == user_id, Notification.is_read == False)
-            .update({"is_read": True})
+            .filter(Notification.user_id == user_id, Notification.read_at.is_(None))
+            .update({"read_at": datetime.utcnow()})
         )
         self.db.commit()
         return count
@@ -196,7 +198,7 @@ class NotificationService:
         query = self.db.query(Notification).filter(Notification.user_id == user_id)
 
         if unread_only:
-            query = query.filter(Notification.is_read == False)
+            query = query.filter(Notification.read_at.is_(None))
 
         notifications = query.order_by(Notification.created_at.desc()).limit(limit).all()
         return notifications
@@ -244,7 +246,7 @@ class NotificationService:
     def _should_send_sms(self, user: User) -> bool:
         """Check if user wants SMS notifications"""
         # TODO: Check user notification preferences
-        return user.phone_number is not None
+        return user.phone is not None
 
 
 async def send_password_reset_email(email: str, first_name: str, reset_url: str):

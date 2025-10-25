@@ -48,7 +48,7 @@ def get_unread_count(
         db.query(Notification)
         .filter(
             Notification.user_id == current_user.id,
-            Notification.is_read == False,
+            Notification.read_at.is_(None),
         )
         .count()
     )
