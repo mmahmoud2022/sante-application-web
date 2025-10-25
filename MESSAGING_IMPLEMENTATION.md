@@ -226,11 +226,11 @@ Potential improvements for future iterations:
 
 ## Browser Compatibility
 
-Tested and compatible with:
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+Tested and compatible with modern browsers:
+- Chrome 100+
+- Firefox 100+
+- Safari 15+
+- Edge 100+
 
 ## Conclusion
 
