@@ -13,7 +13,9 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 
 ## 🚀 Improvements & New Features
 
-**📋 [Comprehensive Improvements & New Features Guide](AMELIORATIONS_FONCTIONNALITES.md)** - Detailed roadmap with 144+ features across 6 phases over 24 months (in French)
+**📋 Roadmap Documentation**:
+- **[English Summary](IMPROVEMENTS_ROADMAP.md)** - Executive summary and roadmap overview
+- **[Guide Complet en Français](AMELIORATIONS_FONCTIONNALITES.md)** - Version détaillée avec 144+ fonctionnalités sur 6 phases (24 mois)
 
 ## 🎨 Design System
 
