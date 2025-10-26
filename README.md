@@ -11,6 +11,10 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 
 👉 [**View UI Enhancements Documentation**](ENHANCED_UI_FEATURES.md) | [**Try Demo Page**](/ui-showcase)
 
+## 🚀 Improvements & New Features
+
+**📋 [Comprehensive Improvements & New Features Guide](AMELIORATIONS_FONCTIONNALITES.md)** - Detailed roadmap with 144+ features across 6 phases over 24 months (in French)
+
 ## 🎨 Design System
 
 ### Color Palette
