@@ -40,14 +40,6 @@ export const useAuthStore = create<AuthState>()(
           const response = await api.auth.login(email, password, rememberMe);
           const { access_token, refresh_token } = response.data;
 
-          // Store tokens in localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('access_token', access_token);
-            if (refresh_token) {
-              localStorage.setItem('refresh_token', refresh_token);
-            }
-          }
-
           // Fetch user data
           const userResponse = await api.users.me();
           const userData = userResponse.data;
@@ -59,6 +51,14 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             loading: false,
           });
+
+          // Sync tokens to localStorage for API interceptor
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('access_token', access_token);
+            if (refresh_token) {
+              localStorage.setItem('refresh_token', refresh_token);
+            }
+          }
         } catch (error) {
           set({ loading: false });
           throw error;

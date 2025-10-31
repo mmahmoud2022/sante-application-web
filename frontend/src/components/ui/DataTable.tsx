@@ -44,13 +44,25 @@ export function DataTable<TData>({
   const handleExport = () => {
     // Get column definitions for export
     const exportColumns = columns
-      .filter(col => col.id || (col as any).accessorKey)
-      .map(col => ({
-        key: col.id || (col as any).accessorKey,
-        label: typeof col.header === 'string' ? col.header : col.id || (col as any).accessorKey,
-      }));
+      .filter(col => {
+        const hasId = 'id' in col && col.id;
+        const hasAccessorKey = 'accessorKey' in col && col.accessorKey;
+        return hasId || hasAccessorKey;
+      })
+      .map(col => {
+        const id = 'id' in col ? col.id : undefined;
+        const accessorKey = 'accessorKey' in col ? col.accessorKey : undefined;
+        const key = id || accessorKey || 'unknown';
+        const header = col.header;
+        const label = typeof header === 'string' ? header : key;
+        
+        return {
+          key: String(key),
+          label: String(label),
+        };
+      });
 
-    downloadCSV(data as any[], exportFilename, exportColumns);
+    downloadCSV(data as Record<string, any>[], exportFilename, exportColumns);
   };
 
   const table = useReactTable({

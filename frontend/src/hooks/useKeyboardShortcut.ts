@@ -3,7 +3,7 @@
  * Handles keyboard shortcuts in a declarative way
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 
 type KeyboardShortcutHandler = (event: KeyboardEvent) => void;
 
@@ -20,9 +20,10 @@ export function useKeyboardShortcut(
   handler: KeyboardShortcutHandler,
   deps: any[] = []
 ) {
-  const shortcutConfig = typeof config === 'string' 
-    ? { key: config } 
-    : config;
+  const shortcutConfig = useMemo(() => 
+    typeof config === 'string' ? { key: config } : config,
+    [config]
+  );
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     const { key, ctrlKey = false, shiftKey = false, altKey = false, metaKey = false } = shortcutConfig;
@@ -38,7 +39,7 @@ export function useKeyboardShortcut(
       event.preventDefault();
       handler(event);
     }
-  }, [shortcutConfig, handler, ...deps]);
+  }, [shortcutConfig.key, shortcutConfig.ctrlKey, shortcutConfig.shiftKey, shortcutConfig.altKey, shortcutConfig.metaKey, handler, ...deps]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

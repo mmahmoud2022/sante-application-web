@@ -28,7 +28,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   toasts: [],
 
   addToast: (toast: Omit<Toast, 'id'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
+    const id = crypto.randomUUID();
     const newToast: Toast = { ...toast, id };
     
     set((state) => ({
@@ -37,17 +37,27 @@ export const useNotificationStore = create<NotificationState>((set) => ({
 
     // Auto-remove toast after duration
     const duration = toast.duration || 5000;
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id),
       }));
     }, duration);
+
+    // Store timeout ID for cleanup
+    (newToast as any).timeoutId = timeoutId;
   },
 
   removeToast: (id: string) => {
-    set((state) => ({
-      toasts: state.toasts.filter((toast) => toast.id !== id),
-    }));
+    set((state) => {
+      const toastToRemove = state.toasts.find((t) => t.id === id);
+      // Clear timeout if exists
+      if (toastToRemove && (toastToRemove as any).timeoutId) {
+        clearTimeout((toastToRemove as any).timeoutId);
+      }
+      return {
+        toasts: state.toasts.filter((toast) => toast.id !== id),
+      };
+    });
   },
 
   clearAllToasts: () => {
