@@ -3,12 +3,15 @@ File upload validation and processing service
 """
 import os
 import hashlib
+import logging
 import magic
 from typing import Optional, Tuple
 from PIL import Image
 from io import BytesIO
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class FileValidationError(Exception):
@@ -264,7 +267,7 @@ class FileUploadService:
                 result['thumbnail'] = thumbnail
             except Exception as e:
                 # Thumbnail generation is optional, so don't fail
-                print(f"Warning: Failed to generate thumbnail: {e}")
+                logger.warning(f"Failed to generate thumbnail: {e}")
         
         # Virus scanning would happen here
         # For now, we skip it in development

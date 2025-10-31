@@ -205,8 +205,11 @@ class AuditLogService:
         import logging
         import os
         
+        # Create a copy to avoid mutating the original
+        log_entry_copy = log_entry.copy()
+        
         # Format log entry
-        log_line = json.dumps(log_entry, default=str)
+        log_line = json.dumps(log_entry_copy, default=str)
         
         # Console output (development only)
         from app.core.config import settings
@@ -215,19 +218,19 @@ class AuditLogService:
         
         # Store in database
         try:
-            # Parse timestamp back to datetime object
-            timestamp = log_entry.pop("timestamp", None)
+            # Remove timestamp from copy for database storage
+            log_entry_copy.pop("timestamp", None)
             
             audit_log = AuditLog(
-                action=log_entry.get("action"),
-                user_id=log_entry.get("user_id"),
-                resource_type=log_entry.get("resource_type"),
-                resource_id=log_entry.get("resource_id"),
-                ip_address=log_entry.get("ip_address"),
-                user_agent=log_entry.get("user_agent"),
-                success=log_entry.get("success", True),
-                error_message=log_entry.get("error_message"),
-                details=log_entry.get("details"),
+                action=log_entry_copy.get("action"),
+                user_id=log_entry_copy.get("user_id"),
+                resource_type=log_entry_copy.get("resource_type"),
+                resource_id=log_entry_copy.get("resource_id"),
+                ip_address=log_entry_copy.get("ip_address"),
+                user_agent=log_entry_copy.get("user_agent"),
+                success=log_entry_copy.get("success", True),
+                error_message=log_entry_copy.get("error_message"),
+                details=log_entry_copy.get("details"),
             )
             self.db.add(audit_log)
             self.db.commit()

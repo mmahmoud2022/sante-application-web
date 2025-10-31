@@ -186,16 +186,23 @@ def translate(key: str, language: str = 'en', **kwargs) -> str:
     Returns:
         Translated message
     """
+    import logging
+    
     # Get translation or fall back to English
     translations = TRANSLATIONS.get(language, TRANSLATIONS['en'])
-    message = translations.get(key, key)
+    message = translations.get(key)
+    
+    # If not found, log missing translation and return explicit message
+    if message is None:
+        logging.warning(f"Missing translation for key '{key}' in language '{language}'")
+        message = f"[Missing translation: {key}]"
     
     # Substitute variables if provided
     if kwargs:
         try:
             message = message.format(**kwargs)
-        except KeyError:
-            pass
+        except KeyError as e:
+            logging.warning(f"Missing variable in translation '{key}': {e}")
     
     return message
 

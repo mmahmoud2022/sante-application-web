@@ -207,7 +207,9 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         manager.disconnect(websocket, user.id)
     except Exception as e:
-        print(f"WebSocket error for user {user.id}: {e}")
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"WebSocket error for user {user.id}: {e}", exc_info=True)
         manager.disconnect(websocket, user.id)
 
 
