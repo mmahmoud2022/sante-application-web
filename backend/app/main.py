@@ -94,7 +94,7 @@ async def health_check():
 
 # Custom OpenAPI schema
 def custom_openapi():
-    """Customize OpenAPI schema"""
+    """Customize OpenAPI schema with enhanced documentation"""
     if app.openapi_schema:
         return app.openapi_schema
     
@@ -109,6 +109,189 @@ def custom_openapi():
     openapi_schema["info"]["x-logo"] = {
         "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
     }
+    
+    # Add contact information
+    openapi_schema["info"]["contact"] = {
+        "name": "API Support",
+        "email": "support@sante-app.com",
+        "url": "https://sante-app.com/support"
+    }
+    
+    # Add license information
+    openapi_schema["info"]["license"] = {
+        "name": "Proprietary",
+        "url": "https://sante-app.com/license"
+    }
+    
+    # Add security schemes documentation
+    if "components" not in openapi_schema:
+        openapi_schema["components"] = {}
+    
+    openapi_schema["components"]["securitySchemes"] = {
+        "Bearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter your JWT token in the format: Bearer <token>"
+        }
+    }
+    
+    # Add common error responses
+    openapi_schema["components"]["responses"] = {
+        "UnauthorizedError": {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "UNAUTHORIZED"},
+                                    "message": {"type": "string", "example": "Authentication required"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ForbiddenError": {
+            "description": "Insufficient permissions",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "FORBIDDEN"},
+                                    "message": {"type": "string", "example": "Not enough permissions"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "NotFoundError": {
+            "description": "Resource not found",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "NOT_FOUND"},
+                                    "message": {"type": "string", "example": "Resource not found"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ValidationError": {
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "VALIDATION_ERROR"},
+                                    "message": {"type": "string", "example": "Invalid input"},
+                                    "details": {"type": "object"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "RateLimitError": {
+            "description": "Rate limit exceeded",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "string",
+                                "example": "Rate limit exceeded"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    # Add tags metadata with descriptions
+    openapi_schema["tags"] = [
+        {
+            "name": "Authentication",
+            "description": "User authentication and authorization endpoints including login, registration, and password reset"
+        },
+        {
+            "name": "Users",
+            "description": "User management endpoints for profiles and user data"
+        },
+        {
+            "name": "Appointments",
+            "description": "Appointment scheduling, management, and cancellation"
+        },
+        {
+            "name": "Doctor",
+            "description": "Doctor-specific features including patient lists and schedules"
+        },
+        {
+            "name": "Patient",
+            "description": "Patient-specific features and medical history"
+        },
+        {
+            "name": "Medical Records",
+            "description": "Medical record management and access"
+        },
+        {
+            "name": "Prescriptions",
+            "description": "Prescription creation and management"
+        },
+        {
+            "name": "Documents",
+            "description": "Document upload and management"
+        },
+        {
+            "name": "Messages",
+            "description": "Messaging between users"
+        },
+        {
+            "name": "Notifications",
+            "description": "Push notifications and alerts"
+        },
+        {
+            "name": "Health",
+            "description": "Health check endpoints for monitoring"
+        },
+        {
+            "name": "Audit Logs",
+            "description": "Audit trail and compliance logging"
+        },
+        {
+            "name": "GDPR Compliance",
+            "description": "GDPR compliance features including data export and deletion"
+        },
+        {
+            "name": "WebSocket",
+            "description": "Real-time communication via WebSocket"
+        }
+    ]
     
     app.openapi_schema = openapi_schema
     return app.openapi_schema

@@ -20,6 +20,7 @@ python-dotenv==1.0.0
 # Task Queue
 celery==5.3.4
 redis==5.0.1
+flower==2.0.1  # Celery monitoring tool
 
 # HTTP Requests
 httpx==0.25.1
