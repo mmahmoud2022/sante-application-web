@@ -165,16 +165,23 @@ class TestDatabaseMigration:
     def test_migration_file_exists(self):
         """Test that performance indexes migration file exists"""
         import os
-        migration_path = "/home/runner/work/sante-application-web/sante-application-web/backend/alembic/versions/003_add_performance_indexes.py"
-        assert os.path.exists(migration_path)
+        import pathlib
+        # Get path relative to test file
+        test_dir = pathlib.Path(__file__).parent
+        backend_dir = test_dir.parent
+        migration_path = backend_dir / "alembic" / "versions" / "003_add_performance_indexes.py"
+        assert migration_path.exists()
     
     def test_migration_has_upgrade_downgrade(self):
         """Test that migration has upgrade and downgrade functions"""
-        with open("/home/runner/work/sante-application-web/sante-application-web/backend/alembic/versions/003_add_performance_indexes.py", "r") as f:
-            content = f.read()
-            assert "def upgrade():" in content
-            assert "def downgrade():" in content
-            assert "create_index" in content
+        import pathlib
+        test_dir = pathlib.Path(__file__).parent
+        backend_dir = test_dir.parent
+        migration_path = backend_dir / "alembic" / "versions" / "003_add_performance_indexes.py"
+        content = migration_path.read_text()
+        assert "def upgrade():" in content
+        assert "def downgrade():" in content
+        assert "create_index" in content
 
 
 if __name__ == "__main__":

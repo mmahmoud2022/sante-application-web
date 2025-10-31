@@ -14,6 +14,26 @@ Performance Impact:
 - Improves query performance by 5-10x on large datasets
 - Small overhead on write operations (acceptable trade-off)
 - Recommended for production deployment
+
+IMPORTANT PRODUCTION NOTE:
+For zero-downtime deployments on large tables, consider using CONCURRENTLY:
+1. Run this migration outside of a transaction
+2. Set postgresql_concurrently=True for index creation
+3. Monitor index creation progress with:
+   SELECT * FROM pg_stat_progress_create_index;
+
+Example for concurrent index creation:
+    op.create_index(
+        'ix_appointments_patient_id',
+        'appointments',
+        ['patient_id'],
+        unique=False,
+        postgresql_concurrently=True  # No table locks
+    )
+
+Note: Concurrent index creation cannot run in a transaction, so either:
+- Run alembic with --sql and execute manually
+- Or create a separate migration with transaction=False
 """
 from alembic import op
 import sqlalchemy as sa
@@ -32,18 +52,22 @@ def upgrade():
     
     This migration adds indexes that significantly improve query performance
     for common access patterns in the application.
+    
+    Note: For production, consider creating indexes CONCURRENTLY to avoid
+    table locks. See migration docstring for details.
     """
     
     # === Appointments Table Indexes ===
     
     # Foreign key indexes (if not already created by the database)
     # These improve JOIN performance and foreign key constraint checks
+    # For production: Set postgresql_concurrently=True for zero-downtime
     op.create_index(
         'ix_appointments_patient_id',
         'appointments',
         ['patient_id'],
         unique=False,
-        postgresql_concurrently=False  # Set to True in production for zero-downtime
+        postgresql_concurrently=False  # Change to True for production zero-downtime
     )
     
     op.create_index(
