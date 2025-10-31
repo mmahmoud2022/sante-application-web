@@ -74,12 +74,15 @@ class TestAppointmentSchemas:
             (AppointmentType.PHONE_CALL, "phone_call"),
         ]
         
+        # Use fixed datetime for deterministic test behavior
+        fixed_datetime = datetime(2025, 12, 1, 10, 0)
+        
         for appointment_type, expected_serialized in test_cases:
             response = AppointmentResponse(
                 id=1,
                 patient_id=2,
                 doctor_id=3,
-                appointment_date=datetime(2025, 12, 1, 10, 0),
+                appointment_date=fixed_datetime,
                 duration_minutes=30,
                 appointment_type=appointment_type,
                 status=AppointmentStatus.PENDING,
@@ -92,7 +95,7 @@ class TestAppointmentSchemas:
                 cancelled_by=None,
                 cancellation_reason=None,
                 cancelled_at=None,
-                created_at=datetime.now(),
+                created_at=fixed_datetime,
                 updated_at=None,
             )
             
@@ -106,9 +109,11 @@ class TestAppointmentSchemas:
     def test_appointment_backward_compatibility(self):
         """Test that backend accepts legacy frontend values for backward compatibility."""
         # Test backward compatibility with old values
+        # Note: Legacy mapping includes "home_visit" which historically mapped to PHONE_CALL
+        # in the codebase, despite the semantic difference. This maintains API compatibility.
         legacy_mappings = [
-            ("video", AppointmentType.VIDEO_CALL),  # Old: "video" -> New: VIDEO_CALL
-            ("home_visit", AppointmentType.PHONE_CALL),  # Old: "home_visit" -> New: PHONE_CALL
+            ("video", AppointmentType.VIDEO_CALL),  # Legacy shorthand for video calls
+            ("home_visit", AppointmentType.PHONE_CALL),  # Legacy value maintained for compatibility
         ]
         
         for legacy_value, expected_type in legacy_mappings:
