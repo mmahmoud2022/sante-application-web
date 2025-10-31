@@ -20,6 +20,7 @@ from app.api.v1.endpoints import (
     health,
     audit,
     gdpr,
+    websocket,
 )
 
 api_router = APIRouter()
@@ -41,3 +42,4 @@ api_router.include_router(waiting_lists.router, prefix="/waiting-lists", tags=["
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(audit.router, prefix="/audit", tags=["Audit Logs"])
 api_router.include_router(gdpr.router, prefix="/gdpr", tags=["GDPR Compliance"])
+api_router.include_router(websocket.router, prefix="/websocket", tags=["WebSocket"])

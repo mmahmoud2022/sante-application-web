@@ -68,6 +68,10 @@ slowapi==0.1.9
 # Caching
 fastapi-cache2==0.2.1
 
+# File Processing
+python-magic==0.4.27
+Pillow==10.1.0
+
 # Error Tracking & Monitoring
 sentry-sdk[fastapi]==1.39.1
 
