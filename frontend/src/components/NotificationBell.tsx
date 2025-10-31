@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import { Bell } from 'lucide-react';
 
 interface Notification {
@@ -39,7 +39,7 @@ export default function NotificationBell() {
 
   const loadUnreadCount = async () => {
     try {
-      const response = await api.get('/notifications/unread-count');
+      const response = await api.notifications.unreadCount();
       setUnreadCount(response.data.unread_count);
     } catch (error) {
       console.error('Failed to load unread count:', error);
@@ -49,7 +49,7 @@ export default function NotificationBell() {
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/notifications?limit=20');
+      const response = await api.notifications.list({ limit: 20 });
       setNotifications(response.data);
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -60,7 +60,7 @@ export default function NotificationBell() {
 
   const markAsRead = async (notificationId: number) => {
     try {
-      await api.put(`/notifications/${notificationId}/read`);
+      await api.notifications.markAsRead(notificationId);
       setNotifications(prev =>
         prev.map(notif =>
           notif.id === notificationId ? { ...notif, read_at: new Date().toISOString() } : notif
@@ -74,7 +74,7 @@ export default function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await api.put('/notifications/read-all');
+      await api.notifications.markAllAsRead();
       setNotifications(prev =>
         prev.map(notif => ({ ...notif, read_at: new Date().toISOString() }))
       );

@@ -41,17 +41,14 @@ export default function ProfilePage() {
     first_name: '',
     last_name: '',
     email: '',
-    phone_number: '',
+    phone: '',
     date_of_birth: '',
-    gender: '',
-    address: '',
+    address_line1: '',
+    address_line2: '',
     city: '',
+    state: '',
     postal_code: '',
     country: '',
-    insurance_provider: '',
-    insurance_number: '',
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
   });
 
   useEffect(() => {
@@ -66,21 +63,33 @@ export default function ProfilePage() {
     }
 
     if (user) {
+      const userData = user as any;
+      
+      // Format date_of_birth to YYYY-MM-DD for input type="date"
+      let formattedDate = '';
+      if (user.date_of_birth) {
+        try {
+          const date = new Date(user.date_of_birth);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          console.error('Error formatting date:', e);
+        }
+      }
+      
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        phone_number: user.phone_number || '',
-        date_of_birth: user.date_of_birth || '',
-        gender: user.gender || '',
-        address: user.address || '',
-        city: user.city || '',
-        postal_code: user.postal_code || '',
-        country: user.country || '',
-        insurance_provider: user.insurance_provider || '',
-        insurance_number: user.insurance_number || '',
-        emergency_contact_name: user.emergency_contact_name || '',
-        emergency_contact_phone: user.emergency_contact_phone || '',
+        phone: userData.phone || '',
+        date_of_birth: formattedDate,
+        address_line1: userData.address_line1 || '',
+        address_line2: userData.address_line2 || '',
+        city: userData.city || '',
+        state: userData.state || '',
+        postal_code: userData.postal_code || '',
+        country: userData.country || '',
       });
     }
   }, [user, authLoading, router]);
@@ -116,21 +125,33 @@ export default function ProfilePage() {
   const handleCancel = () => {
     // Reset form to original user data
     if (user) {
+      const userData = user as any;
+      
+      // Format date_of_birth to YYYY-MM-DD for input type="date"
+      let formattedDate = '';
+      if (user.date_of_birth) {
+        try {
+          const date = new Date(user.date_of_birth);
+          if (!isNaN(date.getTime())) {
+            formattedDate = date.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          console.error('Error formatting date:', e);
+        }
+      }
+      
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        phone_number: user.phone_number || '',
-        date_of_birth: user.date_of_birth || '',
-        gender: user.gender || '',
-        address: user.address || '',
-        city: user.city || '',
-        postal_code: user.postal_code || '',
-        country: user.country || '',
-        insurance_provider: user.insurance_provider || '',
-        insurance_number: user.insurance_number || '',
-        emergency_contact_name: user.emergency_contact_name || '',
-        emergency_contact_phone: user.emergency_contact_phone || '',
+        phone: userData.phone || '',
+        date_of_birth: formattedDate,
+        address_line1: userData.address_line1 || '',
+        address_line2: userData.address_line2 || '',
+        city: userData.city || '',
+        state: userData.state || '',
+        postal_code: userData.postal_code || '',
+        country: userData.country || '',
       });
     }
     setEditing(false);
@@ -334,8 +355,8 @@ export default function ProfilePage() {
                       Numéro de téléphone
                     </label>
                     <Input
-                      name="phone_number"
-                      value={formData.phone_number}
+                      name="phone"
+                      value={formData.phone}
                       onChange={handleInputChange}
                       disabled={!editing}
                       placeholder="+33 6 12 34 56 78"
@@ -353,22 +374,6 @@ export default function ProfilePage() {
                       disabled={!editing}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Genre
-                    </label>
-                    <Select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      disabled={!editing}
-                    >
-                      <option value="">Sélectionner</option>
-                      <option value="male">Homme</option>
-                      <option value="female">Femme</option>
-                      <option value="other">Autre</option>
-                    </Select>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -385,17 +390,29 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Adresse
+                      Adresse ligne 1
                     </label>
                     <Input
-                      name="address"
-                      value={formData.address}
+                      name="address_line1"
+                      value={formData.address_line1}
                       onChange={handleInputChange}
                       disabled={!editing}
                       placeholder="123 Rue de la Paix"
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Adresse ligne 2 (optionnel)
+                    </label>
+                    <Input
+                      name="address_line2"
+                      value={formData.address_line2}
+                      onChange={handleInputChange}
+                      disabled={!editing}
+                      placeholder="Appartement 5B"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Ville
@@ -406,6 +423,18 @@ export default function ProfilePage() {
                         onChange={handleInputChange}
                         disabled={!editing}
                         placeholder="Paris"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Région/État
+                      </label>
+                      <Input
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        disabled={!editing}
+                        placeholder="Île-de-France"
                       />
                     </div>
                     <div>
@@ -432,82 +461,6 @@ export default function ProfilePage() {
                         placeholder="France"
                       />
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Insurance Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Shield className="w-5 h-5 mr-2" />
-                  Informations d'assurance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Assureur
-                    </label>
-                    <Input
-                      name="insurance_provider"
-                      value={formData.insurance_provider}
-                      onChange={handleInputChange}
-                      disabled={!editing}
-                      placeholder="Sécurité Sociale"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Numéro d'assurance
-                    </label>
-                    <Input
-                      name="insurance_number"
-                      value={formData.insurance_number}
-                      onChange={handleInputChange}
-                      disabled={!editing}
-                      placeholder="1 23 45 67 890 123"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Emergency Contact */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Heart className="w-5 h-5 mr-2 text-red-500" />
-                  Contact d'urgence
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nom du contact
-                    </label>
-                    <Input
-                      name="emergency_contact_name"
-                      value={formData.emergency_contact_name}
-                      onChange={handleInputChange}
-                      disabled={!editing}
-                      placeholder="Jean Dupont"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Téléphone du contact
-                    </label>
-                    <Input
-                      name="emergency_contact_phone"
-                      value={formData.emergency_contact_phone}
-                      onChange={handleInputChange}
-                      disabled={!editing}
-                      placeholder="+33 6 98 76 54 32"
-                    />
                   </div>
                 </div>
               </CardContent>

@@ -32,6 +32,7 @@ function RegisterPageContent() {
     specialization: '',
     licenseNumber: '',
     practiceName: '',
+    city: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +67,11 @@ function RegisterPageContent() {
       return;
     }
 
+    if (role === UserRole.DOCTOR && !formData.city.trim()) {
+      setError('La ville est obligatoire pour les praticiens.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -75,12 +81,13 @@ function RegisterPageContent() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         role: role,
-        phone_number: formData.phoneNumber || undefined,
+        phone: formData.phoneNumber || undefined,
         date_of_birth: formData.dateOfBirth || undefined,
         gender: formData.gender || undefined,
         specialization: role === UserRole.DOCTOR ? formData.specialization : undefined,
         license_number: role === UserRole.DOCTOR ? formData.licenseNumber : undefined,
         practice_name: role === UserRole.DOCTOR ? formData.practiceName.trim() : undefined,
+        city: role === UserRole.DOCTOR ? formData.city.trim() : undefined,
       });
     } catch (err: any) {
       setError(err.message || 'L\'inscription a échoué. Veuillez réessayer.');
@@ -344,6 +351,24 @@ function RegisterPageContent() {
                       placeholder="Ex: Médecin généraliste, Cardiologue..."
                       required={role === UserRole.DOCTOR}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+                      Ville <span className="text-accent-error">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                      placeholder="Ex: Paris, Lyon, Marseille..."
+                      required={role === UserRole.DOCTOR}
+                    />
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 flex items-center">
+                      <span className="mr-2">📍</span> Permet aux patients de vous trouver facilement
+                    </p>
                   </div>
 
                   <div>

@@ -5,29 +5,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-
-interface Message {
-  id: number;
-  sender_id: number;
-  recipient_id: number;
-  subject?: string;
-  content: string;
-  is_read: boolean;
-  read_at?: string;
-  created_at: string;
-}
-
-interface Conversation {
-  other_user_id: number;
-  other_user_name: string;
-  other_user_role: string;
-  last_message?: Message;
-  unread_count: number;
-}
+import { Message, Conversation, MessageCreate } from '@/types';
 
 export default function Messages() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -52,7 +34,7 @@ export default function Messages() {
 
   const loadCurrentUser = async () => {
     try {
-      const response = await api.get('/users/me');
+      const response = await api.users.me();
       setCurrentUserId(response.data.id);
     } catch (error) {
       console.error('Failed to load current user:', error);
@@ -62,7 +44,7 @@ export default function Messages() {
   const loadConversations = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/messages/conversations');
+      const response = await api.messages.listConversations();
       setConversations(response.data);
     } catch (error) {
       console.error('Failed to load conversations:', error);
@@ -73,11 +55,14 @@ export default function Messages() {
 
   const loadMessages = async (otherUserId: number) => {
     try {
-      const response = await api.get(`/messages/conversations/${otherUserId}`);
-      setMessages(response.data.reverse());
+      const response = await api.messages.getConversation(otherUserId);
+      const orderedMessages: Message[] = Array.isArray(response.data)
+        ? [...(response.data as Message[])].reverse()
+        : [];
+      setMessages(orderedMessages);
       
       // Mark conversation as read
-      await api.put(`/messages/conversations/${otherUserId}/read`);
+      await api.messages.markConversationAsRead(otherUserId);
       
       // Update unread count in conversations list
       setConversations(prev => 
@@ -97,11 +82,14 @@ export default function Messages() {
 
     try {
       setSending(true);
-      const response = await api.post('/messages', {
+      
+      const messageData: MessageCreate = {
         recipient_id: selectedConversation.other_user_id,
-        subject: messageSubject.trim() || null,
         content: messageContent.trim(),
-      });
+        subject: messageSubject.trim() || undefined,
+      };
+      
+      const response = await api.messages.sendMessage(messageData);
 
       setMessages([...messages, response.data]);
       setMessageContent('');

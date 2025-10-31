@@ -217,27 +217,26 @@ function PatientBookAppointmentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
+      <div className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* --- Header --- */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary-100">
-              <CalendarIcon className="h-6 w-6 text-primary-600" />
-            </div>
+        <header className="mb-8 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 sticky top-0 z-40">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-neutral-900">Réserver un rendez-vous</h1>
-              <p className="text-sm text-neutral-500">
-                Choisissez un médecin, une date et un créneau pour confirmer votre consultation.
+              <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-neutral-100">
+                Prendre rendez-vous
+              </h1>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                Réservez une consultation avec votre médecin
               </p>
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <Button variant="outline" onClick={() => router.push('/patient/dashboard')}>
+            <Button type="button" variant="outline" onClick={() => router.push('/patient/dashboard')}>
               <ArrowLeft className="h-5 w-5 mr-2" />
               Tableau de bord
             </Button>
-            <Button variant="outline" onClick={() => router.push('/patient/appointments')}>
+            <Button type="button" variant="outline" onClick={() => router.push('/patient/appointments')}>
               Mes rendez-vous
             </Button>
           </div>
@@ -354,6 +353,7 @@ function PatientBookAppointmentContent() {
 
               <div className="flex justify-end">
                 <Button
+                  type="button"
                   onClick={handleBookAppointment}
                   loading={booking}
                   disabled={booking || !selectedDoctorId || !chiefComplaint.trim()}

@@ -1,9 +1,9 @@
 """
 User schemas for request/response validation
 """
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from typing import Optional
-from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
+from typing import Optional, Union
+from datetime import datetime, date
 
 from app.models.user import UserRole
 
@@ -21,6 +21,34 @@ class UserCreate(UserBase):
     """Schema for creating a new user"""
     password: str = Field(..., min_length=8, max_length=100)
     admin_secret: Optional[str] = None  # Required only for admin registration
+    
+    # Additional optional fields
+    date_of_birth: Optional[Union[datetime, date, str]] = None
+    gender: Optional[str] = None
+    
+    # Doctor-specific fields
+    specialization: Optional[str] = Field(None, max_length=100)
+    license_number: Optional[str] = Field(None, max_length=50)
+    practice_name: Optional[str] = Field(None, max_length=200)
+    city: Optional[str] = Field(None, max_length=100)
+    
+    @field_validator('date_of_birth', mode='before')
+    @classmethod
+    def parse_date_of_birth(cls, v):
+        """Parse date_of_birth from string if needed"""
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            try:
+                # Try parsing as date only (YYYY-MM-DD) and convert to datetime
+                return datetime.strptime(v, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    # Try parsing as datetime
+                    return datetime.fromisoformat(v.replace('Z', '+00:00'))
+                except ValueError:
+                    return None
+        return v
 
 
 class UserLogin(BaseModel):
@@ -34,7 +62,7 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
     last_name: Optional[str] = Field(None, min_length=1, max_length=100)
     phone: Optional[str] = Field(None, max_length=20)
-    date_of_birth: Optional[datetime] = None
+    date_of_birth: Optional[Union[datetime, date, str]] = None
     specialization: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = None
     experience_years: Optional[int] = Field(None, ge=0)
@@ -47,6 +75,24 @@ class UserUpdate(BaseModel):
     country: Optional[str] = Field(None, max_length=100)
     is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
+    
+    @field_validator('date_of_birth', mode='before')
+    @classmethod
+    def parse_date_of_birth(cls, v):
+        """Parse date_of_birth from string if needed"""
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            try:
+                # Try parsing as date only (YYYY-MM-DD) and convert to datetime
+                return datetime.strptime(v, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    # Try parsing as datetime
+                    return datetime.fromisoformat(v.replace('Z', '+00:00'))
+                except ValueError:
+                    return None
+        return v
 
 
 class UserResponse(UserBase):

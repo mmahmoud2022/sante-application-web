@@ -181,6 +181,8 @@ function CreatePrescriptionContent() {
           start_date: today,
         };
 
+        console.log('🔍 DEBUG: Creating prescription with payload:', payload);
+
         if (med.file) {
           return api.prescriptions.upload(med.file, payload);
         }
@@ -188,7 +190,8 @@ function CreatePrescriptionContent() {
         return api.prescriptions.create(payload);
       });
 
-      await Promise.all(prescriptionPromises);
+      const results = await Promise.all(prescriptionPromises);
+      console.log('✅ DEBUG: Prescription creation results:', results);
 
       setMessage({
         type: 'success',
@@ -200,6 +203,8 @@ function CreatePrescriptionContent() {
         router.push('/doctor/prescriptions');
       }, 1500);
     } catch (error: any) {
+      console.error('❌ DEBUG: Prescription creation error:', error);
+      console.error('❌ DEBUG: Error response:', error?.response?.data);
       logger.error('Failed to create prescription', {
         userId: user?.id,
         patientId: selectedPatientId,

@@ -32,16 +32,14 @@ import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
-import { Appointment, User as UserType, AppointmentStatus, AppointmentType } from '@/types';
+import { Appointment, AppointmentStatus, AppointmentType } from '@/types';
 
 export default function AppointmentsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [doctors, setDoctors] = useState<UserType[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
-  const [showBookingForm, setShowBookingForm] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   
   // Calendar state
@@ -50,7 +48,6 @@ export default function AppointmentsPage() {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   
   // Booking form state
-  const [selectedDoctor, setSelectedDoctor] = useState<number | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [appointmentType, setAppointmentType] = useState<AppointmentType>(AppointmentType.IN_PERSON);
   const [chiefComplaint, setChiefComplaint] = useState('');
@@ -60,7 +57,6 @@ export default function AppointmentsPage() {
 
   const resetBookingForm = useCallback(() => {
     setEditingAppointment(null);
-    setSelectedDoctor(null);
     setSelectedDate(null);
     setSelectedSlot(null);
     setAppointmentType(AppointmentType.IN_PERSON);
@@ -70,14 +66,9 @@ export default function AppointmentsPage() {
   }, []);
 
   const closeBookingForm = useCallback(() => {
-    setShowBookingForm(false);
     resetBookingForm();
   }, [resetBookingForm]);
 
-  const handleStartBooking = useCallback(() => {
-    resetBookingForm();
-    setShowBookingForm(true);
-  }, [resetBookingForm]);
 
   const loadData = useCallback(async () => {
     if (!user) {
@@ -88,45 +79,11 @@ export default function AppointmentsPage() {
     setLoadingData(true);
 
     try {
-      const results = await Promise.allSettled([
-        api.appointments.list({ limit: 100 }),
-        api.users.doctors({ limit: 100 }),
-      ]);
-
-      const [appointmentsRes, doctorsRes] = results;
-
-      if (appointmentsRes.status === 'fulfilled') {
-        const nextAppointments = dedupeById<Appointment>(
-          extractItems<Appointment>(appointmentsRes.value.data)
-        );
-        setAppointments(nextAppointments);
-      } else {
-        setLoadingError(
-          'Unable to load your appointments right now. Please try again in a few moments.'
-        );
-        logger.error(
-          'Failed to load appointments',
-          {
-            userId: user.id,
-            errorMessage: appointmentsRes.reason?.message,
-          },
-          appointmentsRes.reason
-        );
-      }
-
-      if (doctorsRes.status === 'fulfilled') {
-        const nextDoctors = dedupeById<UserType>(extractItems<UserType>(doctorsRes.value.data));
-        setDoctors(nextDoctors);
-      } else {
-        logger.warn(
-          'Failed to load doctor directory for patient appointments',
-          {
-            userId: user.id,
-            errorMessage: doctorsRes.reason?.message,
-          },
-          doctorsRes.reason
-        );
-      }
+      const appointmentsResponse = await api.appointments.list({ limit: 100 });
+      const nextAppointments = dedupeById<Appointment>(
+        extractItems<Appointment>(appointmentsResponse.data)
+      );
+      setAppointments(nextAppointments);
     } catch (error: any) {
       setLoadingError(
         'An unexpected error occurred while loading your appointments. Please try again later.'
@@ -217,16 +174,12 @@ export default function AppointmentsPage() {
 
   const openBookingFormForEdit = (appointment: Appointment) => {
     resetBookingForm();
-    setEditingAppointment(appointment);
-    setShowBookingForm(true);
-
-    const doctorId = appointment.doctor_id;
-    setSelectedDoctor(doctorId);
+  setEditingAppointment(appointment);
 
     const appointmentDateValue = toDate(appointment.appointment_date, appointment.appointment_time);
     if (appointmentDateValue) {
       setSelectedDate(appointmentDateValue);
-      loadAvailableSlots(doctorId, appointmentDateValue, appointment.appointment_time);
+      loadAvailableSlots(appointment.doctor_id, appointmentDateValue, appointment.appointment_time);
     }
 
     setSelectedSlot(appointment.appointment_time ?? null);
@@ -238,19 +191,9 @@ export default function AppointmentsPage() {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
-    if (selectedDoctor) {
-      loadAvailableSlots(selectedDoctor, date);
-    }
-  };
-
-  const handleDoctorSelect = (doctorId: number) => {
-    if (editingAppointment) {
-      return;
-    }
-    setSelectedDoctor(doctorId);
-    setSelectedSlot(null);
-    if (selectedDate) {
-      loadAvailableSlots(doctorId, selectedDate);
+    const doctorId = editingAppointment?.doctor_id;
+    if (doctorId) {
+      loadAvailableSlots(doctorId, date);
     }
   };
 
@@ -308,8 +251,9 @@ export default function AppointmentsPage() {
     }
     return formatTimeValue(editingAppointment.appointment_date, editingAppointment.appointment_time);
   }, [editingAppointment]);
-  const handleBookAppointment = async () => {
-    if (!selectedDoctor || !selectedDate || !selectedSlot || !chiefComplaint) {
+  const handleUpdateAppointment = async () => {
+    const doctorId = editingAppointment?.doctor_id;
+    if (!editingAppointment || !doctorId || !selectedDate || !selectedSlot || !chiefComplaint) {
       alert('Please fill in all required fields');
       return;
     }
@@ -320,48 +264,29 @@ export default function AppointmentsPage() {
       return;
     }
 
-    const isEditing = Boolean(editingAppointment);
-
     try {
-      if (isEditing && editingAppointment) {
-        await api.appointments.update(editingAppointment.id, {
-          appointment_date: appointmentDateTime.toISOString(),
-          appointment_type: appointmentType,
-          reason: chiefComplaint,
-          notes: notes || undefined,
-        });
-        alert('Appointment updated successfully!');
-      } else {
-        await api.appointments.create({
-          doctor_id: selectedDoctor,
-          appointment_date: appointmentDateTime.toISOString(),
-          appointment_time: selectedSlot,
-          appointment_type: appointmentType,
-          chief_complaint: chiefComplaint,
-          reason: chiefComplaint,
-          notes: notes || undefined,
-        });
-        alert('Appointment booked successfully!');
-      }
-
+      await api.appointments.update(editingAppointment.id, {
+        appointment_date: appointmentDateTime.toISOString(),
+        appointment_type: appointmentType,
+        reason: chiefComplaint,
+        notes: notes || undefined,
+      });
+      alert('Appointment updated successfully!');
       closeBookingForm();
       await loadData();
     } catch (error: any) {
       const payloadContext = {
         userId: user?.id,
         appointmentId: editingAppointment?.id,
-        doctorId: selectedDoctor,
+        doctorId,
         date: selectedDate?.toISOString(),
         slot: selectedSlot,
         errorMessage: error?.message,
       };
 
-      logger.error(isEditing ? 'Failed to update appointment' : 'Failed to book appointment', payloadContext, error);
+      logger.error('Failed to update appointment', payloadContext, error);
 
-      alert(
-        error?.response?.data?.detail ||
-          (isEditing ? 'Failed to update appointment' : 'Failed to book appointment')
-      );
+      alert(error?.response?.data?.detail || 'Failed to update appointment');
     }
   };
 
@@ -527,13 +452,17 @@ export default function AppointmentsPage() {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => router.push('/patient/dashboard')}
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Retour au tableau de bord
               </Button>
-              <Button onClick={handleStartBooking}>
+              <Button
+                type="button"
+                onClick={() => router.push('/patient/search-doctors')}
+              >
                 <CalendarIcon className="w-5 h-5 mr-2" />
                 Prendre rendez-vous
               </Button>
@@ -637,23 +566,21 @@ export default function AppointmentsPage() {
           </Card>
         )}
 
-        {/* Booking Form Modal */}
-        {showBookingForm && (
+        {/* Reschedule Modal */}
+        {editingAppointment && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>{editingAppointment ? 'Reschedule Appointment' : 'Book New Appointment'}</CardTitle>
+                  <CardTitle>Reschedule Appointment</CardTitle>
                   <button onClick={closeBookingForm} className="text-gray-500 hover:text-gray-700">
                     <XCircle className="w-6 h-6" />
                   </button>
                 </div>
-                {editingAppointment && (
-                  <p className="mt-3 text-sm text-gray-500">
-                    Report du rendez-vous initialement prévu pour {editingOriginalDate}
-                    {editingOriginalTime ? ` à ${editingOriginalTime}` : ''}. Pour changer de médecin, annulez ce rendez-vous et prenez-en un nouveau.
-                  </p>
-                )}
+                <p className="mt-3 text-sm text-gray-500">
+                  Report du rendez-vous initialement prévu pour {editingOriginalDate}
+                  {editingOriginalTime ? ` à ${editingOriginalTime}` : ''}. Pour changer de médecin, annulez ce rendez-vous et prenez-en un nouveau.
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -661,25 +588,16 @@ export default function AppointmentsPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Sélectionnez un médecin *
+                        Médecin
                       </label>
-                      <Select
-                        value={selectedDoctor?.toString() || ''}
-                        onChange={(e) => handleDoctorSelect(Number(e.target.value))}
-                        disabled={Boolean(editingAppointment)}
-                      >
-                        <option value="">Choisissez un médecin</option>
-                        {doctors.map(doctor => (
-                          <option key={doctor.id} value={doctor.id}>
-                            Dr. {doctor.first_name} {doctor.last_name} - {doctor.specialization}
-                          </option>
-                        ))}
-                      </Select>
-                      {editingAppointment && (
-                        <p className="mt-1 text-xs text-gray-500">
-                          Les changements de médecin nécessitent l'annulation et la réservation d'un nouveau rendez-vous.
-                        </p>
-                      )}
+                      <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700">
+                        {editingAppointment?.doctor
+                          ? `Dr. ${editingAppointment.doctor.first_name} ${editingAppointment.doctor.last_name} - ${editingAppointment.doctor.specialization ?? 'Spécialité inconnue'}`
+                          : 'Médecin non disponible'}
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Pour changer de médecin, annulez ce rendez-vous puis prenez-en un nouveau.
+                      </p>
                     </div>
 
                     <div>
@@ -754,7 +672,7 @@ export default function AppointmentsPage() {
                     </div>
 
                     {/* Available Time Slots */}
-                    {selectedDate && selectedDoctor && (
+                    {selectedDate && editingAppointment?.doctor_id && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Créneaux horaires disponibles *
@@ -786,10 +704,10 @@ export default function AppointmentsPage() {
                     Cancel
                   </Button>
                   <Button 
-                    onClick={handleBookAppointment}
-                    disabled={!selectedDoctor || !selectedDate || !selectedSlot || !chiefComplaint}
+                    onClick={handleUpdateAppointment}
+                    disabled={!editingAppointment || !editingAppointment.doctor_id || !selectedDate || !selectedSlot || !chiefComplaint}
                   >
-                    {editingAppointment ? 'Mise à jour du rendez-vous' : 'Prendre rendez-vous'}
+                    Mettre à jour le rendez-vous
                   </Button>
                 </div>
               </CardContent>
@@ -820,7 +738,11 @@ export default function AppointmentsPage() {
               <CardContent className="text-center py-12">
                 <CalendarIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">Aucun rendez-vous trouvé</p>
-                <Button onClick={handleStartBooking} className="mt-4">
+                <Button
+                  type="button"
+                  onClick={() => router.push('/patient/search-doctors')}
+                  className="mt-4"
+                >
                   Prendre votre premier rendez-vous
                 </Button>
               </CardContent>

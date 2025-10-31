@@ -430,3 +430,34 @@ export interface DoctorSearchFilters {
   accepting_new_patients?: boolean;
   available_date?: string;
 }
+
+export interface Message {
+  id: number;
+  sender_id: number;
+  recipient_id: number;
+  subject?: string;
+  content: string;
+  is_read: boolean;
+  read_at?: string;
+  reference_id?: number;
+  reference_type?: string;
+  created_at: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface MessageCreate {
+  recipient_id: number;
+  subject?: string;
+  content: string;
+  reference_id?: number;
+  reference_type?: string;
+}
+
+export interface Conversation {
+  other_user_id: number;
+  other_user_name: string;
+  other_user_role: string;
+  last_message?: Message;
+  unread_count: number;
+}

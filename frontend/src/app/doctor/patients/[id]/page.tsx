@@ -26,6 +26,8 @@ import {
   Calendar,
   Phone,
   Mail,
+  Plus,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -262,7 +264,7 @@ export default function PatientDocumentsPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
@@ -279,10 +281,23 @@ export default function PatientDocumentsPage() {
                 <p className="text-gray-600 mt-1">Medical Records &amp; Documents</p>
               </div>
             </div>
-            <Button onClick={() => setShowUploadModal(true)}>
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Document
-            </Button>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push(`/doctor/prescriptions?patient_id=${patientId}`)}
+                className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-2 border-purple-300 text-purple-700 font-semibold"
+              >
+                <Pill className="w-5 h-5 mr-2" />
+                New Prescription
+              </Button>
+              <Button 
+                onClick={() => setShowUploadModal(true)}
+                className="flex-1 sm:flex-initial"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                Upload Document
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -313,7 +328,7 @@ export default function PatientDocumentsPage() {
         {/* Upload Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <Card className="max-w-2xl w-full">
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Upload Medical Document</CardTitle>

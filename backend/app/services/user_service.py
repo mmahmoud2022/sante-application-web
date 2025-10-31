@@ -45,14 +45,18 @@ def create_user(db: Session, user: UserCreate) -> User:
             detail="Email already registered"
         )
     
-    # Create new user
+    # Create new user with all provided fields
     db_user = User(
         email=user.email,
         hashed_password=get_password_hash(user.password),
         first_name=user.first_name,
         last_name=user.last_name,
         phone=user.phone,
-        role=user.role
+        role=user.role,
+        date_of_birth=user.date_of_birth,
+        specialization=user.specialization,
+        license_number=user.license_number,
+        city=user.city,
     )
     
     db.add(db_user)

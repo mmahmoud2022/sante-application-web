@@ -2,8 +2,8 @@
 Prescription schemas for request/response validation
 """
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
-from datetime import datetime
+from typing import Optional, Union
+from datetime import datetime, date
 
 from app.models.prescription import PrescriptionStatus
 from app.schemas.document import DocumentResponse
@@ -26,8 +26,8 @@ class PrescriptionCreate(PrescriptionBase):
     patient_id: int
     appointment_id: Optional[int] = None
     document_id: Optional[int] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: Optional[Union[str, date, datetime]] = None
+    end_date: Optional[Union[str, date, datetime]] = None
     auto_renewal_enabled: bool = False
 
 

@@ -22,6 +22,7 @@ import {
   Star,
   Loader2,
   MessageSquare,
+  Pill,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -719,6 +720,20 @@ export default function DoctorDashboard() {
                         <Users className="h-4 w-4 text-secondary-600 dark:text-secondary-400" />
                       </div>
                       Mes patients
+                    </div>
+                  </Button>
+                  <Button
+                    fullWidth
+                    onClick={() => router.push('/doctor/prescriptions')}
+                    variant="outline"
+                    size="sm"
+                    className="justify-start"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <Pill className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      Prescriptions
                     </div>
                   </Button>
                   <Button

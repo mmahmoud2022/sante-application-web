@@ -1,6 +1,7 @@
 """Prescription API endpoints, including upload support."""
 import json
 from typing import List, Optional
+from datetime import datetime, date
 
 from fastapi import (
     APIRouter,
@@ -39,6 +40,9 @@ def create_prescription(
     """
     Create a new prescription (doctors only)
     """
+    print(f"🔍 DEBUG: Creating prescription - Doctor: {current_user.id}, Patient: {prescription.patient_id}")
+    print(f"📋 DEBUG: Prescription data: {prescription.dict()}")
+    
     if current_user.role != "doctor":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -59,12 +63,21 @@ def create_prescription(
                 detail="Document does not belong to the specified patient",
             )
 
+    # Convert date strings to datetime objects if needed
+    prescription_dict = prescription.dict()
+    if prescription_dict.get('start_date') and isinstance(prescription_dict['start_date'], str):
+        prescription_dict['start_date'] = datetime.fromisoformat(prescription_dict['start_date'].replace('Z', '+00:00'))
+    if prescription_dict.get('end_date') and isinstance(prescription_dict['end_date'], str):
+        prescription_dict['end_date'] = datetime.fromisoformat(prescription_dict['end_date'].replace('Z', '+00:00'))
+
     db_prescription = Prescription(
-        **prescription.dict(),
+        **prescription_dict,
         doctor_id=current_user.id,
     )
     # Initialize refills_remaining to the number of allowed refills when creating new prescriptions
     db_prescription.refills_remaining = prescription.refills_allowed
+
+    print(f"💾 DEBUG: Saving prescription to database - Patient ID: {db_prescription.patient_id}, Doctor ID: {db_prescription.doctor_id}")
 
     if document is not None:
         db_prescription.document = document
@@ -72,6 +85,9 @@ def create_prescription(
     db.add(db_prescription)
     db.commit()
     db.refresh(db_prescription)
+    
+    print(f"✅ DEBUG: Prescription created successfully - ID: {db_prescription.id}")
+    
     return db_prescription
 
 
@@ -90,17 +106,27 @@ def list_prescriptions(
     - Doctors see prescriptions they created
     - Admins see all prescriptions
     """
+    print(f"🔍 DEBUG: Listing prescriptions - User: {current_user.id}, Role: {current_user.role}")
+    
     query = db.query(Prescription).options(selectinload(Prescription.document))
 
     if current_user.role == "patient":
         query = query.filter(Prescription.patient_id == current_user.id)
+        print(f"👤 DEBUG: Filtering by patient_id: {current_user.id}")
     elif current_user.role == "doctor":
         query = query.filter(Prescription.doctor_id == current_user.id)
+        print(f"👨‍⚕️ DEBUG: Filtering by doctor_id: {current_user.id}")
 
     if status:
         query = query.filter(Prescription.status == status)
+        print(f"🏷️ DEBUG: Filtering by status: {status}")
 
     prescriptions = query.offset(skip).limit(limit).all()
+    print(f"📊 DEBUG: Found {len(prescriptions)} prescriptions")
+    
+    for p in prescriptions:
+        print(f"  - Prescription ID: {p.id}, Patient: {p.patient_id}, Doctor: {p.doctor_id}, Status: {p.status}")
+    
     return prescriptions
 
 

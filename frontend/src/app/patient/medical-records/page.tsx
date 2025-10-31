@@ -229,24 +229,25 @@ export default function MedicalRecordsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md shadow-sm border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dossiers médicaux</h1>
-              <p className="text-gray-600 mt-1">Consultez vos antécédents médicaux et vos documents</p>
+              <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-neutral-100">Dossier médical</h1>
+              <p className="text-neutral-600 dark:text-neutral-400 mt-1">Consultez tous vos documents médicaux</p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => router.push('/patient/dashboard')}
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Retour au tableau de bord
               </Button>
-              <Button onClick={() => setShowUploadModal(true)}>
+              <Button type="button" onClick={() => setShowUploadModal(true)}>
                 <Upload className="w-5 h-5 mr-2" />
                 Télécharger le document
               </Button>
@@ -345,10 +346,11 @@ export default function MedicalRecordsPage() {
                 </div>
 
                 <div className="mt-6 flex justify-end space-x-3">
-                  <Button variant="outline" onClick={() => setShowUploadModal(false)} disabled={uploading}>
+                  <Button type="button" variant="outline" onClick={() => setShowUploadModal(false)} disabled={uploading}>
                     Annuler
                   </Button>
                   <Button 
+                    type="button"
                     onClick={handleUploadDocument}
                     disabled={!uploadFile || !uploadData.title || uploading}
                     loading={uploading}

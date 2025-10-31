@@ -60,13 +60,18 @@ export default function PrescriptionsPage() {
   const loadPrescriptions = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🔍 DEBUG: Loading prescriptions for patient:', user?.id);
       const response = await api.prescriptions.list();
+      console.log('✅ DEBUG: Prescription API response:', response.data);
       const prescriptionsList = Array.isArray(response.data) 
         ? response.data 
         : (response.data as any).items || [];
       
+      console.log('📋 DEBUG: Parsed prescriptions list:', prescriptionsList);
+      console.log('📊 DEBUG: Number of prescriptions:', prescriptionsList.length);
       setPrescriptions(prescriptionsList);
     } catch (error: any) {
+      console.error('❌ DEBUG: Failed to load prescriptions:', error);
       logger.error('Failed to load prescriptions', {
         userId: user?.id,
         errorMessage: error?.message,
@@ -189,16 +194,17 @@ export default function PrescriptionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md shadow-sm border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Mes ordonnances</h1>
-              <p className="text-gray-600 mt-1">Consultez et gérez vos ordonnances</p>
+              <h1 className="text-2xl font-heading font-bold text-neutral-900 dark:text-neutral-100">Mes ordonnances</h1>
+              <p className="text-neutral-600 dark:text-neutral-400 mt-1">Consultez et gérez vos ordonnances</p>
             </div>
             <Button
+              type="button"
               variant="outline"
               onClick={() => router.push('/patient/dashboard')}
             >
@@ -212,14 +218,15 @@ export default function PrescriptionsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Details Modal */}
         {showDetailsModal && selectedPrescription && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <Card className="max-w-2xl w-full">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="max-w-2xl w-full glass-card border-2 border-primary-200 dark:border-primary-700">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Détails de l'ordonnance</CardTitle>
+                  <CardTitle className="text-neutral-900 dark:text-neutral-100">Détails de l'ordonnance</CardTitle>
                   <button
+                    type="button"
                     onClick={() => setShowDetailsModal(false)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
                   >
                     <span className="sr-only">Fermer la fenêtre</span>
                     <XCircle className="w-6 h-6" />
@@ -228,17 +235,17 @@ export default function PrescriptionsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div className="border-b pb-4">
+                  <div className="border-b border-neutral-200 dark:border-neutral-700 pb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">
+                      <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
                         {selectedPrescription.medication_name}
                       </h3>
                       {getStatusBadge(selectedPrescription.status)}
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-neutral-600 dark:text-neutral-400">
                       Prescrite par : Dr {selectedPrescription.doctor_id}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-500 mt-1">
                       Début : {formatDate(selectedPrescription.start_date)} | Fin : {formatDate(selectedPrescription.end_date)}
                     </p>
                   </div>
@@ -328,15 +335,15 @@ export default function PrescriptionsPage() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+          <Card className="glass-card border-2 border-green-100 dark:border-green-800">
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Pill className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-xl">
+                  <Pill className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Actives</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Actives</p>
+                  <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {prescriptions.filter(p => p.status === 'active').length}
                   </p>
                 </div>
@@ -344,15 +351,15 @@ export default function PrescriptionsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-2 border-blue-100 dark:border-blue-800">
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-xl">
+                  <CheckCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Terminées</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Terminées</p>
+                  <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {prescriptions.filter(p => p.status === 'completed').length}
                   </p>
                 </div>
@@ -360,15 +367,15 @@ export default function PrescriptionsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-2 border-orange-100 dark:border-orange-800">
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-3 bg-orange-100 rounded-lg">
-                  <RefreshCw className="w-6 h-6 text-orange-600" />
+                <div className="p-3 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-800 rounded-xl">
+                  <RefreshCw className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Renouvellements disponibles</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Renouvellements disponibles</p>
+                  <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {prescriptions.reduce((sum, p) => sum + p.refills_remaining, 0)}
                   </p>
                 </div>
@@ -376,15 +383,15 @@ export default function PrescriptionsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card border-2 border-purple-100 dark:border-purple-800">
             <CardContent className="p-4">
               <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <AlertCircle className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-xl">
+                  <AlertCircle className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm text-gray-600">Expiration proche</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">Expiration proche</p>
+                  <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                     {prescriptions.filter(p => {
                       const days = calculateDaysRemaining(p.end_date);
                       return days !== null && days > 0 && days <= 7;
@@ -397,9 +404,9 @@ export default function PrescriptionsPage() {
         </div>
 
         {/* Filter */}
-        <div className="flex items-center space-x-4 mb-6">
-          <Filter className="w-5 h-5 text-gray-500" />
-          <span className="text-sm text-gray-600">Filtrer par statut</span>
+        <div className="flex items-center space-x-4 mb-6 bg-white dark:bg-neutral-800 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700">
+          <Filter className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+          <span className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">Filtrer par statut</span>
           <Select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value as 'all' | PrescriptionStatus)}
@@ -415,14 +422,15 @@ export default function PrescriptionsPage() {
 
         {/* Prescriptions List */}
         {filteredPrescriptions.length === 0 ? (
-          <Card>
+          <Card className="glass-card">
             <CardContent className="text-center py-12">
-              <Pill className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">{emptyStateMessage}</p>
+              <Pill className="w-12 h-12 text-neutral-400 dark:text-neutral-600 mx-auto mb-4" />
+              <p className="text-neutral-600 dark:text-neutral-400">{emptyStateMessage}</p>
               {filterStatus === 'all' && (
                 <Button
+                  type="button"
                   className="mt-4"
-                  onClick={() => router.push('/patient/book-appointment')}
+                  onClick={() => router.push('/patient/search-doctors')}
                 >
                   Réservez votre premier rendez-vous
                 </Button>
@@ -436,7 +444,7 @@ export default function PrescriptionsPage() {
               const isExpiringSoon = daysRemaining !== null && daysRemaining > 0 && daysRemaining <= 7;
 
               return (
-                <Card key={prescription.id}>
+                <Card key={prescription.id} className="glass-card border-2 border-primary-100 dark:border-primary-800 hover:shadow-lg transition-all">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">

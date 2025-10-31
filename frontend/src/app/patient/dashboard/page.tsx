@@ -508,7 +508,7 @@ export default function PatientDashboard() {
                     icon={<Calendar className="h-12 w-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />}
                     title="Aucun rendez-vous à venir"
                     actionText="Prendre un rendez-vous"
-                    onAction={() => router.push('/patient/search-doctors')}
+                    actionHref="/patient/book-appointment"
                   />
                 )}
               </CardContent>
@@ -1005,11 +1005,12 @@ function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   return <div className={`animate-spin rounded-full ${dims} border-b-2 border-primary-500 mx-auto`} role="status" aria-label="Chargement" />;
 }
 
-function EmptyState({ icon, title, description, actionText, onAction }: {
+function EmptyState({ icon, title, description, actionText, actionHref, onAction }: {
   icon?: React.ReactNode;
   title: string;
   description?: string;
   actionText?: string;
+  actionHref?: string;
   onAction?: () => void;
 }) {
   return (
@@ -1017,9 +1018,13 @@ function EmptyState({ icon, title, description, actionText, onAction }: {
       {icon}
       <p className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mt-2">{title}</p>
       {description && <p className="text-neutral-600 dark:text-neutral-400 mt-2">{description}</p>}
-      {actionText && onAction && (
+      {actionText && (actionHref || onAction) && (
         <div className="mt-4">
-          <Button onClick={onAction} size="sm">{actionText}</Button>
+          {actionHref ? (
+            <Button href={actionHref} onClick={onAction} size="sm">{actionText}</Button>
+          ) : (
+            <Button onClick={onAction} size="sm">{actionText}</Button>
+          )}
         </div>
       )}
     </div>
@@ -1076,6 +1081,7 @@ function QuickActionCard({ title, subtitle, onClick, icon }: {
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="glass-card p-6 rounded-2xl hover:shadow-large transition-all group text-left"
       aria-label={title}

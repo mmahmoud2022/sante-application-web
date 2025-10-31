@@ -49,6 +49,16 @@ export default function DoctorPrescriptionsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+
+  // Group prescriptions by patient
+  const prescriptionsByPatient = prescriptions.reduce((acc, prescription) => {
+    const patientId = prescription.patient_id;
+    if (!acc[patientId]) {
+      acc[patientId] = [];
+    }
+    acc[patientId].push(prescription);
+    return acc;
+  }, {} as Record<number, Prescription[]>);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const loadPrescriptions = useCallback(async () => {

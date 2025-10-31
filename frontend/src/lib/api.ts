@@ -404,7 +404,7 @@ const api = {
     },
     
     cancel: async (id: number) => {
-      return axiosInstance.patch(`prescriptions/${id}/cancel`);
+      return axiosInstance.delete(`prescriptions/${id}`);
     },
   },
 
@@ -471,13 +471,47 @@ const api = {
     list: async (params?: any) => {
       return axiosInstance.get('notifications/', { params });
     },
+
+    unreadCount: async () => {
+      return axiosInstance.get('notifications/unread-count');
+    },
     
     markAsRead: async (id: number) => {
-      return axiosInstance.patch(`notifications/${id}/read`);
+      return axiosInstance.put(`notifications/${id}/read`);
     },
     
     markAllAsRead: async () => {
-      return axiosInstance.post('notifications/mark-all-read');
+      return axiosInstance.put('notifications/read-all');
+    },
+  },
+
+  messages: {
+    listConversations: async () => {
+      return axiosInstance.get('messages/conversations');
+    },
+
+    getConversation: async (otherUserId: number, params?: { limit?: number; offset?: number }) => {
+      return axiosInstance.get(`messages/conversations/${otherUserId}`, { params });
+    },
+
+    markConversationAsRead: async (otherUserId: number) => {
+      return axiosInstance.put(`messages/conversations/${otherUserId}/read`);
+    },
+
+    sendMessage: async (data: { recipient_id: number; content: string; subject?: string; reference_id?: number; reference_type?: string }) => {
+      return axiosInstance.post('messages', data);
+    },
+
+    markMessageAsRead: async (messageId: number) => {
+      return axiosInstance.put(`messages/${messageId}/read`);
+    },
+
+    unreadCount: async () => {
+      return axiosInstance.get('messages/unread-count');
+    },
+
+    delete: async (messageId: number) => {
+      return axiosInstance.delete(`messages/${messageId}`);
     },
   },
 
