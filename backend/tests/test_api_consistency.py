@@ -65,6 +65,62 @@ class TestAppointmentSchemas:
                                               AppointmentType.VIDEO_CALL, 
                                               AppointmentType.PHONE_CALL]
     
+    def test_appointment_type_serialization_consistency(self):
+        """Test that AppointmentResponse serializes types consistently for frontend."""
+        # Test each appointment type serializes correctly
+        test_cases = [
+            (AppointmentType.IN_PERSON, "in_person"),
+            (AppointmentType.VIDEO_CALL, "video_call"),
+            (AppointmentType.PHONE_CALL, "phone_call"),
+        ]
+        
+        for appointment_type, expected_serialized in test_cases:
+            response = AppointmentResponse(
+                id=1,
+                patient_id=2,
+                doctor_id=3,
+                appointment_date=datetime(2025, 12, 1, 10, 0),
+                duration_minutes=30,
+                appointment_type=appointment_type,
+                status=AppointmentStatus.PENDING,
+                reason="Test",
+                notes=None,
+                video_call_link=None,
+                video_call_room_id=None,
+                reminder_sent=False,
+                reminder_sent_at=None,
+                cancelled_by=None,
+                cancellation_reason=None,
+                cancelled_at=None,
+                created_at=datetime.now(),
+                updated_at=None,
+            )
+            
+            # Serialize to JSON (as API would return)
+            data = response.model_dump(mode="json")
+            
+            # Verify serialized value matches frontend expectation
+            assert data["appointment_type"] == expected_serialized, \
+                f"Expected {expected_serialized}, got {data['appointment_type']}"
+    
+    def test_appointment_backward_compatibility(self):
+        """Test that backend accepts legacy frontend values for backward compatibility."""
+        # Test backward compatibility with old values
+        legacy_mappings = [
+            ("video", AppointmentType.VIDEO_CALL),  # Old: "video" -> New: VIDEO_CALL
+            ("home_visit", AppointmentType.PHONE_CALL),  # Old: "home_visit" -> New: PHONE_CALL
+        ]
+        
+        for legacy_value, expected_type in legacy_mappings:
+            schema = AppointmentCreate(
+                doctor_id=1,
+                appointment_date=datetime(2025, 12, 1, 10, 0),
+                appointment_type=legacy_value,
+                reason="Test"
+            )
+            assert schema.appointment_type == expected_type, \
+                f"Legacy value '{legacy_value}' should map to {expected_type}"
+    
     def test_appointment_response_has_all_fields(self):
         """Test that AppointmentResponse includes all fields frontend expects."""
         # Create a response schema instance

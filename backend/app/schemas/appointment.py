@@ -25,8 +25,8 @@ _TYPE_ALIASES: dict[str, AppointmentType] = {
 
 _TYPE_SERIALIZATION: dict[str, str] = {
     AppointmentType.IN_PERSON.value: "in_person",
-    AppointmentType.VIDEO_CALL.value: "video",
-    AppointmentType.PHONE_CALL.value: "home_visit",
+    AppointmentType.VIDEO_CALL.value: "video_call",
+    AppointmentType.PHONE_CALL.value: "phone_call",
 }
 
 
