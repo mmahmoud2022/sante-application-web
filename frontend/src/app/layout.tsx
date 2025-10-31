@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ToastProvider } from '@/components/ui/Toast'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import { OnlineStatusIndicator } from '@/components/OnlineStatusIndicator'
 
 export const metadata: Metadata = {
   title: 'Santé - Medical Appointment Platform',
@@ -23,6 +25,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Aller au contenu principal
         </a>
+        <ErrorBoundary>
           <ToastProvider>
             <AuthProvider>
               <main id="main-content">
@@ -30,6 +33,8 @@ export default function RootLayout({
               </main>
             </AuthProvider>
           </ToastProvider>
+          <OnlineStatusIndicator />
+        </ErrorBoundary>
       </body>
     </html>
   )
