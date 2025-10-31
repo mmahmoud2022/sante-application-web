@@ -83,7 +83,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         return;
       }
 
-      const id = Math.random().toString(36).substring(7);
+      const id = crypto.randomUUID();
       const filePreview: FilePreview = { file, id };
 
       // Create preview for images

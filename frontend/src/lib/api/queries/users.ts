@@ -44,7 +44,7 @@ export function useUsers(params?: any) {
 // Fetch doctors list
 export function useDoctors(params?: any) {
   return useQuery({
-    queryKey: userKeys.list(params),
+    queryKey: [...userKeys.doctors(), { params }],
     queryFn: async () => {
       const { data } = await api.users.doctors(params);
       return data;
