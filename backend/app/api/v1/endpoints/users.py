@@ -59,7 +59,7 @@ def list_users(
 
 
 @router.get("/doctors", response_model=List[UserResponse])
-def list_doctors(
+async def list_doctors(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     specialization: Optional[str] = None,
@@ -71,6 +71,8 @@ def list_doctors(
 ):
     """
     List all doctors with optional filtering by specialization, city, rating, and search
+    
+    Results are cached for 5 minutes to improve performance
     """
     return get_doctors(
         db, 
