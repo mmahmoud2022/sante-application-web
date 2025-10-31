@@ -17,14 +17,17 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from '@tanstack/react-table';
-import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { downloadCSV } from '@/lib/export';
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   data: TData[];
   pageSize?: number;
   className?: string;
+  enableExport?: boolean;
+  exportFilename?: string;
 }
 
 export function DataTable<TData>({
@@ -32,9 +35,23 @@ export function DataTable<TData>({
   data,
   pageSize = 10,
   className,
+  enableExport = false,
+  exportFilename = 'export.csv',
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const handleExport = () => {
+    // Get column definitions for export
+    const exportColumns = columns
+      .filter(col => col.id || (col as any).accessorKey)
+      .map(col => ({
+        key: col.id || (col as any).accessorKey,
+        label: typeof col.header === 'string' ? col.header : col.id || (col as any).accessorKey,
+      }));
+
+    downloadCSV(data as any[], exportFilename, exportColumns);
+  };
 
   const table = useReactTable({
     data,
@@ -58,6 +75,22 @@ export function DataTable<TData>({
 
   return (
     <div className={cn('space-y-4', className)}>
+      {enableExport && (
+        <div className="flex justify-end">
+          <button
+            onClick={handleExport}
+            className={cn(
+              'flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md',
+              'bg-primary-600 hover:bg-primary-700',
+              'text-white',
+              'transition-colors'
+            )}
+          >
+            <Download className="h-4 w-4" />
+            <span>Export CSV</span>
+          </button>
+        </div>
+      )}
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
