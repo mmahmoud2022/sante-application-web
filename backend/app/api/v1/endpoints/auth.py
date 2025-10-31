@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -30,6 +32,7 @@ from datetime import datetime, timedelta
 logger = get_logger(__name__)
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 # Password reset schemas
@@ -57,9 +60,10 @@ email_verification_tokens = {}
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/hour")
 async def register(
-    user: UserCreate,
     request: Request,
+    user: UserCreate,
     db: Session = Depends(get_db)
 ):
     """
@@ -116,9 +120,10 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    request: Request = None,
     db: Session = Depends(get_db)
 ):
     """

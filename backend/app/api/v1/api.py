@@ -17,6 +17,9 @@ from app.api.v1.endpoints import (
     documents,
     waiting_lists,
     messages,
+    health,
+    audit,
+    gdpr,
 )
 
 api_router = APIRouter()
@@ -35,3 +38,6 @@ api_router.include_router(doctor.router, prefix="/doctor", tags=["Doctor"])
 api_router.include_router(patient.router, prefix="/patient", tags=["Patient"])
 api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])
 api_router.include_router(waiting_lists.router, prefix="/waiting-lists", tags=["Waiting Lists"])
+api_router.include_router(health.router, prefix="/health", tags=["Health"])
+api_router.include_router(audit.router, prefix="/audit", tags=["Audit Logs"])
+api_router.include_router(gdpr.router, prefix="/gdpr", tags=["GDPR Compliance"])

@@ -7,6 +7,10 @@ from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 import time
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.core.logging import setup_logging, get_logger
@@ -20,6 +24,9 @@ setup_logging(
 )
 logger = get_logger(__name__)
 
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
+
 # Create FastAPI application
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -29,6 +36,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 app.add_middleware(
@@ -42,6 +53,15 @@ app.add_middleware(
 # Add custom middleware for logging and versioning
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(APIVersionMiddleware)
+
+
+# Startup event - initialize cache
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on application startup"""
+    from app.core.cache import init_cache
+    await init_cache()
+    logger.info("Application startup complete")
 
 
 # Include API router
