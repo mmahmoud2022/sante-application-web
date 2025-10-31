@@ -6,17 +6,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 import time
-import logging
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.core.logging import setup_logging, get_logger
+from app.core.middleware import RequestLoggingMiddleware, APIVersionMiddleware
+from app.core.errors import APIError
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+# Configure structured logging
+setup_logging(
+    log_level=settings.ENVIRONMENT == "development" and "DEBUG" or "INFO",
+    json_logs=settings.ENVIRONMENT != "development"
 )
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Create FastAPI application
 app = FastAPI(
@@ -37,28 +39,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Middleware for logging and performance monitoring
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all requests and measure response time"""
-    start_time = time.time()
-    
-    # Process request
-    response = await call_next(request)
-    
-    # Calculate processing time
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    
-    # Log request details
-    logger.info(
-        f"{request.method} {request.url.path} - "
-        f"Status: {response.status_code} - "
-        f"Time: {process_time:.3f}s"
-    )
-    
-    return response
+# Add custom middleware for logging and versioning
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(APIVersionMiddleware)
 
 
 # Include API router
@@ -115,6 +98,15 @@ app.openapi = custom_openapi
 
 
 # Exception handlers
+@app.exception_handler(APIError)
+async def api_error_handler(request: Request, exc: APIError):
+    """Handle custom API errors"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.to_dict()
+    )
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
@@ -122,8 +114,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={
-            "detail": "Internal server error",
-            "message": str(exc) if settings.ENVIRONMENT == "development" else "An error occurred"
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": str(exc) if settings.ENVIRONMENT == "development" else "An internal error occurred"
+            }
         }
     )
 
