@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, File, FileImage } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -184,11 +185,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             >
               <div className="flex items-center space-x-3 flex-1 min-w-0">
                 {filePreview.preview ? (
-                  <img
-                    src={filePreview.preview}
-                    alt={filePreview.file.name}
-                    className="h-10 w-10 object-cover rounded"
-                  />
+                  <div className="relative h-10 w-10 rounded overflow-hidden">
+                    <Image
+                      src={filePreview.preview}
+                      alt={filePreview.file.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 ) : filePreview.file.type.startsWith('image/') ? (
                   <FileImage className="h-10 w-10 text-gray-400" />
                 ) : (
