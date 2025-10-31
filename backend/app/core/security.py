@@ -264,7 +264,9 @@ class RateLimiter:
             raise
         except Exception as e:
             # Log error but don't block request if Redis fails
-            print(f"Rate limiter error: {str(e)}")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Rate limiter error: {str(e)}", extra={"error": str(e)})
             return True
     
     def get_remaining_requests(self, key: str, max_requests: int) -> int:
@@ -337,7 +339,9 @@ class AccountLockout:
             return result[0]
             
         except Exception as e:
-            print(f"Failed to record login attempt: {str(e)}")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Failed to record login attempt: {str(e)}", extra={"error": str(e)})
             return 0
     
     def is_locked_out(self, identifier: str) -> bool:
@@ -363,7 +367,9 @@ class AccountLockout:
             return False
             
         except Exception as e:
-            print(f"Failed to check lockout status: {str(e)}")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Failed to check lockout status: {str(e)}", extra={"error": str(e)})
             return False
     
     def get_remaining_attempts(self, identifier: str) -> int:
@@ -427,7 +433,9 @@ class AccountLockout:
             key = self._get_key(identifier)
             self.redis_client.delete(key)
         except Exception as e:
-            print(f"Failed to reset login attempts: {str(e)}")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Failed to reset login attempts: {str(e)}", extra={"error": str(e), "identifier": identifier})
 
 
 # Global rate limiter instance
@@ -451,7 +459,9 @@ def get_rate_limiter() -> RateLimiter:
             redis_client.ping()
             _rate_limiter = RateLimiter(redis_client)
         except Exception as e:
-            print(f"Redis not available: {str(e)}. Rate limiting disabled.")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Redis not available: {str(e)}. Rate limiting disabled.", extra={"error": str(e)})
             _rate_limiter = RateLimiter(None)
     
     return _rate_limiter
@@ -473,7 +483,9 @@ def get_account_lockout() -> AccountLockout:
             redis_client.ping()
             _account_lockout = AccountLockout(redis_client)
         except Exception as e:
-            print(f"Redis not available: {str(e)}. Account lockout disabled.")
+            from app.core.logging import get_logger
+            logger = get_logger(__name__)
+            logger.warning(f"Redis not available: {str(e)}. Account lockout disabled.", extra={"error": str(e)})
             _account_lockout = AccountLockout(None)
     
     return _account_lockout
