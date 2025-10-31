@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useOnlineStatus } from './useOnlineStatus';
 
 describe('useOnlineStatus', () => {
-  let onlineGetter: jest.SpyInstance;
+  let onlineGetter: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     // Mock navigator.onLine

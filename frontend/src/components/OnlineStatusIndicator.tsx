@@ -11,6 +11,8 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { offlineQueue } from '@/lib/offline-queue';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 
+const HIDE_DELAY_MS = 3000;
+
 export function OnlineStatusIndicator() {
   const isOnline = useOnlineStatus();
   const { announce } = useAnnouncement();
@@ -26,7 +28,7 @@ export function OnlineStatusIndicator() {
       setShowIndicator(true);
     } else {
       // Hide indicator after a delay when back online
-      const timer = setTimeout(() => setShowIndicator(false), 3000);
+      const timer = setTimeout(() => setShowIndicator(false), HIDE_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [isOnline]);
