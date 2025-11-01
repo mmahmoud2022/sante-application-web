@@ -515,7 +515,7 @@ export default function PatientDocumentsPage() {
                         <label className="text-sm font-medium text-gray-600">Current Medications</label>
                         <p className="text-gray-900">
                           {Array.isArray(medicalRecord.medications) 
-                            ? medicalRecord.medications.map((m: any) => `${m.name} (${m.dosage})`).join(', ')
+                            ? medicalRecord.medications.map((m) => `${m.name} (${m.dosage})`).join(', ')
                             : medicalRecord.medications}
                         </p>
                       </div>
