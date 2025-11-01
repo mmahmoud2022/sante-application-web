@@ -76,22 +76,19 @@ export interface User {
   first_name: string;
   last_name: string;
   role: UserRole;
-  phone?: string;
-  phone_number?: string;
+  phone?: string; // Backend uses 'phone' not 'phone_number'
   date_of_birth?: string;
   gender?: string;
   address_line1?: string;
   address_line2?: string;
-  address?: string;
   city?: string;
   state?: string;
   postal_code?: string;
   country?: string;
-  profile_image?: string;
+  profile_image?: string; // Backend uses 'profile_image' not 'profile_picture_url'
   is_active: boolean;
   is_verified: boolean;
   mfa_enabled?: boolean;
-  two_factor_enabled?: boolean;
   created_at: string;
   updated_at: string;
 
@@ -99,7 +96,8 @@ export interface User {
   specialization?: string;
   license_number?: string;
   bio?: string;
-  consultation_fee?: number;
+  experience_years?: number;
+  consultation_fee?: number; // In cents (e.g., 5000 = €50.00)
   rating_average?: number;
   rating_count?: number;
   languages_spoken?: string;
@@ -148,10 +146,9 @@ export interface MedicalRecord {
   blood_type?: string;
   height_cm?: number;
   weight_kg?: number;
-  allergies?: string[];
-  chronic_conditions?: string[];
-  current_medications?: string;
-  medications?: Array<{
+  allergies?: string[]; // Backend uses JSON array
+  chronic_conditions?: string[]; // Backend uses JSON array
+  medications?: Array<{ // Backend uses 'medications' not 'current_medications'
     name: string;
     dosage: string;
     frequency: string;
@@ -167,12 +164,10 @@ export interface MedicalRecord {
   family_history?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  emergency_contact_relation?: string;
-  emergency_contact_relationship?: string;
+  emergency_contact_relation?: string; // Backend uses 'emergency_contact_relation' not 'emergency_contact_relationship'
   insurance_provider?: string;
   insurance_policy_number?: string;
-  insurance_expiry_date?: string;
-  insurance_valid_until?: string;
+  insurance_valid_until?: string; // Backend uses 'insurance_valid_until' not 'insurance_expiry_date'
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -325,18 +320,17 @@ export interface Document {
   document_type: string;
   title: string;
   description?: string;
-  file_path: string;
+  file_path: string; // Backend uses 'file_path' not 'file_url'
   file_name: string;
-  file_size?: number;
-  file_size_bytes?: number;
+  file_size_bytes?: number; // Backend uses 'file_size_bytes' not 'file_size'
   mime_type?: string;
-  is_shared: boolean;
+  is_shared: boolean; // Backend uses 'is_shared' not 'is_shared_with_doctors'
   shared_with?: string;
   ocr_text?: string;
   ocr_processed?: boolean;
   document_date?: string;
   tags?: string;
-  verified: boolean;
+  verified: boolean; // Backend uses 'verified' not 'is_verified'
   verified_by?: number;
   verified_at?: string;
   created_at: string;

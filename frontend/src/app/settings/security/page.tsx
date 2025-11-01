@@ -72,7 +72,7 @@ export default function TwoFactorAuthPage() {
           setError('Veuillez entrer votre numéro de téléphone');
           return;
         }
-        await api.users.sendTwoFactorCode({ phone_number: phoneNumber });
+        await api.users.sendTwoFactorCode({ phone: phoneNumber });
         setSuccess('Code envoyé par SMS');
       } else if (selectedMethod === 'email') {
         await api.users.sendTwoFactorCode({ method: 'email' });
@@ -103,7 +103,7 @@ export default function TwoFactorAuthPage() {
       const response = await api.users.enableTwoFactor({
         method: selectedMethod,
         code: verificationCode,
-        phone_number: selectedMethod === 'sms' ? phoneNumber : undefined,
+        phone: selectedMethod === 'sms' ? phoneNumber : undefined,
       });
 
       setBackupCodes(response.data.backup_codes);

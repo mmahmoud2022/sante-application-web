@@ -89,7 +89,7 @@ export default function DoctorProfilePage() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        phone: (enrichedUser.phone as string) || user.phone_number || '',
+        phone: (enrichedUser.phone as string) || user.phone || '',
         specialization: enrichedUser.specialization || '',
         bio: enrichedUser.bio || '',
         experience_years: enrichedUser.experience_years ? String(enrichedUser.experience_years) : '',
@@ -121,7 +121,7 @@ export default function DoctorProfilePage() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        phone: (enrichedUser.phone as string) || user.phone_number || '',
+        phone: (enrichedUser.phone as string) || user.phone || '',
         specialization: enrichedUser.specialization || '',
         bio: enrichedUser.bio || '',
         experience_years: enrichedUser.experience_years ? String(enrichedUser.experience_years) : '',
@@ -272,9 +272,9 @@ export default function DoctorProfilePage() {
                   <div className="flex items-center justify-center gap-2">
                     <Mail className="h-4 w-4" /> {user.email}
                   </div>
-                  {(doctorProfile?.phone || user.phone_number) && (
+                  {(doctorProfile?.phone || user.phone) && (
                     <div className="flex items-center justify-center gap-2">
-                      <Phone className="h-4 w-4" /> {doctorProfile?.phone || user.phone_number}
+                      <Phone className="h-4 w-4" /> {doctorProfile?.phone || user.phone}
                     </div>
                   )}
                   <div className="flex items-center justify-center gap-2">
