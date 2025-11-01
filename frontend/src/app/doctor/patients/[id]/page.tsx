@@ -510,10 +510,14 @@ export default function PatientDocumentsPage() {
                         <p className="text-gray-900">{medicalRecord.chronic_conditions}</p>
                       </div>
                     )}
-                    {medicalRecord.current_medications && (
+                    {medicalRecord.medications && (
                       <div>
                         <label className="text-sm font-medium text-gray-600">Current Medications</label>
-                        <p className="text-gray-900">{medicalRecord.current_medications}</p>
+                        <p className="text-gray-900">
+                          {Array.isArray(medicalRecord.medications) 
+                            ? medicalRecord.medications.map((m: any) => `${m.name} (${m.dosage})`).join(', ')
+                            : medicalRecord.medications}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -552,7 +556,7 @@ export default function PatientDocumentsPage() {
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium text-gray-900 truncate">{doc.title}</h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size)}
+                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size_bytes)}
                               </p>
                               {doc.description && (
                                 <p className="text-sm text-gray-500 mt-2">{doc.description}</p>

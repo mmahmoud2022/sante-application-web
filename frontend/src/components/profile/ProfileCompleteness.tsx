@@ -27,9 +27,9 @@ export const ProfileCompleteness: React.FC<ProfileCompletenessProps> = ({
   const checks = useMemo((): CompletenessCheck[] => {
     const baseChecks: CompletenessCheck[] = [
       { label: 'Basic information', completed: !!(user.first_name && user.last_name && user.email) },
-      { label: 'Phone number', completed: !!user.phone_number },
+      { label: 'Phone number', completed: !!user.phone },
       { label: 'Date of birth', completed: !!user.date_of_birth },
-      { label: 'Address', completed: !!user.address },
+      { label: 'Address', completed: !!(user.address_line1 || user.city) },
     ];
 
     // Role-specific checks

@@ -25,7 +25,7 @@ interface User {
   role: string;
   is_active: boolean;
   is_verified: boolean;
-  phone_number?: string;
+  phone?: string;
   created_at: string;
   last_login?: string;
 }
@@ -375,7 +375,7 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {user.phone_number || 'N/A'}
+                              {user.phone || 'N/A'}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -485,7 +485,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Téléphone</h3>
-                  <p className="mt-1 text-gray-900">{selectedUser.phone_number || 'N/A'}</p>
+                  <p className="mt-1 text-gray-900">{selectedUser.phone || 'N/A'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Rôle</h3>
