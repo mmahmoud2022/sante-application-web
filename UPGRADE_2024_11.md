@@ -88,10 +88,10 @@ This document details the comprehensive upgrade of all major components in the S
 
 #### Next.js Framework
 - **Previous Version**: 14.0.4
-- **New Version**: 14.2.33
+- **New Version**: 15.5.6
 - **Changes**: Updated in `frontend/package.json`
-- **Benefits**: Bug fixes, performance improvements, enhanced App Router features
-- **Note**: Staying on Next.js 14 for stability; Next.js 15+ available but requires more testing
+- **Benefits**: Enhanced App Router with React Server Components, improved performance, better developer experience, Turbopack improvements
+- **Note**: Upgraded to Next.js 15 which requires React 19 for App Router features
 
 #### TypeScript
 - **Previous Version**: 5.3.3
@@ -107,8 +107,10 @@ This document details the comprehensive upgrade of all major components in the S
 
 #### React
 - **Previous Version**: 18.2.0
-- **New Version**: 18.2.0 (unchanged)
-- **Note**: Keeping React 18 for stability; React 19 available but Next.js 14 is optimized for React 18
+- **New Version**: 19.2.0
+- **Changes**: Updated in `frontend/package.json`
+- **Benefits**: New compiler optimizations, improved hooks (useActionState, useFormStatus), better concurrent features, enhanced server components support
+- **Note**: Upgraded to React 19 as required by Next.js 15 App Router
 
 ### Infrastructure Components
 
