@@ -34,7 +34,7 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 - **Testing**: Pytest with pytest-asyncio and pytest-cov
 
 ### Frontend
-- **Framework**: Next.js 14+ (React 18+)
+- **Framework**: Next.js 15+ (React 19+)
 - **State Management**: Redux Toolkit / Zustand
 - **Styling**: Tailwind CSS 3.0+ with custom components
 - **Forms**: React Hook Form with Zod validation
