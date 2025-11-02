@@ -484,3 +484,60 @@ async def get_password_requirements_endpoint():
         }
     }
 
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+@limiter.limit("10/hour")
+async def change_password(
+    request: Request,
+    password_data: ChangePasswordRequest,
+    current_user: Any = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Change password for the authenticated user
+    
+    - **current_password**: Current password for verification
+    - **new_password**: New password (must meet password policy requirements)
+    """
+    from app.models.user import User
+    from app.core.security import verify_password, get_password_hash
+    
+    # Get user from database
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Verify current password
+    if not verify_password(password_data.current_password, user.hashed_password):
+        logger.warning(f"Failed password change attempt for user {user.email}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Validate new password strength
+    is_valid, error_message = validate_password_strength(password_data.new_password)
+    if not is_valid:
+        raise APIError(
+            code=ErrorCode.WEAK_PASSWORD,
+            message=error_message,
+            status_code=422,
+            details={"requirements": get_password_requirements()}
+        )
+    
+    # Update password
+    user.hashed_password = get_password_hash(password_data.new_password)
+    db.commit()
+    
+    logger.info(f"Password changed successfully for user {user.email}")
+    
+    return {"message": "Password changed successfully"}
+

@@ -264,6 +264,18 @@ const api = {
     resendVerificationEmail: async () => {
       return axiosInstance.post('auth/resend-verification');
     },
+    
+    changePassword: async (data: { current_password: string; new_password: string }) => {
+      return axiosInstance.post('auth/change-password', data);
+    },
+    
+    enable2FA: async () => {
+      return axiosInstance.post('users/me/2fa/enable', {});
+    },
+    
+    disable2FA: async () => {
+      return axiosInstance.post('users/me/2fa/disable');
+    },
   },
 
   // Users

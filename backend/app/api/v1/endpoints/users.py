@@ -242,3 +242,45 @@ def get_user_stats(
         "active_users": active_users,
         "doctors_by_specialization": specialization_stats
     }
+
+
+@router.post("/me/2fa/enable", response_model=UserResponse)
+def enable_two_factor(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Enable two-factor authentication for current user
+    """
+    if current_user.mfa_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two-factor authentication is already enabled"
+        )
+    
+    current_user.mfa_enabled = True
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user
+
+
+@router.post("/me/2fa/disable", response_model=UserResponse)
+def disable_two_factor(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Disable two-factor authentication for current user
+    """
+    if not current_user.mfa_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two-factor authentication is already disabled"
+        )
+    
+    current_user.mfa_enabled = False
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user

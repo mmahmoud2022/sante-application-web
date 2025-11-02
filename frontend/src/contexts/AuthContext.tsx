@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => void;
   register: (data: any) => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
+  syncUser: (data: Partial<User>) => void;
   isAuthenticated: boolean;
   isPatient: boolean;
   isDoctor: boolean;
@@ -118,6 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const syncUser = (data: Partial<User>) => {
+    setUser(prev => (prev ? { ...prev, ...data } : prev));
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -125,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     register,
     updateUser,
+    syncUser,
     isAuthenticated: !!user,
     isPatient: user?.role === 'patient',
     isDoctor: user?.role === 'doctor',

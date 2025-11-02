@@ -105,6 +105,7 @@ class AppointmentUpdate(BaseModel):
     """Schema for updating appointment information."""
 
     appointment_date: Optional[datetime] = None
+    appointment_time: Optional[str] = None
     duration_minutes: Optional[int] = Field(None, ge=15, le=180)
     appointment_type: Optional[AppointmentType] = None
     reason: Optional[str] = None
@@ -114,6 +115,17 @@ class AppointmentUpdate(BaseModel):
     status: Optional[AppointmentStatus] = None
 
     model_config = ConfigDict(extra="ignore")
+
+    @field_validator("appointment_time")
+    @classmethod
+    def _validate_time(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        try:
+            datetime.strptime(value, "%H:%M")
+        except ValueError as exc:  # pragma: no cover - defensive
+            raise ValueError("appointment_time must be in HH:MM format") from exc
+        return value
 
     @field_validator("appointment_type", mode="before")
     @classmethod

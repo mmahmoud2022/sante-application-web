@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/Input';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
+import { getTomorrowLocal, getTodayLocal } from '@/lib/utils/date';
 import {
   AppointmentBookingContext,
   AppointmentBookingDoctorSummary,
@@ -109,9 +110,8 @@ function PatientBookAppointmentContent() {
       return;
     }
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const defaultDate = tomorrow.toISOString().split('T')[0];
+    // Get tomorrow's date in local timezone (avoid UTC conversion issues)
+    const defaultDate = getTomorrowLocal();
     setSelectedDate(defaultDate);
 
     loadContext(queryDoctor, defaultDate);
@@ -286,7 +286,7 @@ function PatientBookAppointmentContent() {
                     type="date"
                     value={selectedDate}
                     onChange={handleDateChange}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={getTodayLocal()}
                   />
                 </div>
                 <div>

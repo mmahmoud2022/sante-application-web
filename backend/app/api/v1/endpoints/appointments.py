@@ -266,7 +266,7 @@ def update_appointment(
     db: Session = Depends(get_db)
 ):
     """
-    Update appointment
+    Update appointment (including reschedule)
     """
     from app.models.appointment import Appointment
     
@@ -287,8 +287,30 @@ def update_appointment(
                 detail="Not enough permissions"
             )
     
+    # Handle appointment_time if provided (for reschedule)
+    if appointment_update.appointment_time and appointment_update.appointment_date:
+        try:
+            time_value = datetime.strptime(appointment_update.appointment_time, "%H:%M").time()
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Invalid appointment_time format. Use HH:MM."
+            ) from exc
+
+        # Combine date and time
+        appointment_datetime = appointment_update.appointment_date.replace(
+            hour=time_value.hour,
+            minute=time_value.minute,
+            second=0,
+            microsecond=0,
+        )
+        appointment_update.appointment_date = appointment_datetime
+    
     # Update appointment
     update_data = appointment_update.model_dump(exclude_unset=True)
+    # Remove appointment_time from update_data as it's already processed
+    update_data.pop('appointment_time', None)
+    
     for field, value in update_data.items():
         setattr(appointment, field, value)
     

@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 from app.core.database import get_db
-from app.core.security import decode_access_token
+from app.core.security import decode_token
 from app.models.user import User
 
 router = APIRouter()
@@ -98,7 +98,7 @@ manager = ConnectionManager()
 async def get_current_user_from_token(token: str, db: Session) -> User:
     """Authenticate user from WebSocket token"""
     try:
-        payload = decode_access_token(token)
+        payload = decode_token(token)
         user_id = payload.get("sub")
         if user_id is None:
             return None

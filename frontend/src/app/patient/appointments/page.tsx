@@ -265,8 +265,12 @@ export default function AppointmentsPage() {
     }
 
     try {
+      // Format the datetime consistently with the create endpoint
+      const formattedDateTime = `${selectedDate}T${selectedSlot}:00`;
+      
       await api.appointments.update(editingAppointment.id, {
-        appointment_date: appointmentDateTime.toISOString(),
+        appointment_date: formattedDateTime,
+        appointment_time: selectedSlot,
         appointment_type: appointmentType,
         reason: chiefComplaint,
         notes: notes || undefined,

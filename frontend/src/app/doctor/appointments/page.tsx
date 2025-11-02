@@ -38,6 +38,24 @@ interface Appointment {
 type AppointmentStatus = 'all' | 'pending' | 'confirmed' | 'completed' | 'cancelled';
 type AppointmentType = 'all' | 'in-person' | 'video' | 'home';
 
+// Utility function to parse appointment date string as local date
+// This avoids timezone conversion issues when displaying dates
+const parseAppointmentDate = (dateStr: string): Date => {
+  // Extract YYYY-MM-DD part if it's an ISO string
+  const datePart = dateStr.split('T')[0];
+  const [year, month, day] = datePart.split('-').map(Number);
+  // Create date in local timezone (month is 0-indexed)
+  return new Date(year, month - 1, day);
+};
+
+// Get today's date string in YYYY-MM-DD format (local timezone)
+const getTodayString = (): string => {
+  const today = new Date();
+  return today.getFullYear() + '-' + 
+         String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(today.getDate()).padStart(2, '0');
+};
+
 export default function DoctorAppointmentsPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
@@ -70,12 +88,13 @@ export default function DoctorAppointmentsPage() {
   });
 
   const calculateStats = useCallback((appts: Appointment[]) => {
-    const today = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayString();
+    
     setStats({
       pending: appts.filter(a => a.status === 'pending').length,
       confirmed: appts.filter(a => a.status === 'confirmed').length,
       completed: appts.filter(a => a.status === 'completed').length,
-      today: appts.filter(a => a.date === today).length,
+      today: appts.filter(a => a.date.split('T')[0] === todayStr).length,
     });
   }, []);
 
@@ -106,21 +125,29 @@ export default function DoctorAppointmentsPage() {
       filtered = filtered.filter(a => a.appointment_type === typeFilter);
     }
 
-    // Date filter
+    // Date filter - using local timezone for consistent comparison
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    
     if (dateFilter === 'today') {
-      const todayStr = today.toISOString().split('T')[0];
-      filtered = filtered.filter(a => a.date === todayStr);
+      const todayStr = getTodayString();
+      filtered = filtered.filter(a => a.date.split('T')[0] === todayStr);
     } else if (dateFilter === 'week') {
-      const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const weekFromNow = new Date(today);
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
+      weekFromNow.setHours(23, 59, 59, 999); // End of that day
+      
       filtered = filtered.filter(a => {
-        const apptDate = new Date(a.date);
+        const apptDate = parseAppointmentDate(a.date);
         return apptDate >= today && apptDate <= weekFromNow;
       });
     } else if (dateFilter === 'month') {
-      const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const monthFromNow = new Date(today);
+      monthFromNow.setDate(monthFromNow.getDate() + 30);
+      monthFromNow.setHours(23, 59, 59, 999); // End of that day
+      
       filtered = filtered.filter(a => {
-        const apptDate = new Date(a.date);
+        const apptDate = parseAppointmentDate(a.date);
         return apptDate >= today && apptDate <= monthFromNow;
       });
     }
@@ -405,7 +432,7 @@ export default function DoctorAppointmentsPage() {
                             <div className="flex items-center space-x-4 text-sm text-gray-600">
                               <span className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-1" />
-                                {new Date(appointment.date).toLocaleDateString('fr-FR')}
+                                {parseAppointmentDate(appointment.date).toLocaleDateString('fr-FR')}
                               </span>
                               <span className="flex items-center">
                                 <Clock className="h-4 w-4 mr-1" />
@@ -589,7 +616,7 @@ export default function DoctorAppointmentsPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Rendez-vous</h3>
-                <p><strong>Date:</strong> {new Date(selectedAppointment.date).toLocaleDateString('fr-FR')}</p>
+                <p><strong>Date:</strong> {parseAppointmentDate(selectedAppointment.date).toLocaleDateString('fr-FR')}</p>
                 <p><strong>Heure:</strong> {selectedAppointment.time}</p>
                 <p><strong>Type:</strong> {selectedAppointment.appointment_type}</p>
               </div>
