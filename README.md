@@ -24,7 +24,7 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 ## 🚀 Tech Stack
 
 ### Backend
-- **Language**: Python 3.11+
+- **Language**: Python 3.12+
 - **Framework**: FastAPI 0.104.0+
 - **ORM**: SQLAlchemy 2.0+ with Alembic for migrations
 - **Validation**: Pydantic V2
