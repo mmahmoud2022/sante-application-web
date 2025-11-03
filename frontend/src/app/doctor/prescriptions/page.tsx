@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Pill,
@@ -28,6 +28,19 @@ import api from '@/lib/api';
 import logger from '@/lib/logger';
 import { Prescription, PrescriptionStatus } from '@/types';
 
+const formatDateLabel = (value?: string | null) => {
+  if (!value) {
+    return 'Non renseignée';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Non renseignée';
+  }
+
+  return date.toLocaleDateString();
+};
+
 export default function DoctorPrescriptionsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -36,25 +49,19 @@ export default function DoctorPrescriptionsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+
+  // Group prescriptions by patient
+  const prescriptionsByPatient = prescriptions.reduce((acc, prescription) => {
+    const patientId = prescription.patient_id;
+    if (!acc[patientId]) {
+      acc[patientId] = [];
+    }
+    acc[patientId].push(prescription);
+    return acc;
+  }, {} as Record<number, Prescription[]>);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadPrescriptions();
-    }
-  }, [user, authLoading, router]);
-
-  const loadPrescriptions = async () => {
+  const loadPrescriptions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.prescriptions.list({ doctor_id: user?.id });
@@ -71,7 +78,23 @@ export default function DoctorPrescriptionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadPrescriptions();
+    }
+  }, [user, authLoading, router, loadPrescriptions]);
 
   const handleViewDetails = (prescription: Prescription) => {
     setSelectedPrescription(prescription);
@@ -187,7 +210,7 @@ export default function DoctorPrescriptionsPage() {
                     <div>
                       <label className="text-sm font-medium text-gray-600">Start Date</label>
                       <p className="text-gray-900 font-medium">
-                        {new Date(selectedPrescription.start_date).toLocaleDateString()}
+                        {formatDateLabel(selectedPrescription.start_date)}
                       </p>
                     </div>
                   </div>
@@ -276,7 +299,16 @@ export default function DoctorPrescriptionsPage() {
                   <p className="text-sm text-gray-600">This Month</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {prescriptions.filter(p => {
-                      const date = new Date(p.created_at || p.start_date);
+                      const timestamp = p.created_at ?? p.start_date;
+                      if (!timestamp) {
+                        return false;
+                      }
+
+                      const date = new Date(timestamp);
+                      if (Number.isNaN(date.getTime())) {
+                        return false;
+                      }
+
                       const now = new Date();
                       return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
                     }).length}
@@ -389,7 +421,7 @@ export default function DoctorPrescriptionsPage() {
                       <div className="flex items-center space-x-6 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />
-                          <span>Started: {new Date(prescription.start_date).toLocaleDateString()}</span>
+                          <span>Started: {formatDateLabel(prescription.start_date)}</span>
                         </div>
                         <div className="flex items-center">
                           <FileText className="w-4 h-4 mr-1" />

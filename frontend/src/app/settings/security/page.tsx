@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Shield, Smartphone, Mail, CheckCircle, AlertCircle,
@@ -71,7 +72,7 @@ export default function TwoFactorAuthPage() {
           setError('Veuillez entrer votre numéro de téléphone');
           return;
         }
-        await api.users.sendTwoFactorCode({ phone_number: phoneNumber });
+        await api.users.sendTwoFactorCode({ phone: phoneNumber });
         setSuccess('Code envoyé par SMS');
       } else if (selectedMethod === 'email') {
         await api.users.sendTwoFactorCode({ method: 'email' });
@@ -102,7 +103,7 @@ export default function TwoFactorAuthPage() {
       const response = await api.users.enableTwoFactor({
         method: selectedMethod,
         code: verificationCode,
-        phone_number: selectedMethod === 'sms' ? phoneNumber : undefined,
+        phone: selectedMethod === 'sms' ? phoneNumber : undefined,
       });
 
       setBackupCodes(response.data.backup_codes);
@@ -341,7 +342,14 @@ export default function TwoFactorAuthPage() {
                         </p>
                         {qrCodeUrl && (
                           <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
-                            <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48" />
+                            <Image
+                              src={qrCodeUrl}
+                              alt="QR Code"
+                              width={192}
+                              height={192}
+                              className="w-48 h-48"
+                              unoptimized
+                            />
                           </div>
                         )}
                       </div>

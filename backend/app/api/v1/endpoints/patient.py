@@ -45,15 +45,32 @@ def _map_doctor(user: User) -> AppointmentBookingDoctor:
 def get_book_appointment_context(
     doctor: int | None = Query(None, description="Preselected doctor ID"),
     appointment_date: date | None = Query(None, alias="date"),
+    specialty: str | None = Query(None, description="Filter by specialty"),
+    city: str | None = Query(None, description="Filter by city/location"),
+    postal_code: str | None = Query(None, description="Filter by postal code"),
+    reason: str | None = Query(None, description="Reason for consultation"),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Provide helper data for the appointment booking experience."""
+    """
+    Provide helper data for the appointment booking experience.
+    
+    Supports searching practitioners by:
+    - Specialty (e.g., dermatologist, dentist, general practitioner)
+    - Location (city, postal code)
+    - Reason for consultation (stored for appointment creation)
+    """
 
     _ensure_patient(current_user)
 
-    doctors = get_doctors(db, limit=limit)
+    # Enhanced doctor search with filters
+    doctors = get_doctors(
+        db,
+        limit=limit,
+        specialization=specialty,
+        city=city or postal_code,  # Use postal_code as city fallback
+    )
     doctor_payload: List[AppointmentBookingDoctor] = [_map_doctor(doc) for doc in doctors]
 
     response = AppointmentBookingResponse(doctors=doctor_payload)
@@ -77,3 +94,43 @@ def get_book_appointment_context(
             response.available_slots = slots or []
 
     return response
+
+
+@router.get("/search-doctors", response_model=dict)
+def search_doctors(
+    specialty: str | None = Query(None, description="Filter by specialty"),
+    city: str | None = Query(None, description="Filter by city/location"),
+    postal_code: str | None = Query(None, description="Filter by postal code"),
+    search: str | None = Query(None, description="Search by name or specialty"),
+    min_rating: float | None = Query(None, ge=0, le=5, description="Minimum rating"),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Advanced doctor search endpoint.
+    
+    Allows patients to search for practitioners by:
+    - Specialty (e.g., dermatologist, dentist, general practitioner)
+    - Location (city, postal code, distance)
+    - Name or specialty text search
+    - Minimum rating
+    """
+    _ensure_patient(current_user)
+
+    doctors = get_doctors(
+        db,
+        limit=limit,
+        specialization=specialty,
+        city=city or postal_code,
+        min_rating=min_rating,
+        accepting_new_patients=True,
+        search=search
+    )
+    
+    doctor_list = [_map_doctor(doc) for doc in doctors]
+    
+    return {
+        "total": len(doctor_list),
+        "doctors": doctor_list
+    }

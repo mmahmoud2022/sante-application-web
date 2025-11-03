@@ -6,17 +6,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 import time
-import logging
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.core.logging import setup_logging, get_logger
+from app.core.middleware import RequestLoggingMiddleware, APIVersionMiddleware
+from app.core.errors import APIError
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+# Configure structured logging
+setup_logging(
+    log_level=settings.ENVIRONMENT == "development" and "DEBUG" or "INFO",
+    json_logs=settings.ENVIRONMENT != "development"
 )
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 # Create FastAPI application
 app = FastAPI(
@@ -28,6 +37,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Add rate limiter to app state
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -37,28 +50,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add custom middleware for logging and versioning
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(APIVersionMiddleware)
 
-# Middleware for logging and performance monitoring
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all requests and measure response time"""
-    start_time = time.time()
-    
-    # Process request
-    response = await call_next(request)
-    
-    # Calculate processing time
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    
-    # Log request details
-    logger.info(
-        f"{request.method} {request.url.path} - "
-        f"Status: {response.status_code} - "
-        f"Time: {process_time:.3f}s"
-    )
-    
-    return response
+
+# Startup event - initialize cache
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on application startup"""
+    from app.core.cache import init_cache
+    await init_cache()
+    logger.info("Application startup complete")
 
 
 # Include API router
@@ -91,7 +94,7 @@ async def health_check():
 
 # Custom OpenAPI schema
 def custom_openapi():
-    """Customize OpenAPI schema"""
+    """Customize OpenAPI schema with enhanced documentation"""
     if app.openapi_schema:
         return app.openapi_schema
     
@@ -107,6 +110,189 @@ def custom_openapi():
         "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
     }
     
+    # Add contact information
+    openapi_schema["info"]["contact"] = {
+        "name": "API Support",
+        "email": "support@sante-app.com",
+        "url": "https://sante-app.com/support"
+    }
+    
+    # Add license information
+    openapi_schema["info"]["license"] = {
+        "name": "Proprietary",
+        "url": "https://sante-app.com/license"
+    }
+    
+    # Add security schemes documentation
+    if "components" not in openapi_schema:
+        openapi_schema["components"] = {}
+    
+    openapi_schema["components"]["securitySchemes"] = {
+        "Bearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter your JWT token in the format: Bearer <token>"
+        }
+    }
+    
+    # Add common error responses
+    openapi_schema["components"]["responses"] = {
+        "UnauthorizedError": {
+            "description": "Authentication required",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "UNAUTHORIZED"},
+                                    "message": {"type": "string", "example": "Authentication required"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ForbiddenError": {
+            "description": "Insufficient permissions",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "FORBIDDEN"},
+                                    "message": {"type": "string", "example": "Not enough permissions"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "NotFoundError": {
+            "description": "Resource not found",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "NOT_FOUND"},
+                                    "message": {"type": "string", "example": "Resource not found"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ValidationError": {
+            "description": "Validation error",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {"type": "string", "example": "VALIDATION_ERROR"},
+                                    "message": {"type": "string", "example": "Invalid input"},
+                                    "details": {"type": "object"}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "RateLimitError": {
+            "description": "Rate limit exceeded",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "error": {
+                                "type": "string",
+                                "example": "Rate limit exceeded"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    # Add tags metadata with descriptions
+    openapi_schema["tags"] = [
+        {
+            "name": "Authentication",
+            "description": "User authentication and authorization endpoints including login, registration, and password reset"
+        },
+        {
+            "name": "Users",
+            "description": "User management endpoints for profiles and user data"
+        },
+        {
+            "name": "Appointments",
+            "description": "Appointment scheduling, management, and cancellation"
+        },
+        {
+            "name": "Doctor",
+            "description": "Doctor-specific features including patient lists and schedules"
+        },
+        {
+            "name": "Patient",
+            "description": "Patient-specific features and medical history"
+        },
+        {
+            "name": "Medical Records",
+            "description": "Medical record management and access"
+        },
+        {
+            "name": "Prescriptions",
+            "description": "Prescription creation and management"
+        },
+        {
+            "name": "Documents",
+            "description": "Document upload and management"
+        },
+        {
+            "name": "Messages",
+            "description": "Messaging between users"
+        },
+        {
+            "name": "Notifications",
+            "description": "Push notifications and alerts"
+        },
+        {
+            "name": "Health",
+            "description": "Health check endpoints for monitoring"
+        },
+        {
+            "name": "Audit Logs",
+            "description": "Audit trail and compliance logging"
+        },
+        {
+            "name": "GDPR Compliance",
+            "description": "GDPR compliance features including data export and deletion"
+        },
+        {
+            "name": "WebSocket",
+            "description": "Real-time communication via WebSocket"
+        }
+    ]
+    
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
@@ -115,6 +301,15 @@ app.openapi = custom_openapi
 
 
 # Exception handlers
+@app.exception_handler(APIError)
+async def api_error_handler(request: Request, exc: APIError):
+    """Handle custom API errors"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.to_dict()
+    )
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler"""
@@ -122,8 +317,10 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={
-            "detail": "Internal server error",
-            "message": str(exc) if settings.ENVIRONMENT == "development" else "An error occurred"
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": str(exc) if settings.ENVIRONMENT == "development" else "An internal error occurred"
+            }
         }
     )
 

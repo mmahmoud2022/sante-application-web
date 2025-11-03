@@ -15,6 +15,12 @@ from app.api.v1.endpoints import (
     doctor,
     patient,
     documents,
+    waiting_lists,
+    messages,
+    health,
+    audit,
+    gdpr,
+    websocket,
 )
 
 api_router = APIRouter()
@@ -28,6 +34,12 @@ api_router.include_router(prescriptions.router, prefix="/prescriptions", tags=["
 api_router.include_router(reviews.router, prefix="/reviews", tags=["Reviews"])
 api_router.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+api_router.include_router(messages.router, prefix="/messages", tags=["Messages"])
 api_router.include_router(doctor.router, prefix="/doctor", tags=["Doctor"])
 api_router.include_router(patient.router, prefix="/patient", tags=["Patient"])
 api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])
+api_router.include_router(waiting_lists.router, prefix="/waiting-lists", tags=["Waiting Lists"])
+api_router.include_router(health.router, prefix="/health", tags=["Health"])
+api_router.include_router(audit.router, prefix="/audit", tags=["Audit Logs"])
+api_router.include_router(gdpr.router, prefix="/gdpr", tags=["GDPR Compliance"])
+api_router.include_router(websocket.router, prefix="/websocket", tags=["WebSocket"])

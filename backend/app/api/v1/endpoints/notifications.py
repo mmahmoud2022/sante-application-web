@@ -15,7 +15,8 @@ from app.services.notification_service import NotificationService
 router = APIRouter()
 
 
-@router.get("/", response_model=List[NotificationResponse])
+@router.get("", response_model=List[NotificationResponse])
+@router.get("/", response_model=List[NotificationResponse], include_in_schema=False)
 def list_notifications(
     skip: int = 0,
     limit: int = 50,
@@ -47,7 +48,7 @@ def get_unread_count(
         db.query(Notification)
         .filter(
             Notification.user_id == current_user.id,
-            Notification.is_read == False,
+            Notification.read_at.is_(None),
         )
         .count()
     )

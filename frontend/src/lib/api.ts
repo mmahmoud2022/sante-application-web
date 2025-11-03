@@ -57,6 +57,11 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor to add auth token and start timing
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Ensure relative URLs don't drop the /api/v1 prefix by stripping leading slashes
+    if (config.url && !/^https?:\/\//i.test(config.url)) {
+      config.url = config.url.replace(/^\/+/u, '');
+    }
+
     // Start timing the request
     (config as any).metadata = { startTime: Date.now() };
 
@@ -65,6 +70,23 @@ axiosInstance.interceptors.request.use(
       if (token) {
         config.headers = config.headers ?? new AxiosHeaders();
         config.headers.set('Authorization', `Bearer ${token}`);
+        logger.debug(
+          'API Request Authorization attached',
+          {
+            url: config.url,
+            hasToken: true,
+          },
+          LogCategory.AUTH
+        );
+      } else {
+        logger.debug(
+          'API Request without Authorization token',
+          {
+            url: config.url,
+            hasToken: false,
+          },
+          LogCategory.AUTH
+        );
       }
     }
 
@@ -200,8 +222,8 @@ const api = {
       formData.append('username', email);
       formData.append('password', password);
       formData.append('remember_me', rememberMe ? 'true' : 'false');
-      
-      return axiosInstance.post('/auth/login', formData, {
+
+      return axiosInstance.post('auth/login', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -209,7 +231,7 @@ const api = {
     },
     
     register: async (data: any) => {
-      return axiosInstance.post('/auth/register', data);
+      return axiosInstance.post('auth/register', data);
     },
     
     logout: () => {
@@ -220,191 +242,215 @@ const api = {
     },
     
     refresh: async (refreshToken: string) => {
-      return axiosInstance.post('/auth/refresh', { refresh_token: refreshToken });
+      return axiosInstance.post('auth/refresh', { refresh_token: refreshToken });
     },
     
     requestPasswordReset: async (email: string) => {
-      return axiosInstance.post('/auth/request-password-reset', { email });
+      return axiosInstance.post('auth/request-password-reset', { email });
     },
     
     validateResetToken: async (token: string) => {
-      return axiosInstance.post('/auth/validate-reset-token', { token });
+      return axiosInstance.post('auth/validate-reset-token', { token });
     },
     
     resetPassword: async (token: string, new_password: string) => {
-      return axiosInstance.post('/auth/reset-password', { token, new_password });
+      return axiosInstance.post('auth/reset-password', { token, new_password });
     },
     
     verifyEmail: async (token: string) => {
-      return axiosInstance.post('/auth/verify-email', { token });
+      return axiosInstance.post('auth/verify-email', { token });
     },
     
     resendVerificationEmail: async () => {
-      return axiosInstance.post('/auth/resend-verification');
+      return axiosInstance.post('auth/resend-verification');
+    },
+    
+    changePassword: async (data: { current_password: string; new_password: string }) => {
+      return axiosInstance.post('auth/change-password', data);
+    },
+    
+    enable2FA: async () => {
+      return axiosInstance.post('users/me/2fa/enable', {});
+    },
+    
+    disable2FA: async () => {
+      return axiosInstance.post('users/me/2fa/disable');
     },
   },
 
   // Users
   users: {
     me: async () => {
-      return axiosInstance.get('/users/me');
+      return axiosInstance.get('users/me');
     },
     
     update: async (idOrData: number | any, data?: any) => {
       // Support both update(data) for current user and update(id, data) for admin
       if (typeof idOrData === 'number' && data) {
-        return axiosInstance.put(`/users/${idOrData}`, data);
+        return axiosInstance.put(`users/${idOrData}`, data);
       } else {
-        return axiosInstance.put('/users/me', idOrData);
+        return axiosInstance.put('users/me', idOrData);
       }
     },
     
     list: async (params?: any) => {
-      return axiosInstance.get('/users', { params });
+      return axiosInstance.get('users/', { params });
     },
     
     doctors: async (params?: any) => {
-      return axiosInstance.get('/users/doctors', { params });
+      return axiosInstance.get('users/doctors', { params });
     },
     
     getDoctor: async (id: number) => {
-      return axiosInstance.get(`/users/doctors/${id}`);
+      return axiosInstance.get(`users/doctors/${id}`);
     },
     
     delete: async (id: number) => {
-      return axiosInstance.delete(`/users/${id}`);
+      return axiosInstance.delete(`users/${id}`);
     },
     
     verify: async (id: number) => {
-      return axiosInstance.post(`/users/${id}/verify`);
+      return axiosInstance.post(`users/${id}/verify`);
     },
     
     stats: async () => {
-      return axiosInstance.get('/users/stats/overview');
+      return axiosInstance.get('users/stats/overview');
     },
     
     getTwoFactorStatus: async () => {
-      return axiosInstance.get('/users/me/2fa/status');
+      return axiosInstance.get('users/me/2fa/status');
     },
     
     sendTwoFactorCode: async (data: any) => {
-      return axiosInstance.post('/users/me/2fa/send-code', data);
+      return axiosInstance.post('users/me/2fa/send-code', data);
     },
     
     generateTwoFactorSecret: async () => {
-      return axiosInstance.post('/users/me/2fa/generate-secret');
+      return axiosInstance.post('users/me/2fa/generate-secret');
     },
     
     enableTwoFactor: async (data: any) => {
-      return axiosInstance.post('/users/me/2fa/enable', data);
+      return axiosInstance.post('users/me/2fa/enable', data);
     },
     
     disableTwoFactor: async () => {
-      return axiosInstance.post('/users/me/2fa/disable');
+      return axiosInstance.post('users/me/2fa/disable');
     },
   },
 
   // Appointments
   appointments: {
     list: async (params?: any) => {
-      return axiosInstance.get('/appointments', { params });
+      return axiosInstance.get('appointments/', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`/appointments/${id}`);
+      return axiosInstance.get(`appointments/${id}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/appointments', data);
+      return axiosInstance.post('appointments/', data);
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`/appointments/${id}`, data);
+      return axiosInstance.put(`appointments/${id}`, data);
     },
     
     cancel: async (id: number, reason?: string) => {
-      return axiosInstance.patch(`/appointments/${id}/cancel`, { 
+      return axiosInstance.patch(`appointments/${id}/cancel`, { 
         cancellation_reason: reason 
       });
     },
     
     confirm: async (id: number) => {
-      return axiosInstance.patch(`/appointments/${id}/confirm`);
+      return axiosInstance.patch(`appointments/${id}/confirm`);
     },
     
     complete: async (id: number, data?: any) => {
-      return axiosInstance.patch(`/appointments/${id}/complete`, data);
+      return axiosInstance.patch(`appointments/${id}/complete`, data);
     },
     
     getAvailableSlots: async (doctorId: number, date: string) => {
-      return axiosInstance.get('/appointments/available-slots', {
+      return axiosInstance.get('appointments/available-slots', {
         params: { doctor_id: doctorId, date }
       });
     },
     
     stats: async () => {
-      return axiosInstance.get('/appointments/stats/overview');
+      return axiosInstance.get('appointments/stats/overview');
     },
   },
 
   // Prescriptions
   prescriptions: {
     list: async (params?: any) => {
-      return axiosInstance.get('/prescriptions', { params });
+      return axiosInstance.get('prescriptions/', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`/prescriptions/${id}`);
+      return axiosInstance.get(`prescriptions/${id}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/prescriptions', data);
+      return axiosInstance.post('prescriptions/', data);
+    },
+
+    upload: async (file: File, data: any) => {
+      const formData = new FormData();
+      formData.append('prescription_payload', JSON.stringify(data));
+      formData.append('file', file);
+
+      return axiosInstance.post('prescriptions/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`/prescriptions/${id}`, data);
+      return axiosInstance.put(`prescriptions/${id}`, data);
     },
     
     renew: async (id: number) => {
-      return axiosInstance.post(`/prescriptions/${id}/renew`);
+      return axiosInstance.post(`prescriptions/${id}/renew`);
     },
     
     cancel: async (id: number) => {
-      return axiosInstance.patch(`/prescriptions/${id}/cancel`);
+      return axiosInstance.delete(`prescriptions/${id}`);
     },
   },
 
   // Medical Records
   medicalRecords: {
     list: async (params?: any) => {
-      return axiosInstance.get('/medical-records', { params });
+      return axiosInstance.get('medical-records/', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`/medical-records/${id}`);
+      return axiosInstance.get(`medical-records/${id}`);
     },
     
     getByPatient: async (patientId: number) => {
-      return axiosInstance.get(`/medical-records/patient/${patientId}`);
+      return axiosInstance.get(`medical-records/patient/${patientId}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/medical-records', data);
+      return axiosInstance.post('medical-records/', data);
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`/medical-records/${id}`, data);
+      return axiosInstance.put(`medical-records/${id}`, data);
     },
   },
 
   // Documents
   documents: {
     list: async (params?: any) => {
-      return axiosInstance.get('/documents', { params });
+      return axiosInstance.get('documents/', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`/documents/${id}`);
+      return axiosInstance.get(`documents/${id}`);
     },
     
     upload: async (file: File, data: any) => {
@@ -414,7 +460,7 @@ const api = {
         formData.append(key, data[key]);
       });
       
-      return axiosInstance.post('/documents', formData, {
+      return axiosInstance.post('documents/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -422,11 +468,11 @@ const api = {
     },
     
     delete: async (id: number) => {
-      return axiosInstance.delete(`/documents/${id}`);
+      return axiosInstance.delete(`documents/${id}`);
     },
     
     download: async (id: number) => {
-      return axiosInstance.get(`/documents/${id}/download`, {
+      return axiosInstance.get(`documents/${id}/download`, {
         responseType: 'blob',
       });
     },
@@ -435,80 +481,114 @@ const api = {
   // Notifications
   notifications: {
     list: async (params?: any) => {
-      return axiosInstance.get('/notifications', { params });
+      return axiosInstance.get('notifications/', { params });
+    },
+
+    unreadCount: async () => {
+      return axiosInstance.get('notifications/unread-count');
     },
     
     markAsRead: async (id: number) => {
-      return axiosInstance.patch(`/notifications/${id}/read`);
+      return axiosInstance.put(`notifications/${id}/read`);
     },
     
     markAllAsRead: async () => {
-      return axiosInstance.post('/notifications/mark-all-read');
+      return axiosInstance.put('notifications/read-all');
+    },
+  },
+
+  messages: {
+    listConversations: async () => {
+      return axiosInstance.get('messages/conversations');
+    },
+
+    getConversation: async (otherUserId: number, params?: { limit?: number; offset?: number }) => {
+      return axiosInstance.get(`messages/conversations/${otherUserId}`, { params });
+    },
+
+    markConversationAsRead: async (otherUserId: number) => {
+      return axiosInstance.put(`messages/conversations/${otherUserId}/read`);
+    },
+
+    sendMessage: async (data: { recipient_id: number; content: string; subject?: string; reference_id?: number; reference_type?: string }) => {
+      return axiosInstance.post('messages', data);
+    },
+
+    markMessageAsRead: async (messageId: number) => {
+      return axiosInstance.put(`messages/${messageId}/read`);
+    },
+
+    unreadCount: async () => {
+      return axiosInstance.get('messages/unread-count');
+    },
+
+    delete: async (messageId: number) => {
+      return axiosInstance.delete(`messages/${messageId}`);
     },
   },
 
   // Reviews
   reviews: {
     list: async (params?: any) => {
-      return axiosInstance.get('/reviews', { params });
+      return axiosInstance.get('reviews/', { params });
     },
     
     getByDoctor: async (doctorId: number, params?: any) => {
-      return axiosInstance.get(`/reviews/doctor/${doctorId}`, { params });
+      return axiosInstance.get(`reviews/doctor/${doctorId}`, { params });
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/reviews', data);
+      return axiosInstance.post('reviews/', data);
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`/reviews/${id}`, data);
+      return axiosInstance.put(`reviews/${id}`, data);
     },
     
     delete: async (id: number) => {
-      return axiosInstance.delete(`/reviews/${id}`);
+      return axiosInstance.delete(`reviews/${id}`);
     },
   },
 
   // Schedules
   schedules: {
     list: async (params?: any) => {
-      return axiosInstance.get('/schedules', { params });
+      return axiosInstance.get('schedules/', { params });
     },
     
     getByDoctor: async (doctorId: number) => {
-      return axiosInstance.get(`/schedules/doctor/${doctorId}`);
+      return axiosInstance.get(`schedules/doctor/${doctorId}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/schedules', data);
+      return axiosInstance.post('schedules/', data);
     },
     
     update: async (id: number, data: any) => {
-      return axiosInstance.put(`/schedules/${id}`, data);
+      return axiosInstance.put(`schedules/${id}`, data);
     },
     
     delete: async (id: number) => {
-      return axiosInstance.delete(`/schedules/${id}`);
+      return axiosInstance.delete(`schedules/${id}`);
     },
   },
 
   // Doctor helpers
   doctor: {
     profile: async () => {
-      return axiosInstance.get('/doctor/profile');
+      return axiosInstance.get('doctor/profile');
     },
 
     patients: async (params?: any) => {
-      return axiosInstance.get('/doctor/patients', { params });
+      return axiosInstance.get('doctor/patients', { params });
     },
 
-    schedule: async () => {
-      return axiosInstance.get('/doctor/schedule');
+    schedules: async () => {
+      return axiosInstance.get('doctor/schedule');
     },
 
     availableSlots: async (targetDate: string, doctorId?: number) => {
-      return axiosInstance.get('/doctor/schedule/available-slots', {
+      return axiosInstance.get('doctor/schedule/available-slots', {
         params: {
           target_date: targetDate,
           doctor_id: doctorId,
@@ -520,30 +600,30 @@ const api = {
   // Patient helpers
   patient: {
     bookAppointmentContext: async (params?: any) => {
-      return axiosInstance.get('/patient/book-appointment', { params });
+      return axiosInstance.get('patient/book-appointment', { params });
     },
   },
 
   // Payments
   payments: {
     list: async (params?: any) => {
-      return axiosInstance.get('/payments', { params });
+      return axiosInstance.get('payments/', { params });
     },
     
     get: async (id: number) => {
-      return axiosInstance.get(`/payments/${id}`);
+      return axiosInstance.get(`payments/${id}`);
     },
     
     create: async (data: any) => {
-      return axiosInstance.post('/payments', data);
+      return axiosInstance.post('payments/', data);
     },
     
     processPayment: async (id: number, paymentMethod: string) => {
-      return axiosInstance.post(`/payments/${id}/process`, { payment_method: paymentMethod });
+      return axiosInstance.post(`payments/${id}/process`, { payment_method: paymentMethod });
     },
     
     refund: async (id: number, amount?: number) => {
-      return axiosInstance.post(`/payments/${id}/refund`, { amount });
+      return axiosInstance.post(`payments/${id}/refund`, { amount });
     },
   },
 };

@@ -3,6 +3,7 @@ Service layer helpers for doctor-specific features
 """
 from __future__ import annotations
 
+import logging
 from datetime import date, datetime, time, timedelta
 from typing import List, Optional
 
@@ -13,6 +14,8 @@ from app.models.appointment import Appointment
 from app.models.schedule import DayOfWeek, DoctorSchedule, ScheduleType
 from app.models.user import User
 from app.schemas.doctor import AppointmentSlot, DoctorPatientSummary
+
+logger = logging.getLogger(__name__)
 
 
 _DAY_INDEX_TO_ENUM = {
@@ -124,6 +127,16 @@ def get_available_slots_for_date(
 ) -> List[AppointmentSlot]:
     """Calculate available appointment slots for a doctor on a given date."""
 
+    logger.info(
+        f"Computing available slots for doctor_id={doctor_id}, target_date={target_date} "
+        f"(weekday={target_date.weekday()})"
+    )
+
+    # Convert target_date to datetime range for accurate timezone comparison
+    # This ensures we match dates correctly regardless of timezone storage
+    start_of_day = datetime.combine(target_date, time.min)
+    end_of_day = datetime.combine(target_date, time.max)
+
     # Check for blocked/holiday entries first
     blocked_entry = (
         db.query(DoctorSchedule)
@@ -132,7 +145,8 @@ def get_available_slots_for_date(
             DoctorSchedule.schedule_type.in_([ScheduleType.HOLIDAY, ScheduleType.BLOCKED]),
         )
         .filter(DoctorSchedule.specific_date.isnot(None))
-        .filter(func.date(DoctorSchedule.specific_date) == target_date)
+        .filter(DoctorSchedule.specific_date >= start_of_day)
+        .filter(DoctorSchedule.specific_date <= end_of_day)
         .first()
     )
     if blocked_entry:
@@ -146,15 +160,32 @@ def get_available_slots_for_date(
             DoctorSchedule.schedule_type == ScheduleType.EXCEPTION,
         )
         .filter(DoctorSchedule.specific_date.isnot(None))
-        .filter(func.date(DoctorSchedule.specific_date) == target_date)
+        .filter(DoctorSchedule.specific_date >= start_of_day)
+        .filter(DoctorSchedule.specific_date <= end_of_day)
         .filter(DoctorSchedule.is_available == True)
         .all()
     )
 
     if exception_schedules:
         schedules = exception_schedules
+        logger.info(f"Found {len(exception_schedules)} exception schedule(s) for {target_date}")
     else:
         day_enum = _DAY_INDEX_TO_ENUM[target_date.weekday()]
+        
+        # Log all schedules for this doctor to debug
+        all_schedules = (
+            db.query(DoctorSchedule)
+            .filter(
+                DoctorSchedule.doctor_id == doctor_id,
+                DoctorSchedule.schedule_type == ScheduleType.REGULAR,
+            )
+            .all()
+        )
+        logger.info(f"Doctor {doctor_id} has {len(all_schedules)} regular schedules total:")
+        for sched in all_schedules:
+            logger.info(f"  - Schedule ID {sched.id}: {sched.day_of_week.value if sched.day_of_week else 'None'}, "
+                       f"{sched.start_time}-{sched.end_time}, available={sched.is_available}")
+        
         schedules = (
             db.query(DoctorSchedule)
             .filter(
@@ -165,9 +196,13 @@ def get_available_slots_for_date(
             )
             .all()
         )
+        logger.info(f"Found {len(schedules)} regular schedule(s) for {day_enum.value} (weekday {target_date.weekday()})")
 
     slots: List[AppointmentSlot] = []
     for schedule in schedules:
-        slots.extend(_generate_slots_for_schedule(schedule, target_date))
+        schedule_slots = _generate_slots_for_schedule(schedule, target_date)
+        logger.debug(f"Generated {len(schedule_slots)} slots from schedule {schedule.id} ({schedule.start_time} - {schedule.end_time})")
+        slots.extend(schedule_slots)
 
+    logger.info(f"Returning {len(slots)} total available slots for {target_date}")
     return slots

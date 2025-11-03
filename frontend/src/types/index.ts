@@ -13,6 +13,7 @@ export enum AppointmentStatus {
   CONFIRMED = 'confirmed',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show',
 }
 
 export enum AppointmentType {
@@ -52,13 +53,30 @@ export enum NotificationType {
   SYSTEM_ALERT = 'system_alert',
 }
 
+export enum DayOfWeek {
+  MONDAY = 'monday',
+  TUESDAY = 'tuesday',
+  WEDNESDAY = 'wednesday',
+  THURSDAY = 'thursday',
+  FRIDAY = 'friday',
+  SATURDAY = 'saturday',
+  SUNDAY = 'sunday',
+}
+
+export enum ScheduleType {
+  REGULAR = 'regular',
+  EXCEPTION = 'exception',
+  HOLIDAY = 'holiday',
+  BLOCKED = 'blocked',
+}
+
 export interface User {
   id: number;
   email: string;
   first_name: string;
   last_name: string;
   role: UserRole;
-  phone?: string;
+  phone?: string; // Backend uses 'phone' not 'phone_number'
   date_of_birth?: string;
   gender?: string;
   address_line1?: string;
@@ -67,7 +85,7 @@ export interface User {
   state?: string;
   postal_code?: string;
   country?: string;
-  profile_image?: string;
+  profile_image?: string; // Backend uses 'profile_image' not 'profile_picture_url'
   is_active: boolean;
   is_verified: boolean;
   mfa_enabled?: boolean;
@@ -78,7 +96,8 @@ export interface User {
   specialization?: string;
   license_number?: string;
   bio?: string;
-  consultation_fee?: number;
+  experience_years?: number;
+  consultation_fee?: number; // In cents (e.g., 5000 = €50.00)
   rating_average?: number;
   rating_count?: number;
   languages_spoken?: string;
@@ -127,9 +146,9 @@ export interface MedicalRecord {
   blood_type?: string;
   height_cm?: number;
   weight_kg?: number;
-  allergies?: string[];
-  chronic_conditions?: string[];
-  medications?: Array<{
+  allergies?: string[]; // Backend uses JSON array
+  chronic_conditions?: string[]; // Backend uses JSON array
+  medications?: Array<{ // Backend uses 'medications' not 'current_medications'
     name: string;
     dosage: string;
     frequency: string;
@@ -145,10 +164,10 @@ export interface MedicalRecord {
   family_history?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  emergency_contact_relation?: string;
+  emergency_contact_relation?: string; // Backend uses 'emergency_contact_relation' not 'emergency_contact_relationship'
   insurance_provider?: string;
   insurance_policy_number?: string;
-  insurance_valid_until?: string;
+  insurance_valid_until?: string; // Backend uses 'insurance_valid_until' not 'insurance_expiry_date'
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -168,6 +187,7 @@ export interface Prescription {
   refills_remaining: number;
   instructions?: string;
   notes?: string;
+  pharmacy_notes?: string;
   status: PrescriptionStatus;
   prescribed_date: string;
   start_date?: string;
@@ -203,8 +223,8 @@ export interface Review {
 export interface DoctorSchedule {
   id: number;
   doctor_id: number;
-  schedule_type: string;
-  day_of_week?: number;
+  schedule_type: ScheduleType;
+  day_of_week?: DayOfWeek;
   specific_date?: string;
   start_time: string;
   end_time: string;
@@ -217,10 +237,10 @@ export interface DoctorSchedule {
   is_video_consultation: boolean;
   is_active: boolean;
   recurrence_end_date?: string;
-  custom_rules?: any;
+  custom_rules?: Record<string, unknown> | null;
   notes?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface DoctorPatientSummary {
@@ -259,16 +279,20 @@ export interface AppointmentBookingContext {
 export interface Notification {
   id: number;
   user_id: number;
-  type: NotificationType;
+  notification_type: NotificationType;
   channel: string;
   title: string;
   message: string;
-  is_read: boolean;
+  status: string;
   reference_id?: number;
   reference_type?: string;
+  action_url?: string;
   scheduled_for?: string;
   sent_at?: string;
+  delivered_at?: string;
+  read_at?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Payment {
@@ -296,17 +320,17 @@ export interface Document {
   document_type: string;
   title: string;
   description?: string;
-  file_path: string;
+  file_path: string; // Backend uses 'file_path' not 'file_url'
   file_name: string;
-  file_size_bytes?: number;
+  file_size_bytes?: number; // Backend uses 'file_size_bytes' not 'file_size'
   mime_type?: string;
-  is_shared: boolean;
+  is_shared: boolean; // Backend uses 'is_shared' not 'is_shared_with_doctors'
   shared_with?: string;
   ocr_text?: string;
   ocr_processed?: boolean;
   document_date?: string;
   tags?: string;
-  verified: boolean;
+  verified: boolean; // Backend uses 'verified' not 'is_verified'
   verified_by?: number;
   verified_at?: string;
   created_at: string;
@@ -346,6 +370,7 @@ export interface RegisterFormData {
   phone?: string;
   date_of_birth?: string;
   gender?: string;
+  practice_name?: string;
   
   // Doctor specific
   specialization?: string;
@@ -398,4 +423,35 @@ export interface DoctorSearchFilters {
   max_fee?: number;
   accepting_new_patients?: boolean;
   available_date?: string;
+}
+
+export interface Message {
+  id: number;
+  sender_id: number;
+  recipient_id: number;
+  subject?: string;
+  content: string;
+  is_read: boolean;
+  read_at?: string;
+  reference_id?: number;
+  reference_type?: string;
+  created_at: string;
+  updated_at?: string;
+  deleted_at?: string;
+}
+
+export interface MessageCreate {
+  recipient_id: number;
+  subject?: string;
+  content: string;
+  reference_id?: number;
+  reference_type?: string;
+}
+
+export interface Conversation {
+  other_user_id: number;
+  other_user_name: string;
+  other_user_role: string;
+  last_message?: Message;
+  unread_count: number;
 }

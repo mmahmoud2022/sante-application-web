@@ -7,6 +7,7 @@ from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.models.appointment import AppointmentStatus, AppointmentType
+from app.schemas.user import UserResponse
 
 _TYPE_ALIASES: dict[str, AppointmentType] = {
     "in_person": AppointmentType.IN_PERSON,
@@ -24,8 +25,8 @@ _TYPE_ALIASES: dict[str, AppointmentType] = {
 
 _TYPE_SERIALIZATION: dict[str, str] = {
     AppointmentType.IN_PERSON.value: "in_person",
-    AppointmentType.VIDEO_CALL.value: "video",
-    AppointmentType.PHONE_CALL.value: "home_visit",
+    AppointmentType.VIDEO_CALL.value: "video_call",
+    AppointmentType.PHONE_CALL.value: "phone_call",
 }
 
 
@@ -104,6 +105,7 @@ class AppointmentUpdate(BaseModel):
     """Schema for updating appointment information."""
 
     appointment_date: Optional[datetime] = None
+    appointment_time: Optional[str] = None
     duration_minutes: Optional[int] = Field(None, ge=15, le=180)
     appointment_type: Optional[AppointmentType] = None
     reason: Optional[str] = None
@@ -113,6 +115,17 @@ class AppointmentUpdate(BaseModel):
     status: Optional[AppointmentStatus] = None
 
     model_config = ConfigDict(extra="ignore")
+
+    @field_validator("appointment_time")
+    @classmethod
+    def _validate_time(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        try:
+            datetime.strptime(value, "%H:%M")
+        except ValueError as exc:  # pragma: no cover - defensive
+            raise ValueError("appointment_time must be in HH:MM format") from exc
+        return value
 
     @field_validator("appointment_type", mode="before")
     @classmethod
@@ -140,6 +153,8 @@ class AppointmentResponse(AppointmentBase):
     cancelled_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
+    patient: Optional[UserResponse] = None
+    doctor: Optional[UserResponse] = None
 
     model_config = ConfigDict(from_attributes=True, extra="ignore")
 

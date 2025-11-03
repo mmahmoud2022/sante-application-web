@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -6,11 +6,26 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with a clean lockfile state
+RUN npm ci
 
-# Copy application code
+# Provide API endpoints at build time (can be overridden via build args)
+ARG NEXT_PUBLIC_API_URL=https://santeapp.serveirc.com
+ARG NEXT_INTERNAL_API_URL=http://backend:8000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_INTERNAL_API_URL=${NEXT_INTERNAL_API_URL}
+
+# Copy application source
 COPY . .
+
+# Build the Next.js application ahead of time
+RUN npm run build
+
+# Prune development dependencies to slim the image
+RUN npm prune --omit=dev
+
+# Ensure production environment inside the container
+ENV NODE_ENV=production
 
 # Expose port
 EXPOSE 3000
@@ -19,5 +34,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node healthcheck.js || exit 1
 
-# Run the application in development mode
-CMD ["npm", "run", "dev"]
+# Run the production server
+CMD ["npm", "run", "start"]

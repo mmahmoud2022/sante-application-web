@@ -32,7 +32,6 @@ class TestPrescriptionSchemas:
         """Test valid prescription creation schema"""
         data = {
             "patient_id": 1,
-            "doctor_id": 2,
             "medication_name": "Aspirin",
             "dosage": "100mg",
             "frequency": "Once daily",
@@ -48,7 +47,6 @@ class TestPrescriptionSchemas:
         """Test prescription creation with invalid duration"""
         data = {
             "patient_id": 1,
-            "doctor_id": 2,
             "medication_name": "Aspirin",
             "dosage": "100mg",
             "frequency": "Once daily",
@@ -245,7 +243,7 @@ class TestAppointmentSchemas:
             AppointmentCreate(**payload)
 
     def test_appointment_response_serialization_aliases(self):
-        """Ensure response schema exposes UI-friendly aliases."""
+        """Ensure response schema exposes UI-friendly aliases and consistent serialization."""
 
         schema = AppointmentResponse.model_validate(
             {
@@ -256,7 +254,7 @@ class TestAppointmentSchemas:
                 "duration_minutes": 30,
                 "appointment_type": AppointmentType.PHONE_CALL,
                 "status": AppointmentStatus.PENDING,
-                "reason": "At-home follow-up",
+                "reason": "Phone consultation follow-up",
                 "notes": None,
                 "diagnosis": None,
                 "prescription": None,
@@ -273,10 +271,11 @@ class TestAppointmentSchemas:
         )
 
         assert schema.appointment_time == "15:45"
-        assert schema.chief_complaint == "At-home follow-up"
+        assert schema.chief_complaint == "Phone consultation follow-up"
 
         serialized = schema.model_dump(mode="json")
-        assert serialized["appointment_type"] == "home_visit"
+        # Verify consistent serialization matching frontend enum values
+        assert serialized["appointment_type"] == "phone_call"
 
 
 class TestVaccinationSchemas:

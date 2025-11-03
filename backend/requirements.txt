@@ -1,29 +1,30 @@
 # FastAPI and Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
 
 # Database
-sqlalchemy==2.0.23
-alembic==1.12.1
-psycopg2-binary==2.9.9
-asyncpg==0.29.0
+sqlalchemy==2.0.36
+alembic==1.14.1
+psycopg2-binary==2.9.10
+asyncpg==0.30.0
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-bcrypt==4.1.1
-pydantic[email]==2.5.0
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
+bcrypt==4.2.1
+pydantic[email]==2.10.6
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
 
 # Task Queue
-celery==5.3.4
-redis==5.0.1
+celery==5.4.0
+redis==5.2.1
+flower==2.0.1  # Celery monitoring tool
 
 # HTTP Requests
-httpx==0.25.1
-requests==2.31.0
+httpx==0.28.1
+requests==2.32.3
 
 # Email
 fastapi-mail==1.4.1
@@ -42,22 +43,40 @@ opentelemetry-instrumentation-fastapi==0.42b0
 python-json-logger==2.0.7
 
 # Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-httpx==0.25.1
-faker==20.1.0
+pytest==8.3.4
+pytest-asyncio==0.25.2
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+faker==33.2.0
 
 # Code Quality
-black==23.11.0
-flake8==6.1.0
-isort==5.12.0
-mypy==1.7.1
+black==24.10.0
+flake8==7.1.1
+isort==5.13.2
+mypy==1.14.1
 
 # API Documentation
-pydantic==2.5.0
+pydantic==2.10.6
 
 # Utilities
-python-slugify==8.0.1
-pytz==2023.3
+python-slugify==8.0.4
+pytz==2024.2
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Caching
+fastapi-cache2==0.2.1
+
+# File Processing
+python-magic==0.4.27
+Pillow==11.0.0
+
+# Error Tracking & Monitoring
+sentry-sdk[fastapi]==1.39.1
+
+# Email Services
+sendgrid==6.11.0
+
+# SMS Services (Twilio)
+twilio==8.10.3

@@ -3,14 +3,25 @@ Authentication endpoints
 """
 from datetime import timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.core.config import settings
-from app.core.security import create_access_token, create_refresh_token, get_current_user
+from app.core.security import (
+    create_access_token, 
+    create_refresh_token, 
+    get_current_user,
+    get_rate_limiter,
+    get_account_lockout
+)
+from app.core.password_policy import validate_password_strength, get_password_requirements
+from app.core.errors import APIError, ErrorCode
+from app.core.logging import get_logger
 from app.schemas.user import UserCreate, UserResponse, Token
 from app.services.user_service import create_user, authenticate_user
 from app.services.notification_service import send_password_reset_email
@@ -18,7 +29,10 @@ import secrets
 import hashlib
 from datetime import datetime, timedelta
 
+logger = get_logger(__name__)
+
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 # Password reset schemas
@@ -46,7 +60,9 @@ email_verification_tokens = {}
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(
+@limiter.limit("10/hour")
+async def register(
+    request: Request,
     user: UserCreate,
     db: Session = Depends(get_db)
 ):
@@ -54,26 +70,59 @@ def register(
     Register a new user
     
     - **email**: User email (must be unique)
-    - **password**: User password (min 8 characters)
+    - **password**: User password (min 12 characters with complexity requirements)
     - **first_name**: User first name
     - **last_name**: User last name
     - **role**: User role (patient, doctor, admin)
     - **admin_secret**: Required only for admin registration
+    
+    Password Requirements:
+    - At least 12 characters long
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one digit
+    - At least one special character
     """
+    # Rate limiting for registration
+    rate_limiter = get_rate_limiter()
+    client_ip = request.client.host if request.client else "unknown"
+    await rate_limiter.check_rate_limit(
+        key=f"register:{client_ip}",
+        max_requests=5,
+        window=3600  # 5 registrations per hour per IP
+    )
+    
+    # Validate password strength
+    is_valid, error_message = validate_password_strength(user.password)
+    if not is_valid:
+        raise APIError(
+            code=ErrorCode.WEAK_PASSWORD,
+            message=error_message,
+            status_code=422,
+            details={"requirements": get_password_requirements()}
+        )
+    
     # If registering as admin, validate admin secret
     if user.role == "admin":
         admin_secret = getattr(user, 'admin_secret', None)
         if not admin_secret or admin_secret != settings.ADMIN_SECRET:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="INVALID_ADMIN_SECRET"
+            raise APIError(
+                code=ErrorCode.INVALID_ADMIN_SECRET,
+                message="Invalid admin secret",
+                status_code=403
             )
     
-    return create_user(db, user)
+    logger.info(f"New user registration attempt: {user.email}")
+    created_user = create_user(db, user)
+    logger.info(f"User registered successfully: {user.email}")
+    
+    return created_user
 
 
 @router.post("/login", response_model=Token)
-def login(
+@limiter.limit("5/minute")
+async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
@@ -82,20 +131,79 @@ def login(
     
     - **username**: User email
     - **password**: User password
+    
+    Rate Limiting:
+    - 10 login attempts per 15 minutes per IP
+    
+    Account Lockout:
+    - Account locked for 15 minutes after 5 failed attempts
     """
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+    email = form_data.username
+    
+    # Rate limiting for login attempts
+    rate_limiter = get_rate_limiter()
+    client_ip = request.client.host if request and request.client else "unknown"
+    await rate_limiter.check_rate_limit(
+        key=f"login:{client_ip}",
+        max_requests=10,
+        window=900  # 10 attempts per 15 minutes
+    )
+    
+    # Check account lockout
+    account_lockout = get_account_lockout()
+    if account_lockout.is_locked_out(email):
+        lockout_time = account_lockout.get_lockout_time_remaining(email)
+        logger.warning(f"Login attempt on locked account: {email}")
+        raise APIError(
+            code=ErrorCode.ACCOUNT_LOCKED,
+            message="Account temporarily locked due to multiple failed login attempts",
+            status_code=429,
+            details={
+                "lockout_remaining_seconds": lockout_time,
+                "lockout_remaining_minutes": lockout_time // 60
+            }
         )
     
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+    # Authenticate user
+    user = authenticate_user(db, email, form_data.password)
+    
+    if not user:
+        # Record failed attempt
+        failed_attempts = account_lockout.record_failed_attempt(email)
+        remaining_attempts = account_lockout.get_remaining_attempts(email)
+        
+        logger.warning(
+            f"Failed login attempt for {email}",
+            extra={
+                "email": email,
+                "failed_attempts": failed_attempts,
+                "remaining_attempts": remaining_attempts
+            }
         )
+        
+        error_details = {}
+        if remaining_attempts <= 2 and remaining_attempts > 0:
+            error_details["remaining_attempts"] = remaining_attempts
+            error_details["warning"] = f"Account will be locked after {remaining_attempts} more failed attempts"
+        
+        raise APIError(
+            code=ErrorCode.INVALID_CREDENTIALS,
+            message="Incorrect email or password",
+            status_code=401,
+            details=error_details
+        )
+    
+    # Check if user is active
+    if not user.is_active:
+        logger.warning(f"Login attempt on inactive account: {email}")
+        raise APIError(
+            code=ErrorCode.ACCOUNT_INACTIVE,
+            message="Account is inactive. Please contact support.",
+            status_code=403
+        )
+    
+    # Reset failed login attempts on successful login
+    account_lockout.reset_attempts(email)
     
     # Create access token
     access_token = create_access_token(
@@ -105,6 +213,11 @@ def login(
     # Create refresh token
     refresh_token = create_refresh_token(
         data={"sub": str(user.id)}
+    )
+    
+    logger.info(
+        f"Successful login: {email}",
+        extra={"user_id": user.id, "role": user.role}
     )
     
     return {
@@ -349,4 +462,82 @@ async def send_verification_email(email: str, first_name: str, verification_url:
     # """
     # await email_service.send(email, subject, body)
     pass
+
+
+@router.get("/password-requirements")
+async def get_password_requirements_endpoint():
+    """
+    Get password requirements for registration
+    
+    Returns the password policy requirements that users must meet
+    when creating a new password.
+    """
+    return {
+        "requirements": get_password_requirements(),
+        "policy": {
+            "min_length": 12,
+            "require_uppercase": True,
+            "require_lowercase": True,
+            "require_digit": True,
+            "require_special_char": True,
+            "special_chars": "!@#$%^&*(),.?\":{}|<>"
+        }
+    }
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password", status_code=status.HTTP_200_OK)
+@limiter.limit("10/hour")
+async def change_password(
+    request: Request,
+    password_data: ChangePasswordRequest,
+    current_user: Any = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Change password for the authenticated user
+    
+    - **current_password**: Current password for verification
+    - **new_password**: New password (must meet password policy requirements)
+    """
+    from app.models.user import User
+    from app.core.security import verify_password, get_password_hash
+    
+    # Get user from database
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Verify current password
+    if not verify_password(password_data.current_password, user.hashed_password):
+        logger.warning(f"Failed password change attempt for user {user.email}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Validate new password strength
+    is_valid, error_message = validate_password_strength(password_data.new_password)
+    if not is_valid:
+        raise APIError(
+            code=ErrorCode.WEAK_PASSWORD,
+            message=error_message,
+            status_code=422,
+            details={"requirements": get_password_requirements()}
+        )
+    
+    # Update password
+    user.hashed_password = get_password_hash(password_data.new_password)
+    db.commit()
+    
+    logger.info(f"Password changed successfully for user {user.email}")
+    
+    return {"message": "Password changed successfully"}
 

@@ -39,13 +39,15 @@ def update_current_user(
     """
     Update current user information
     """
-    return update_user(db, current_user.id, user_update)
+    allow_privileged = current_user.role == UserRole.ADMIN
+    return update_user(db, current_user.id, user_update, allow_privileged_fields=allow_privileged)
 
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("", response_model=List[UserResponse])
+@router.get("/", response_model=List[UserResponse], include_in_schema=False)
 def list_users(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=200),
     role: Optional[UserRole] = None,
     current_user: User = Depends(check_user_role("admin")),
     db: Session = Depends(get_db)
@@ -57,7 +59,7 @@ def list_users(
 
 
 @router.get("/doctors", response_model=List[UserResponse])
-def list_doctors(
+async def list_doctors(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     specialization: Optional[str] = None,
@@ -69,6 +71,8 @@ def list_doctors(
 ):
     """
     List all doctors with optional filtering by specialization, city, rating, and search
+    
+    Results are cached for 5 minutes to improve performance
     """
     return get_doctors(
         db, 
@@ -146,7 +150,8 @@ def update_user_by_id(
             detail="Not enough permissions"
         )
     
-    return update_user(db, user_id, user_update)
+    allow_privileged = current_user.role == UserRole.ADMIN
+    return update_user(db, user_id, user_update, allow_privileged_fields=allow_privileged)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -237,3 +242,45 @@ def get_user_stats(
         "active_users": active_users,
         "doctors_by_specialization": specialization_stats
     }
+
+
+@router.post("/me/2fa/enable", response_model=UserResponse)
+def enable_two_factor(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Enable two-factor authentication for current user
+    """
+    if current_user.mfa_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two-factor authentication is already enabled"
+        )
+    
+    current_user.mfa_enabled = True
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user
+
+
+@router.post("/me/2fa/disable", response_model=UserResponse)
+def disable_two_factor(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Disable two-factor authentication for current user
+    """
+    if not current_user.mfa_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Two-factor authentication is already disabled"
+        )
+    
+    current_user.mfa_enabled = False
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user

@@ -4,16 +4,16 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Heart, Mail, Lock, User, Phone, Calendar, AlertCircle } from 'lucide-react';
+import { Heart, Mail, Lock, User, Phone, Calendar, AlertCircle, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { UserRole } from '@/types';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const searchParams = useSearchParams();
   const { register } = useAuth();
   
@@ -31,6 +31,8 @@ export default function RegisterPage() {
     gender: '',
     specialization: '',
     licenseNumber: '',
+    practiceName: '',
+    city: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -60,6 +62,16 @@ export default function RegisterPage() {
       return;
     }
 
+    if (role === UserRole.DOCTOR && !formData.practiceName.trim()) {
+      setError('Le nom du cabinet ou de l\'hôpital est obligatoire pour les praticiens.');
+      return;
+    }
+
+    if (role === UserRole.DOCTOR && !formData.city.trim()) {
+      setError('La ville est obligatoire pour les praticiens.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -69,11 +81,13 @@ export default function RegisterPage() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         role: role,
-        phone_number: formData.phoneNumber || undefined,
+        phone: formData.phoneNumber || undefined,
         date_of_birth: formData.dateOfBirth || undefined,
         gender: formData.gender || undefined,
         specialization: role === UserRole.DOCTOR ? formData.specialization : undefined,
         license_number: role === UserRole.DOCTOR ? formData.licenseNumber : undefined,
+        practice_name: role === UserRole.DOCTOR ? formData.practiceName.trim() : undefined,
+        city: role === UserRole.DOCTOR ? formData.city.trim() : undefined,
       });
     } catch (err: any) {
       setError(err.message || 'L\'inscription a échoué. Veuillez réessayer.');
@@ -306,6 +320,26 @@ export default function RegisterPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+                      Nom du cabinet ou de l'hôpital <span className="text-accent-error">*</span>
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Building2 className="h-5 w-5 text-secondary-400 group-focus-within:text-secondary-600 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        name="practiceName"
+                        value={formData.practiceName}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                        placeholder="Clinique du Parc, Hôpital Saint-Pierre..."
+                        required={role === UserRole.DOCTOR}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
                       Spécialisation <span className="text-accent-error">*</span>
                     </label>
                     <input
@@ -317,6 +351,24 @@ export default function RegisterPage() {
                       placeholder="Ex: Médecin généraliste, Cardiologue..."
                       required={role === UserRole.DOCTOR}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">
+                      Ville <span className="text-accent-error">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border-2 border-neutral-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary-400 focus:border-secondary-400 hover:border-secondary-300 transition-all shadow-sm"
+                      placeholder="Ex: Paris, Lyon, Marseille..."
+                      required={role === UserRole.DOCTOR}
+                    />
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 flex items-center">
+                      <span className="mr-2">📍</span> Permet aux patients de vous trouver facilement
+                    </p>
                   </div>
 
                   <div>
@@ -435,5 +487,19 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-warm-peach/20 to-secondary-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <RegisterPageContent />
+    </Suspense>
   );
 }

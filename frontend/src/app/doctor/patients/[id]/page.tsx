@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   FileText,
@@ -26,6 +26,8 @@ import {
   Calendar,
   Phone,
   Mail,
+  Plus,
+  Loader2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -55,23 +57,7 @@ export default function PatientDocumentsPage() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user && patientId) {
-      loadPatientData();
-    }
-  }, [user, authLoading, router, patientId]);
-
-  const loadPatientData = async () => {
+  const loadPatientData = useCallback(async () => {
     try {
       setLoading(true);
       const [patientsRes, recordsRes, documentsRes] = await Promise.all([
@@ -106,7 +92,23 @@ export default function PatientDocumentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientId, user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user && patientId) {
+      void loadPatientData();
+    }
+  }, [user, authLoading, router, patientId, loadPatientData]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -146,7 +148,7 @@ export default function PatientDocumentsPage() {
         description: '',
       });
 
-      loadPatientData();
+      await loadPatientData();
     } catch (error: any) {
       logger.error('Failed to upload document', {
         userId: user?.id,
@@ -189,9 +191,9 @@ export default function PatientDocumentsPage() {
     }
 
     try {
-      await api.documents.delete(docId);
-      setMessage({ type: 'success', text: 'Document deleted successfully' });
-      loadPatientData();
+  await api.documents.delete(docId);
+  setMessage({ type: 'success', text: 'Document deleted successfully' });
+  await loadPatientData();
     } catch (error: any) {
       logger.error('Failed to delete document', {
         userId: user?.id,
@@ -219,7 +221,10 @@ export default function PatientDocumentsPage() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes || Number.isNaN(bytes)) {
+      return '0 B';
+    }
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -259,7 +264,7 @@ export default function PatientDocumentsPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
@@ -276,10 +281,23 @@ export default function PatientDocumentsPage() {
                 <p className="text-gray-600 mt-1">Medical Records &amp; Documents</p>
               </div>
             </div>
-            <Button onClick={() => setShowUploadModal(true)}>
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Document
-            </Button>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => router.push(`/doctor/prescriptions?patient_id=${patientId}`)}
+                className="flex-1 sm:flex-initial bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-2 border-purple-300 text-purple-700 font-semibold"
+              >
+                <Pill className="w-5 h-5 mr-2" />
+                New Prescription
+              </Button>
+              <Button 
+                onClick={() => setShowUploadModal(true)}
+                className="flex-1 sm:flex-initial"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                Upload Document
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -310,7 +328,7 @@ export default function PatientDocumentsPage() {
         {/* Upload Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <Card className="max-w-2xl w-full">
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Upload Medical Document</CardTitle>
@@ -492,10 +510,14 @@ export default function PatientDocumentsPage() {
                         <p className="text-gray-900">{medicalRecord.chronic_conditions}</p>
                       </div>
                     )}
-                    {medicalRecord.current_medications && (
+                    {medicalRecord.medications && (
                       <div>
                         <label className="text-sm font-medium text-gray-600">Current Medications</label>
-                        <p className="text-gray-900">{medicalRecord.current_medications}</p>
+                        <p className="text-gray-900">
+                          {Array.isArray(medicalRecord.medications) 
+                            ? medicalRecord.medications.map((m: { name: string; dosage: string; frequency: string }) => `${m.name} (${m.dosage})`).join(', ')
+                            : medicalRecord.medications}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -534,7 +556,7 @@ export default function PatientDocumentsPage() {
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium text-gray-900 truncate">{doc.title}</h4>
                               <p className="text-sm text-gray-600 mt-1">
-                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size)}
+                                {doc.document_type.replace('_', ' ')} • {formatFileSize(doc.file_size_bytes)}
                               </p>
                               {doc.description && (
                                 <p className="text-sm text-gray-500 mt-2">{doc.description}</p>

@@ -24,8 +24,8 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 ## 🚀 Tech Stack
 
 ### Backend
-- **Language**: Python 3.11+
-- **Framework**: FastAPI 0.104.0+
+- **Language**: Python 3.12+
+- **Framework**: FastAPI 0.115.6+
 - **ORM**: SQLAlchemy 2.0+ with Alembic for migrations
 - **Validation**: Pydantic V2
 - **Authentication**: JWT with OAuth2 + MFA
@@ -34,7 +34,7 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 - **Testing**: Pytest with pytest-asyncio and pytest-cov
 
 ### Frontend
-- **Framework**: Next.js 14+ (React 18+)
+- **Framework**: Next.js 15+ (React 19+)
 - **State Management**: Redux Toolkit / Zustand
 - **Styling**: Tailwind CSS 3.0+ with custom components
 - **Forms**: React Hook Form with Zod validation
@@ -45,6 +45,7 @@ A modern medical web application inspired by Doctolib France, facilitating onlin
 
 ### Infrastructure
 - **Containerization**: Docker with Docker Compose
+- **Orchestration**: Kubernetes (k3s) - [📦 K8s Deployment Guide](K8S_DEPLOYMENT.md)
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Prometheus with Grafana
 - **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana)
@@ -101,22 +102,24 @@ sante-application-web/
 ### Patients
 - Account creation with two-step verification
 - Personal medical record (history, allergies, current treatments)
-- Advanced doctor search with filters and interactive map
-- Intelligent appointment booking with time slot suggestions
-- Integrated video teleconsultations with virtual waiting room
+- **Enhanced doctor search** with filters by specialty, location (city, postal code, distance), and consultation reason
+- **Intelligent appointment booking** with real-time slot availability (first-come-first-served)
+- **Waiting list feature** for earlier appointment slots when cancellations occur
+- Integrated video teleconsultations with **readiness verification** and virtual waiting room
 - Multi-channel customizable reminders (email, SMS, push)
 - Complete consultation history and medical documents
 - Prescription tracking and automatic renewals
 - Secure online payment (Credit Card, PayPal, Apple Pay)
 - Practitioner rating system
 - Real-time notifications for delays or changes
+- **Cancellation policy** enforcement (24-hour rule by default)
 - Digital vaccination record with reminder alerts
 - Synchronization with connected health devices
 - Family mode to manage appointments for dependents
 
 ### Doctors
 - Detailed professional profile with medical CV
-- Advanced calendar configuration with customizable rules
+- **Advanced calendar configuration** with customizable rules (appointment types, duration per type, minimum booking time)
 - Analytical activity dashboard with forecasts
 - Automated cancellation management with replacement suggestions
 - Complete electronic patient record with medical history
@@ -215,6 +218,39 @@ docker-compose exec backend alembic upgrade head  # Run migrations
 3. **Database Changes**: Modify models, run `make migrate-create MSG="description"`, then `make migrate`
 
 For detailed instructions, see the [Quick Start Guide](docs/QUICKSTART.md).
+
+## 🚀 Production Deployment
+
+### Kubernetes (k3s) Deployment
+
+For production deployment on Kubernetes:
+
+```bash
+# See comprehensive deployment guide
+cat K8S_DEPLOYMENT.md
+
+# Quick deployment
+cd infrastructure/k8s
+./deploy.sh
+
+# Check status
+./check-status.sh
+```
+
+**📦 Full Kubernetes Documentation**: [K8S_DEPLOYMENT.md](K8S_DEPLOYMENT.md)
+
+Features:
+- ✅ Complete Kubernetes manifests for all services
+- ✅ Automated deployment scripts
+- ✅ High availability with multiple replicas
+- ✅ Persistent storage for data
+- ✅ Health checks and auto-recovery
+- ✅ Ingress configuration with Traefik
+- ✅ Comprehensive documentation in French
+
+### Docker Compose (Development)
+
+For local development, use Docker Compose as described in the Quick Start section above.
 
 ## 🧪 Testing
 

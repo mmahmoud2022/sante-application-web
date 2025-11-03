@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Heart, CheckCircle, AlertCircle, Mail, ArrowRight } from 'lucide-react';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import api from '@/lib/api';
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -24,17 +24,7 @@ export default function VerifyEmailPage() {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [emailResent, setEmailResent] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
-      setError('Token de vérification manquant');
-      setVerifying(false);
-      return;
-    }
-
-    verifyEmail();
-  }, [token]);
-
-  const verifyEmail = async () => {
+  const verifyEmail = useCallback(async () => {
     try {
       await api.auth.verifyEmail(token!);
       setSuccess(true);
@@ -50,7 +40,17 @@ export default function VerifyEmailPage() {
     } finally {
       setVerifying(false);
     }
-  };
+  }, [router, token]);
+
+  useEffect(() => {
+    if (!token) {
+      setError('Token de vérification manquant');
+      setVerifying(false);
+      return;
+    }
+
+    void verifyEmail();
+  }, [token, verifyEmail]);
 
   const handleResendEmail = async () => {
     setResendingEmail(true);
@@ -163,5 +163,19 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-primary/10 via-white to-secondary/10 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

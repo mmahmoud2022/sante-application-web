@@ -45,14 +45,18 @@ def create_user(db: Session, user: UserCreate) -> User:
             detail="Email already registered"
         )
     
-    # Create new user
+    # Create new user with all provided fields
     db_user = User(
         email=user.email,
         hashed_password=get_password_hash(user.password),
         first_name=user.first_name,
         last_name=user.last_name,
         phone=user.phone,
-        role=user.role
+        role=user.role,
+        date_of_birth=user.date_of_birth,
+        specialization=user.specialization,
+        license_number=user.license_number,
+        city=user.city,
     )
     
     db.add(db_user)
@@ -62,7 +66,12 @@ def create_user(db: Session, user: UserCreate) -> User:
     return db_user
 
 
-def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[User]:
+def update_user(
+    db: Session,
+    user_id: int,
+    user_update: UserUpdate,
+    allow_privileged_fields: bool = False
+) -> Optional[User]:
     """Update user information"""
     db_user = get_user_by_id(db, user_id)
     if not db_user:
@@ -73,6 +82,16 @@ def update_user(db: Session, user_id: int, user_update: UserUpdate) -> Optional[
     
     # Update only provided fields
     update_data = user_update.model_dump(exclude_unset=True)
+
+    if not allow_privileged_fields:
+        restricted_fields = {"is_active", "is_verified"}
+        attempted_restricted = restricted_fields.intersection(update_data.keys())
+        if attempted_restricted:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to update these fields"
+            )
+
     for field, value in update_data.items():
         setattr(db_user, field, value)
     

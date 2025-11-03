@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Pill,
@@ -34,9 +34,10 @@ interface Medication {
   frequency: string;
   duration_days: number;
   instructions: string;
+  file: File | null;
 }
 
-export default function CreatePrescriptionPage() {
+function CreatePrescriptionContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +54,7 @@ export default function CreatePrescriptionPage() {
       frequency: '',
       duration_days: 7,
       instructions: '',
+      file: null,
     },
   ]);
   const [refillsAllowed, setRefillsAllowed] = useState(0);
@@ -60,30 +62,7 @@ export default function CreatePrescriptionPage() {
   const [pharmacyNotes, setPharmacyNotes] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    if (user && user.role !== 'doctor') {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      loadPatients();
-    }
-  }, [user, authLoading, router]);
-
-  useEffect(() => {
-    const patientId = searchParams.get('patient_id');
-    if (patientId) {
-      setSelectedPatientId(Number(patientId));
-    }
-  }, [searchParams]);
-
-  const loadPatients = async () => {
+  const loadPatients = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.doctor.patients();
@@ -100,7 +79,31 @@ export default function CreatePrescriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    if (user && user.role !== 'doctor') {
+      router.push('/login');
+      return;
+    }
+
+    if (user) {
+      void loadPatients();
+    }
+  }, [user, authLoading, router, loadPatients]);
+
+  useEffect(() => {
+    const patientId = searchParams.get('patient_id');
+    if (patientId) {
+      setSelectedPatientId(Number(patientId));
+    }
+  }, [searchParams]);
+
 
   const addMedication = () => {
     const newId = String(Date.now());
@@ -113,6 +116,7 @@ export default function CreatePrescriptionPage() {
         frequency: '',
         duration_days: 7,
         instructions: '',
+        file: null,
       },
     ]);
   };
@@ -161,8 +165,10 @@ export default function CreatePrescriptionPage() {
 
     try {
       // Create each medication as a separate prescription
-      const prescriptionPromises = medications.map(med =>
-        api.prescriptions.create({
+      const today = new Date().toISOString().split('T')[0];
+
+      const prescriptionPromises = medications.map(med => {
+        const payload = {
           patient_id: selectedPatientId,
           medication_name: med.medication_name,
           dosage: med.dosage,
@@ -171,12 +177,21 @@ export default function CreatePrescriptionPage() {
           instructions: med.instructions || undefined,
           refills_allowed: refillsAllowed,
           auto_renewal_enabled: autoRenewal,
-          pharmacy_notes: pharmacyNotes || undefined,
-          start_date: new Date().toISOString().split('T')[0],
-        })
-      );
+          notes: pharmacyNotes || undefined,
+          start_date: today,
+        };
 
-      await Promise.all(prescriptionPromises);
+        console.log('🔍 DEBUG: Creating prescription with payload:', payload);
+
+        if (med.file) {
+          return api.prescriptions.upload(med.file, payload);
+        }
+
+        return api.prescriptions.create(payload);
+      });
+
+      const results = await Promise.all(prescriptionPromises);
+      console.log('✅ DEBUG: Prescription creation results:', results);
 
       setMessage({
         type: 'success',
@@ -188,6 +203,8 @@ export default function CreatePrescriptionPage() {
         router.push('/doctor/prescriptions');
       }, 1500);
     } catch (error: any) {
+      console.error('❌ DEBUG: Prescription creation error:', error);
+      console.error('❌ DEBUG: Error response:', error?.response?.data);
       logger.error('Failed to create prescription', {
         userId: user?.id,
         patientId: selectedPatientId,
@@ -419,6 +436,21 @@ export default function CreatePrescriptionPage() {
                           placeholder="Additional instructions for taking this medication"
                         />
                       </div>
+
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Attach Prescription Document (optional)
+                        </label>
+                        <input
+                          type="file"
+                          accept="application/pdf,image/*"
+                          onChange={(e) => updateMedication(med.id, 'file', e.target.files?.[0] || null)}
+                          className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        {med.file && (
+                          <p className="mt-1 text-xs text-gray-600">Selected: {med.file.name}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -529,5 +561,19 @@ export default function CreatePrescriptionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreatePrescriptionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+      }
+    >
+      <CreatePrescriptionContent />
+    </Suspense>
   );
 }

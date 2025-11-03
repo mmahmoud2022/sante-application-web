@@ -196,55 +196,144 @@ class AuditLogService:
         """
         Write log entry to storage
         
-        In production, this would:
-        - Write to database for queryability
-        - Write to log file for persistence
-        - Send to centralized logging system
-        - Trigger alerts for critical events
+        Stores audit logs in:
+        - Database for queryability and compliance
+        - File for long-term persistence
+        - Console (development only)
         """
+        from app.models.audit_log import AuditLog
+        import logging
+        import os
+        
+        # Create a copy to avoid mutating the original
+        log_entry_copy = log_entry.copy()
+        
         # Format log entry
-        log_line = json.dumps(log_entry, default=str)
+        log_line = json.dumps(log_entry_copy, default=str)
         
-        # Console output (development)
-        print(f"[AUDIT] {log_line}")
+        # Console output (development only)
+        from app.core.config import settings
+        if settings.ENVIRONMENT == "development":
+            print(f"[AUDIT] {log_line}")
         
-        # TODO: Add file logging
-        # with open('/var/log/sante/audit.log', 'a') as f:
-        #     f.write(log_line + '\n')
+        # Store in database
+        try:
+            # Remove timestamp from copy for database storage
+            log_entry_copy.pop("timestamp", None)
+            
+            audit_log = AuditLog(
+                action=log_entry_copy.get("action"),
+                user_id=log_entry_copy.get("user_id"),
+                resource_type=log_entry_copy.get("resource_type"),
+                resource_id=log_entry_copy.get("resource_id"),
+                ip_address=log_entry_copy.get("ip_address"),
+                user_agent=log_entry_copy.get("user_agent"),
+                success=log_entry_copy.get("success", True),
+                error_message=log_entry_copy.get("error_message"),
+                details=log_entry_copy.get("details"),
+            )
+            self.db.add(audit_log)
+            self.db.commit()
+        except Exception as e:
+            # Don't let audit logging failures break the application
+            logging.error(f"Failed to write audit log to database: {e}")
+            self.db.rollback()
         
-        # TODO: Send to centralized logging
-        # elasticsearch_client.index(index='audit-logs', body=log_entry)
-        
-        # TODO: Store in database
-        # audit_log = AuditLog(**log_entry)
-        # self.db.add(audit_log)
-        # self.db.commit()
+        # File logging
+        try:
+            log_dir = "/var/log/sante"
+            os.makedirs(log_dir, exist_ok=True)
+            log_file = os.path.join(log_dir, "audit.log")
+            with open(log_file, 'a') as f:
+                f.write(log_line + '\n')
+        except Exception as e:
+            # Log file writing failure shouldn't break the application
+            logging.error(f"Failed to write audit log to file: {e}")
 
-    def get_user_activity(self, user_id: int, limit: int = 100):
+    def get_user_activity(self, user_id: int, limit: int = 100, skip: int = 0):
         """
         Get recent activity for a user
         
-        In production, this would query the audit log database
+        Returns audit logs for a specific user, ordered by most recent first
         """
-        # Placeholder - would query actual audit log storage
-        return {
-            "user_id": user_id,
-            "note": "Audit logs would be retrieved from storage here",
-            "limit": limit,
-        }
+        from app.models.audit_log import AuditLog
+        
+        logs = (
+            self.db.query(AuditLog)
+            .filter(AuditLog.user_id == user_id)
+            .order_by(AuditLog.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        
+        return logs
 
-    def get_resource_history(self, resource_type: str, resource_id: int):
+    def get_resource_history(self, resource_type: str, resource_id: int, limit: int = 100, skip: int = 0):
         """
         Get audit history for a specific resource
         
         Useful for tracking changes to medical records, prescriptions, etc.
+        Returns audit logs ordered by most recent first
         """
-        # Placeholder - would query actual audit log storage
-        return {
-            "resource_type": resource_type,
-            "resource_id": resource_id,
-            "note": "Resource history would be retrieved from storage here",
-        }
+        from app.models.audit_log import AuditLog
+        
+        logs = (
+            self.db.query(AuditLog)
+            .filter(
+                AuditLog.resource_type == resource_type,
+                AuditLog.resource_id == resource_id
+            )
+            .order_by(AuditLog.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        
+        return logs
+    
+    def search_audit_logs(
+        self,
+        user_id: Optional[int] = None,
+        action: Optional[str] = None,
+        resource_type: Optional[str] = None,
+        success: Optional[bool] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 100,
+        skip: int = 0
+    ):
+        """
+        Search audit logs with various filters
+        
+        Useful for compliance reporting and security investigations
+        """
+        from app.models.audit_log import AuditLog
+        
+        query = self.db.query(AuditLog)
+        
+        if user_id is not None:
+            query = query.filter(AuditLog.user_id == user_id)
+        if action is not None:
+            query = query.filter(AuditLog.action == action)
+        if resource_type is not None:
+            query = query.filter(AuditLog.resource_type == resource_type)
+        if success is not None:
+            query = query.filter(AuditLog.success == success)
+        if start_date is not None:
+            query = query.filter(AuditLog.created_at >= start_date)
+        if end_date is not None:
+            query = query.filter(AuditLog.created_at <= end_date)
+        
+        logs = (
+            query
+            .order_by(AuditLog.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        
+        return logs
 
 
 def get_audit_service(db: Session) -> AuditLogService:

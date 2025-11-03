@@ -21,6 +21,8 @@ import {
   Edit2,
   XCircle,
   CheckCircle,
+  ChevronLeft,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -71,6 +73,14 @@ export default function DoctorProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordModalError, setPasswordModalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -88,7 +98,7 @@ export default function DoctorProfilePage() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        phone: (enrichedUser.phone as string) || user.phone_number || '',
+        phone: (enrichedUser.phone as string) || user.phone || '',
         specialization: enrichedUser.specialization || '',
         bio: enrichedUser.bio || '',
         experience_years: enrichedUser.experience_years ? String(enrichedUser.experience_years) : '',
@@ -120,7 +130,7 @@ export default function DoctorProfilePage() {
       setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        phone: (enrichedUser.phone as string) || user.phone_number || '',
+        phone: (enrichedUser.phone as string) || user.phone || '',
         specialization: enrichedUser.specialization || '',
         bio: enrichedUser.bio || '',
         experience_years: enrichedUser.experience_years ? String(enrichedUser.experience_years) : '',
@@ -176,6 +186,51 @@ export default function DoctorProfilePage() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    setPasswordModalError(null);
+
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      setMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas.' });
+      setPasswordModalError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+
+    if (passwordData.new_password.length < 12) {
+      setMessage({ type: 'error', text: 'Le mot de passe doit contenir au moins 12 caractères.' });
+      setPasswordModalError('Le mot de passe doit contenir au moins 12 caractères.');
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      setMessage(null);
+
+      await api.auth.changePassword({
+        current_password: passwordData.current_password,
+        new_password: passwordData.new_password,
+      });
+
+      setMessage({ type: 'success', text: 'Mot de passe modifié avec succès.' });
+      setShowPasswordModal(false);
+      setPasswordData({
+        current_password: '',
+        new_password: '',
+        confirm_password: '',
+      });
+      setPasswordModalError(null);
+    } catch (error: any) {
+      logger.error('Failed to change password', {
+        userId: user?.id,
+        errorMessage: error?.response?.data?.detail || error.message,
+      }, error);
+      const detail = error?.response?.data?.detail || 'Échec de la modification du mot de passe. Veuillez réessayer.';
+      setMessage({ type: 'error', text: detail });
+      setPasswordModalError(detail);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (authLoading || loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
@@ -204,23 +259,33 @@ export default function DoctorProfilePage() {
               </p>
             </div>
           </div>
-          {!editing ? (
-            <Button onClick={() => setEditing(true)}>
-              <Edit2 className="h-4 w-4 mr-2" />
-              Modifier
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={() => router.push('/doctor/dashboard')}
+              className="hidden sm:inline-flex"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Tableau de bord
             </Button>
-          ) : (
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={handleCancel} disabled={saving}>
-                <XCircle className="h-4 w-4 mr-2" />
-                Annuler
+            {!editing ? (
+              <Button onClick={() => setEditing(true)}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Modifier
               </Button>
-              <Button onClick={handleSave} loading={saving} disabled={saving}>
-                <Save className="h-4 w-4 mr-2" />
-                Enregistrer
-              </Button>
-            </div>
-          )}
+            ) : (
+              <div className="flex space-x-3">
+                <Button variant="outline" onClick={handleCancel} disabled={saving}>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Annuler
+                </Button>
+                <Button onClick={handleSave} loading={saving} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Enregistrer
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -261,9 +326,9 @@ export default function DoctorProfilePage() {
                   <div className="flex items-center justify-center gap-2">
                     <Mail className="h-4 w-4" /> {user.email}
                   </div>
-                  {(doctorProfile?.phone || user.phone_number) && (
+                  {(doctorProfile?.phone || user.phone) && (
                     <div className="flex items-center justify-center gap-2">
-                      <Phone className="h-4 w-4" /> {doctorProfile?.phone || user.phone_number}
+                      <Phone className="h-4 w-4" /> {doctorProfile?.phone || user.phone}
                     </div>
                   )}
                   <div className="flex items-center justify-center gap-2">
@@ -415,6 +480,33 @@ export default function DoctorProfilePage() {
             <Card className="border-2 border-neutral-100">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-primary-600" />
+                  Sécurité du compte
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-neutral-900">Mot de passe</p>
+                    <p className="text-sm text-neutral-600">Modifiez votre mot de passe pour sécuriser votre compte</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowPasswordModal(true);
+                      setPasswordModalError(null);
+                    }}
+                  >
+                    Modifier
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-neutral-100">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-primary-600" />
                   Coordonnées du cabinet
                 </CardTitle>
@@ -513,6 +605,84 @@ export default function DoctorProfilePage() {
           </div>
         </div>
       </main>
+
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]" style={{ pointerEvents: 'auto' }}>
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Modifier le mot de passe</h3>
+            <div className="space-y-4">
+              <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-3">
+                <p className="font-medium text-gray-700">
+                  Le nouveau mot de passe doit respecter les exigences suivantes :
+                </p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Longueur minimale de 12 caractères</li>
+                  <li>Au moins une lettre majuscule et une lettre minuscule</li>
+                  <li>Au moins un chiffre</li>
+                  <li>Au moins un caractère spécial parmi !@#$%^&amp;*(),.?&quot;:{}|&lt;&gt;</li>
+                </ul>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mot de passe actuel
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.current_password}
+                  onChange={(event) => setPasswordData({ ...passwordData, current_password: event.target.value })}
+                  placeholder="Entrez votre mot de passe actuel"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Nouveau mot de passe
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.new_password}
+                  onChange={(event) => setPasswordData({ ...passwordData, new_password: event.target.value })}
+                  placeholder="Entrez votre nouveau mot de passe"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirmer le nouveau mot de passe
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.confirm_password}
+                  onChange={(event) => setPasswordData({ ...passwordData, confirm_password: event.target.value })}
+                  placeholder="Confirmez votre nouveau mot de passe"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+                  setPasswordModalError(null);
+                }}
+                disabled={changingPassword}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handlePasswordChange}
+                disabled={changingPassword}
+              >
+                {changingPassword ? 'Modification...' : 'Modifier'}
+              </Button>
+            </div>
+            {passwordModalError && (
+              <p className="mt-4 text-sm text-red-600" role="alert">
+                {passwordModalError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

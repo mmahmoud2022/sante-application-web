@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -36,16 +36,6 @@ export function Carousel({
   const maxIndex = Math.max(0, itemCount - itemsPerView);
 
   // Auto-play functionality
-  useEffect(() => {
-    if (!autoPlay || itemCount <= itemsPerView) return;
-
-    const interval = setInterval(() => {
-      handleNext();
-    }, autoPlayInterval);
-
-    return () => clearInterval(interval);
-  }, [autoPlay, autoPlayInterval, currentIndex, itemCount, itemsPerView]);
-
   const handlePrevious = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
@@ -53,7 +43,7 @@ export function Carousel({
     setTimeout(() => setIsTransitioning(false), 300);
   };
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setCurrentIndex((prev) => {
@@ -63,7 +53,19 @@ export function Carousel({
       return prev + 1;
     });
     setTimeout(() => setIsTransitioning(false), 300);
-  };
+  }, [isTransitioning, maxIndex]);
+
+  useEffect(() => {
+    if (!autoPlay || itemCount <= itemsPerView) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      handleNext();
+    }, autoPlayInterval);
+
+    return () => clearInterval(interval);
+  }, [autoPlay, autoPlayInterval, itemCount, itemsPerView, handleNext]);
 
   const goToSlide = (index: number) => {
     if (isTransitioning) return;

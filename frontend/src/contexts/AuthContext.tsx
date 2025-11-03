@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => void;
   register: (data: any) => Promise<void>;
   updateUser: (data: Partial<User>) => Promise<void>;
+  syncUser: (data: Partial<User>) => void;
   isAuthenticated: boolean;
   isPatient: boolean;
   isDoctor: boolean;
@@ -80,10 +81,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         router.push('/doctor/dashboard');
       } else if (userData.role === 'admin') {
-        router.push('/admin/verify-doctors');
+        router.push('/admin/dashboard');
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      if (error?.message === 'VERIFICATION_PENDING') {
+        throw error;
+      }
+      const detail = error?.response?.data?.detail;
+      const message = typeof detail === 'string' && detail.trim().length > 0 ? detail : error?.message;
+      throw new Error(message || 'Login failed');
     }
   };
 
@@ -113,6 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const syncUser = (data: Partial<User>) => {
+    setUser(prev => (prev ? { ...prev, ...data } : prev));
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -120,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     register,
     updateUser,
+    syncUser,
     isAuthenticated: !!user,
     isPatient: user?.role === 'patient',
     isDoctor: user?.role === 'doctor',

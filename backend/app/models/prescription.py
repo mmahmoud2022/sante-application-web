@@ -28,6 +28,7 @@ class Prescription(Base):
     patient_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     appointment_id = Column(Integer, ForeignKey("appointments.id"), nullable=True)
+    document_id = Column(Integer, ForeignKey("documents.id"), nullable=True)
     
     # Prescription details
     medication_name = Column(String(200), nullable=False)
@@ -66,6 +67,7 @@ class Prescription(Base):
     # Relationships
     patient = relationship("User", foreign_keys=[patient_id])
     doctor = relationship("User", foreign_keys=[doctor_id])
+    document = relationship("Document")
     
     def __repr__(self):
         return f"<Prescription {self.id} - {self.medication_name}>"

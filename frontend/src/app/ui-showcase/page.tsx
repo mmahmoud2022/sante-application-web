@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input, TextArea, Select } from '@/components/ui/Input';
-import { ThemeToggle, ThemeToggleExpanded } from '@/components/ui/ThemeToggle';
 import { useToast } from '@/components/ui/Toast';
 import {
   StethoscopeIcon,
@@ -47,9 +46,9 @@ export default function UIShowcase() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 transition-colors duration-300">
+  <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-100 dark:border-neutral-700 transition-colors">
+  <header className="bg-white shadow-sm border-b border-neutral-100 transition-colors">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -63,14 +62,11 @@ export default function UIShowcase() {
               </Link>
               <Link 
                 href="/"
-                className="flex items-center gap-2 text-neutral-600 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="flex items-center gap-2 text-neutral-600 hover:text-primary-600 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span>Retour</span>
               </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
             </div>
           </div>
         </div>
@@ -79,26 +75,13 @@ export default function UIShowcase() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-heading font-bold text-neutral-800 dark:text-neutral-100 mb-2">
+          <h1 className="text-4xl font-heading font-bold text-neutral-800 mb-2">
             Démonstration des Fonctionnalités UI
           </h1>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400">
-            Mode sombre, micro-interactions, accessibilité WCAG 2.1 AAA, et icônes médicales
+          <p className="text-lg text-neutral-600">
+            Micro-interactions, accessibilité WCAG 2.1 AAA, et icônes médicales
           </p>
         </div>
-
-        {/* Theme Toggle Section */}
-        <Card className="mb-8" as="section">
-          <CardHeader>
-            <CardTitle>🌓 Sélecteur de Thème</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 text-neutral-600 dark:text-neutral-300">
-              Choisissez votre thème préféré. Le mode système suit automatiquement les préférences de votre appareil.
-            </p>
-            <ThemeToggleExpanded />
-          </CardContent>
-        </Card>
 
         {/* Buttons Section */}
         <Card className="mb-8" as="section">
@@ -108,7 +91,7 @@ export default function UIShowcase() {
           <CardContent>
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Variantes de boutons :</p>
+                <p className="text-sm font-medium text-neutral-700 mb-2">Variantes de boutons :</p>
                 <div className="flex flex-wrap gap-3">
                   <Button variant="primary" onClick={() => handleButtonClick('success')}>
                     Primaire
@@ -129,7 +112,7 @@ export default function UIShowcase() {
               </div>
               
               <div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Tailles :</p>
+                <p className="text-sm font-medium text-neutral-700 mb-2">Tailles :</p>
                 <div className="flex flex-wrap items-center gap-3">
                   <Button size="sm">Petit</Button>
                   <Button size="md">Moyen</Button>
@@ -138,7 +121,7 @@ export default function UIShowcase() {
               </div>
               
               <div>
-                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">États :</p>
+                <p className="text-sm font-medium text-neutral-700 mb-2">États :</p>
                 <div className="flex flex-wrap gap-3">
                   <Button loading={loading} onClick={handleLoadingDemo}>
                     {loading ? 'Chargement...' : 'Démarrer chargement'}
@@ -156,8 +139,8 @@ export default function UIShowcase() {
             <CardTitle>🏥 Bibliothèque d&apos;Icônes Médicales</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="mb-4 text-neutral-600 dark:text-neutral-300">
-              Icônes médicales personnalisées, conformes WCAG AAA, avec support du mode sombre.
+            <p className="mb-4 text-neutral-600">
+              Icônes médicales personnalisées, conformes WCAG AAA.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
               {[
@@ -176,10 +159,10 @@ export default function UIShowcase() {
               ].map(({ Icon, label }) => (
                 <div
                   key={label}
-                  className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors hover-lift"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-primary-50 transition-colors hover-lift"
                 >
-                  <Icon size={40} className="text-primary-600 dark:text-primary-400" />
-                  <span className="text-xs text-center text-neutral-600 dark:text-neutral-400">{label}</span>
+                  <Icon size={40} className="text-primary-600" />
+                  <span className="text-xs text-center text-neutral-600">{label}</span>
                 </div>
               ))}
             </div>
@@ -280,33 +263,33 @@ export default function UIShowcase() {
             <CardTitle>♿ Fonctionnalités d&apos;Accessibilité</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-neutral-600 dark:text-neutral-300">
+            <ul className="space-y-2 text-neutral-600">
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Contraste des couleurs :</strong> Tous les ratios respectent WCAG 2.1 AAA (7:1 pour le texte normal)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Navigation au clavier :</strong> Tous les éléments interactifs sont accessibles au clavier</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Lecteurs d&apos;écran :</strong> ARIA labels, roles et descriptions pour tous les composants</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Indicateurs de focus :</strong> Contours visibles sur tous les éléments focalisables</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Liens d&apos;évitement :</strong> Lien &quot;Aller au contenu principal&quot; en haut de chaque page</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Mouvement réduit :</strong> Respect de prefers-reduced-motion pour les animations</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 dark:text-green-400">✓</span>
+                <span className="text-green-600">✓</span>
                 <span><strong>Mode contraste élevé :</strong> Support de prefers-contrast pour les bordures</span>
               </li>
             </ul>
@@ -315,8 +298,8 @@ export default function UIShowcase() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-neutral-800 border-t border-neutral-100 dark:border-neutral-700 mt-16 py-8 transition-colors">
-        <div className="container mx-auto px-4 text-center text-neutral-600 dark:text-neutral-400">
+      <footer className="bg-white border-t border-neutral-100 mt-16 py-8 transition-colors">
+        <div className="container mx-auto px-4 text-center text-neutral-600">
           <p>&copy; 2024 Santé. Tous droits réservés.</p>
         </div>
       </footer>

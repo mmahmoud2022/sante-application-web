@@ -4,17 +4,50 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Users, Calendar, DollarSign, Heart, LogOut, Bell,
-  TrendingUp, Activity, Shield, Settings, UserCheck, AlertTriangle, User
+  Users,
+  Calendar,
+  Heart,
+  LogOut,
+  Bell,
+  TrendingUp,
+  Activity,
+  Shield,
+  Settings,
+  UserCheck,
+  AlertTriangle,
+  User as UserIcon,
+  Trash2,
+  BarChart2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
 import logger from '@/lib/logger';
+import type { Appointment, User as UserType } from '@/types';
+import { AppointmentStatus } from '@/types';
+
+type DoctorInsight = {
+  id: number;
+  fullName: string;
+  email: string;
+  specialization?: string;
+  totalAppointments: number;
+  refusals: number;
+  patientCancellations: number;
+};
+
+type PatientInsight = {
+  id: number;
+  fullName: string;
+  email: string;
+  totalAppointments: number;
+  cancellations: number;
+  completedAppointments: number;
+};
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -31,6 +64,49 @@ export default function AdminDashboard() {
     cancelledByDoctor: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
+  const [doctorInsights, setDoctorInsights] = useState<DoctorInsight[]>([]);
+  const [patientInsights, setPatientInsights] = useState<PatientInsight[]>([]);
+  const [deletingUserIds, setDeletingUserIds] = useState<number[]>([]);
+
+  const loadDashboardData = useCallback(async () => {
+    setLoadingData(true);
+
+    try {
+      const [userStatsRes, appointmentStatsRes, appointmentsRes] = await Promise.all([
+        api.users.stats(),
+        api.appointments.stats(),
+        api.appointments.list({ limit: 100 }),
+      ]);
+
+      const userStats = userStatsRes.data;
+      const appointmentStats = appointmentStatsRes.data;
+      const appointments = extractItems<Appointment>(appointmentsRes.data);
+
+      setStats({
+        totalUsers: userStats.total_users || 0,
+        totalDoctors: userStats.total_doctors || 0,
+        totalPatients: userStats.total_patients || 0,
+        totalAppointments: appointmentStats.total_appointments || 0,
+        pendingVerifications: userStats.unverified_doctors || 0,
+        activeUsers: userStats.active_users || 0,
+        doctorsBySpecialization: userStats.doctors_by_specialization || {},
+        cancelledByPatient: appointmentStats.cancelled_by_patient || 0,
+        cancelledByDoctor: appointmentStats.cancelled_by_doctor || 0,
+      });
+
+      const { doctors, patients } = buildInsights(appointments);
+      setDoctorInsights(doctors);
+      setPatientInsights(patients);
+    } catch (error: any) {
+      logger.error('Failed to load dashboard data', {
+        userId: user?.id,
+        role: user?.role,
+        errorMessage: error?.message,
+      }, error);
+    } finally {
+      setLoadingData(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -44,39 +120,30 @@ export default function AdminDashboard() {
     }
 
     if (user) {
-      loadDashboardData();
+      void loadDashboardData();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const handleDeleteUser = async (targetId: number, displayName: string) => {
+    if (!confirm(`Confirmez-vous la suppression du compte ${displayName} ?`)) {
+      return;
+    }
+
+    setDeletingUserIds((prev) => prev.includes(targetId) ? prev : [...prev, targetId]);
+
     try {
-      const [userStatsRes, appointmentStatsRes] = await Promise.all([
-        api.users.stats(),
-        api.appointments.stats(),
-      ]);
-
-      const userStats = userStatsRes.data;
-      const appointmentStats = appointmentStatsRes.data;
-
-      setStats({
-        totalUsers: userStats.total_users || 0,
-        totalDoctors: userStats.total_doctors || 0,
-        totalPatients: userStats.total_patients || 0,
-        totalAppointments: appointmentStats.total_appointments || 0,
-        pendingVerifications: userStats.unverified_doctors || 0,
-        activeUsers: userStats.active_users || 0,
-        doctorsBySpecialization: userStats.doctors_by_specialization || {},
-        cancelledByPatient: appointmentStats.cancelled_by_patient || 0,
-        cancelledByDoctor: appointmentStats.cancelled_by_doctor || 0,
-      });
+      await api.users.delete(targetId);
+      alert('Compte supprimé avec succès');
+      await loadDashboardData();
     } catch (error: any) {
-      logger.error('Failed to load dashboard data', {
+      logger.error('Failed to delete user from admin dashboard', {
         userId: user?.id,
-        role: user?.role,
+        targetId,
         errorMessage: error?.message,
       }, error);
+      alert('Impossible de supprimer ce compte pour le moment');
     } finally {
-      setLoadingData(false);
+      setDeletingUserIds((prev) => prev.filter((id) => id !== targetId));
     }
   };
 
@@ -158,7 +225,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => router.push('/admin/users')}
+                  onClick={() => router.push('/admin/verify-doctors')}
                   variant="outline"
                   size="sm"
                 >
@@ -194,9 +261,13 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-green-600 font-semibold mb-1">Médecins</p>
                   <p className="text-4xl font-bold text-green-900">{stats.totalDoctors}</p>
-                  <p className="text-xs text-green-700 mt-1 font-medium">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/admin/verify-doctors')}
+                    className="text-xs text-green-700 mt-1 font-medium underline decoration-dotted transition-colors hover:text-green-800"
+                  >
                     {stats.pendingVerifications} à vérifier
-                  </p>
+                  </button>
                 </div>
                 <div className="p-3 bg-green-200 rounded-xl">
                   <UserCheck className="h-10 w-10 text-green-600" strokeWidth={2} />
@@ -387,6 +458,192 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+  {/* Médecins et patients */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <Card className="border-2 border-neutral-100">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="p-2 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg">
+                  <BarChart2 className="h-5 w-5 text-primary-600" />
+                </div>
+                <span>Statistiques des médecins</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="py-6 text-center text-sm text-neutral-500">
+                  Chargement des statistiques...
+                </div>
+              ) : doctorInsights.length === 0 ? (
+                <div className="py-6 text-center text-sm text-neutral-500">
+                  Aucune donnée disponible
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-neutral-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Médecin
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Rendez-vous
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Refus
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Annulations patients
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200 bg-white">
+                      {doctorInsights.map((insight) => {
+                        const isDeleting = deletingUserIds.includes(insight.id);
+                        return (
+                          <tr key={insight.id} className="hover:bg-neutral-50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-start space-x-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100">
+                                  <UserIcon className="h-5 w-5 text-primary-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-neutral-800">{insight.fullName}</p>
+                                  <p className="text-xs text-neutral-500">{insight.email || 'Non communiqué'}</p>
+                                  {insight.specialization && (
+                                    <p className="text-xs text-primary-600 mt-1">{insight.specialization}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-neutral-800">
+                              {formatNumber(insight.totalAppointments)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-red-600">
+                              {formatNumber(insight.refusals)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-neutral-700">
+                              {formatNumber(insight.patientCancellations)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={() => handleDeleteUser(insight.id, insight.fullName)}
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? 'Suppression...' : (
+                                  <span className="inline-flex items-center">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Supprimer
+                                  </span>
+                                )}
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-neutral-100">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="p-2 bg-gradient-to-br from-secondary-100 to-secondary-200 rounded-lg">
+                  <BarChart2 className="h-5 w-5 text-secondary-600" />
+                </div>
+                <span>Statistiques des patients</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingData ? (
+                <div className="py-6 text-center text-sm text-neutral-500">
+                  Chargement des statistiques...
+                </div>
+              ) : patientInsights.length === 0 ? (
+                <div className="py-6 text-center text-sm text-neutral-500">
+                  Aucune donnée disponible
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-neutral-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Patient
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Rendez-vous
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Annulations
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Terminés
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200 bg-white">
+                      {patientInsights.map((insight) => {
+                        const isDeleting = deletingUserIds.includes(insight.id);
+                        return (
+                          <tr key={insight.id} className="hover:bg-neutral-50">
+                            <td className="px-4 py-3">
+                              <div className="flex items-start space-x-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary-100">
+                                  <UserIcon className="h-5 w-5 text-secondary-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold text-neutral-800">{insight.fullName}</p>
+                                  <p className="text-xs text-neutral-500">{insight.email || 'Non communiqué'}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-neutral-800">
+                              {formatNumber(insight.totalAppointments)}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium text-red-600">
+                              {formatNumber(insight.cancellations)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-neutral-700">
+                              {formatNumber(insight.completedAppointments)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={() => handleDeleteUser(insight.id, insight.fullName)}
+                                disabled={isDeleting}
+                              >
+                                {isDeleting ? 'Suppression...' : (
+                                  <span className="inline-flex items-center">
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Supprimer
+                                  </span>
+                                )}
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Additional Statistics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Doctors by Specialization */}
@@ -424,7 +681,7 @@ export default function AdminDashboard() {
                       <p className="text-3xl font-bold text-blue-900">{stats.cancelledByPatient}</p>
                     </div>
                     <div className="p-3 bg-blue-200 rounded-xl">
-                      <User className="h-8 w-8 text-blue-600" />
+                      <UserIcon className="h-8 w-8 text-blue-600" />
                     </div>
                   </div>
                 </div>
@@ -446,4 +703,132 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+function formatNumber(value: number): string {
+  if (!Number.isFinite(value)) {
+    return '0';
+  }
+  return value.toLocaleString('fr-FR');
+}
+
+function extractItems<T>(payload: unknown): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (payload && typeof payload === 'object') {
+    const items = (payload as { items?: unknown }).items;
+    if (Array.isArray(items)) {
+      return items as T[];
+    }
+  }
+
+  return [];
+}
+
+function buildInsights(appointments: Appointment[]): { doctors: DoctorInsight[]; patients: PatientInsight[] } {
+  const doctorMap = new Map<number, DoctorInsight>();
+  const patientMap = new Map<number, PatientInsight>();
+
+  for (const appointment of appointments) {
+    const doctorId = appointment.doctor_id;
+    const patientId = appointment.patient_id;
+    const doctorInfo = appointment.doctor as UserType | undefined;
+    const patientInfo = appointment.patient as UserType | undefined;
+
+    if (!doctorMap.has(doctorId)) {
+      doctorMap.set(doctorId, {
+        id: doctorId,
+        fullName: buildUserName(doctorInfo, doctorId, 'Dr.'),
+        email: doctorInfo?.email ?? '',
+        specialization: doctorInfo?.specialization,
+        totalAppointments: 0,
+        refusals: 0,
+        patientCancellations: 0,
+      });
+    }
+
+    if (!patientMap.has(patientId)) {
+      patientMap.set(patientId, {
+        id: patientId,
+        fullName: buildUserName(patientInfo, patientId),
+        email: patientInfo?.email ?? '',
+        totalAppointments: 0,
+        cancellations: 0,
+        completedAppointments: 0,
+      });
+    }
+
+    const doctorEntry = doctorMap.get(doctorId)!;
+    doctorEntry.totalAppointments += 1;
+    if (doctorInfo) {
+      doctorEntry.fullName = buildUserName(doctorInfo, doctorId, 'Dr.');
+      doctorEntry.email = doctorInfo.email;
+      doctorEntry.specialization = doctorInfo.specialization;
+    }
+
+    if (appointment.status === AppointmentStatus.CANCELLED) {
+      if (appointment.cancelled_by === doctorId) {
+        doctorEntry.refusals += 1;
+      } else if (appointment.cancelled_by === patientId) {
+        doctorEntry.patientCancellations += 1;
+      }
+    }
+
+    const patientEntry = patientMap.get(patientId)!;
+    patientEntry.totalAppointments += 1;
+    if (patientInfo) {
+      patientEntry.fullName = buildUserName(patientInfo, patientId);
+      patientEntry.email = patientInfo.email;
+    }
+
+    if (appointment.status === AppointmentStatus.CANCELLED && appointment.cancelled_by === patientId) {
+      patientEntry.cancellations += 1;
+    }
+
+    if (appointment.status === AppointmentStatus.COMPLETED) {
+      patientEntry.completedAppointments += 1;
+    }
+  }
+
+  const doctors = Array.from(doctorMap.values())
+    .sort((a, b) => {
+      if (b.refusals !== a.refusals) {
+        return b.refusals - a.refusals;
+      }
+      return b.totalAppointments - a.totalAppointments;
+    })
+    .slice(0, 8);
+
+  const patients = Array.from(patientMap.values())
+    .sort((a, b) => {
+      if (b.cancellations !== a.cancellations) {
+        return b.cancellations - a.cancellations;
+      }
+      return b.totalAppointments - a.totalAppointments;
+    })
+    .slice(0, 8);
+
+  return { doctors, patients };
+}
+
+function buildUserName(user?: UserType, fallbackId?: number, prefix?: string): string {
+  const firstName = user?.first_name?.trim() ?? '';
+  const lastName = user?.last_name?.trim() ?? '';
+  const baseName = [firstName, lastName].filter(Boolean).join(' ');
+
+  if (baseName) {
+    return prefix ? `${prefix} ${baseName}` : baseName;
+  }
+
+  if (prefix) {
+    return fallbackId != null ? `${prefix} #${fallbackId}` : prefix;
+  }
+
+  if (fallbackId != null) {
+    return `Utilisateur #${fallbackId}`;
+  }
+
+  return 'Utilisateur inconnu';
 }
